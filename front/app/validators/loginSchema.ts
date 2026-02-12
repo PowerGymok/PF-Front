@@ -5,7 +5,7 @@ export interface LoginSchema {
     password:string;
 }
 
-export const LoginValues: LoginSchema = {
+export const LoginInitialValues: LoginSchema = {
     email: "",
     password: "",
 }
