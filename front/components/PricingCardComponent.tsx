@@ -1,16 +1,20 @@
 "use client";
 
-import React from "react";
 import { useRouter } from "next/navigation";
+import { variantStyles } from "@/features/memberships/membership.styles";
+import { FeatureItem } from "@/features/memberships/FeatureItem";
+import { MembershipVariant } from "@/features/memberships/membership.types";
 
-type MembershipVariant =
-  | "bronze"
-  | "silver"
-  | "gold"
-  | "unlimited"
-  | "firstTime"
-  | "singleToken";
+/*
+  PROPS DE PRICINGCARD
 
+  - title: nombre del plan/membresía.
+  - price: precio mostrado en la card.
+  - features: lista de beneficios con icono y texto.
+    * premiumOnly: indica si el beneficio aplica solo a planes premium.
+  - membershipVariant: tipo de membresía (Bronze, Plata, Oro, etc.).
+  - highlighted: resalta visualmente la card (ej. plan recomendado).
+*/
 export interface PricingCardProps {
   title: string;
   price: string;
@@ -23,46 +27,6 @@ export interface PricingCardProps {
   highlighted?: boolean;
 }
 
-const variantStyles: Record<
-  MembershipVariant,
-  {
-    border: string;
-    hoverBorder: string;
-    hoverText: string;
-  }
-> = {
-  bronze: {
-    border: "border-white/30",
-    hoverBorder: "group-hover:border-amber-500",
-    hoverText: "group-hover:text-amber-500",
-  },
-  silver: {
-    border: "border-white/30",
-    hoverBorder: "group-hover:border-zinc-600",
-    hoverText: "group-hover:text-zinc-600",
-  },
-  gold: {
-    border: "border-white/30",
-    hoverBorder: "group-hover:border-yellow-400",
-    hoverText: "group-hover:text-yellow-400",
-  },
-  unlimited: {
-    border: "border-white/30",
-    hoverBorder: "group-hover:border-rose-600",
-    hoverText: "group-hover:text-rose-600",
-  },
-  firstTime: {
-    border: "border-white/30",
-    hoverBorder: "group-hover:border-green-400",
-    hoverText: "group-hover:text-green-400",
-  },
-  singleToken: {
-    border: "border-white/30",
-    hoverBorder: "group-hover:border-green-400",
-    hoverText: "group-hover:text-green-400",
-  },
-};
-
 export function PricingCardComponent({
   title,
   price,
@@ -71,7 +35,26 @@ export function PricingCardComponent({
   highlighted = false,
 }: PricingCardProps) {
   const router = useRouter();
+
+  /*
+    ESTILOS SEGÚN VARIANTE
+
+    - variantStyles contiene clases de Tailwind
+      específicas para cada tipo de membresía.
+    - Permite cambiar colores y bordes dinámicamente.
+  */
   const styles = variantStyles[membershipVariant];
+
+  /*
+    NAVEGACIÓN AL REGISTRO
+
+    - handleRegister redirige al formulario de registro.
+    - Se pasa el plan seleccionado como query param (?plan=).
+    - En producción: el backend debe validar el plan recibido.
+  */
+  const handleRegister = () => {
+    router.push(`/register?plan=${membershipVariant}`);
+  };
 
   return (
     <div
@@ -95,9 +78,9 @@ export function PricingCardComponent({
         ${highlighted ? "shadow-2xl shadow-white/10" : ""}
       `}
     >
-      {/* TOP SECTION */}
+      {/* CONTENIDO SUPERIOR */}
       <div className="space-y-6">
-        {/* TITLE */}
+        {/* TÍTULO DEL PLAN */}
         <div className="text-center space-y-3">
           <h2
             className={`
@@ -113,53 +96,26 @@ export function PricingCardComponent({
           </h2>
         </div>
 
-        {/* FEATURES */}
+        {/* LISTA DE FEATURES */}
         <div className="mt-10 flex justify-center">
           <div className="grid grid-cols-2 gap-y-10 gap-x-12 max-w-md">
             {features.map((feature, index) => (
-              <div
+              <FeatureItem
                 key={index}
-                className="flex flex-col items-center text-center space-y-3"
-              >
-                <div
-                  className={`
-                    transition-colors
-                    duration-300
-                    ${styles.hoverText}
-                  `}
-                >
-                  {feature.icon}
-                </div>
-
-                <span
-                  className={`
-    text-xs
-    uppercase
-    tracking-wide
-    leading-snug
-    wrap-break-wordbreak-words
-    max-w-30
-    ${
-      feature.premiumOnly &&
-      membershipVariant !== "gold" &&
-      membershipVariant !== "unlimited"
-        ? "line-through opacity-40"
-        : ""
-    }
-  `}
-                >
-                  {feature.text}
-                </span>
-              </div>
+                icon={feature.icon}
+                text={feature.text}
+                premiumOnly={feature.premiumOnly}
+                membershipVariant={membershipVariant}
+                hoverTextStyle={styles.hoverText}
+              />
             ))}
           </div>
         </div>
       </div>
-      {/* END TOP SECTION */}
 
-      {/* BOTTOM SECTION */}
+      {/* PRECIO + BOTÓN */}
       <div className="mt-12 text-center space-y-6">
-        {/* PRICE */}
+        {/* PRECIO DEL PLAN */}
         <p
           className={`
             text-3xl
@@ -173,22 +129,22 @@ export function PricingCardComponent({
           {price}
         </p>
 
-        {/* BUTTON */}
+        {/* BOTÓN DE REGISTRO */}
         <button
-          onClick={() => router.push(`/register?plan=${membershipVariant}`)}
+          onClick={handleRegister}
           className="
-    w-full
-    py-4
-    rounded-full
-    border
-    border-white
-    font-semibold
-    tracking-wide
-    transition-all
-    duration-300
-    hover:bg-white
-    hover:text-black
-  "
+            w-full
+            py-4
+            rounded-full
+            border
+            border-white
+            font-semibold
+            tracking-wide
+            transition-all
+            duration-300
+            hover:bg-white
+            hover:text-black
+          "
         >
           ¡INSCRÍBETE AHORA!
         </button>
