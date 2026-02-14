@@ -9,7 +9,7 @@ export interface RegisterSchema {
     phone:string;
 }
 
-export const RegisterValuse: RegisterSchema = {
+export const RegisterValues: RegisterSchema = {
     name: "",
     email: "",
     password: "",

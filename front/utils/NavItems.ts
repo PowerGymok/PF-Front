@@ -18,8 +18,12 @@ export const NavItems = [
     },
     {
         id:4,
+        nameToRender: "Membresias",
+        route: PATHROUTES.MEMBRESÍAS
+    },
+    {
+        id:4,
         nameToRender: "Registro",
         route: PATHROUTES.REGISTER
     },
-   
 ]
