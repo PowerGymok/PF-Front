@@ -26,4 +26,5 @@ export interface Workshop {
   image: string;
   capacity: number;
   spotsAvailable: number;
+  time: string;
 }
