@@ -13,8 +13,8 @@ export const NavItems = [
     },
     {
         id:3,
-        nameToRender: "Clases",
-        route: PATHROUTES.CLASES
+        nameToRender: "Workshops",
+        route: PATHROUTES.WORKSHOPS
     },
     {
         id:4,
