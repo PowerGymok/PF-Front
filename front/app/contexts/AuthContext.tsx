@@ -10,7 +10,7 @@ const AuthContext = createContext<AuthContextProps>({
     dataUser: null,
     setDataUser: () => {},
     logOut: () => {},
-    userInitial: null,
+    // userInitial: null,
     isLoading: false,
 })
 
@@ -18,53 +18,45 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const [dataUser, setDataUser] = useState<UserSession | null>(null);
     const [isLoading, setIsLoading] = useState<boolean>(true);
 
-    useEffect(() => {
-        if(dataUser){
-            localStorage.setItem("userSession", JSON.stringify(dataUser));
-        } else {
-            localStorage.removeItem("userSession");
-        }
-    },[dataUser])
+     useEffect(() => {
+    try {
+      const stored = localStorage.getItem("userSession");
+      console.log("Cargando desde localStorage:", stored);
 
-    useEffect(() => {
-    const loadStoredUser = () => {
-      try {
-        const stored = localStorage.getItem("userSession");
-        console.log("Cargando desde localStorage:", stored);
-        
-        if (stored) {
-          const parsedData = JSON.parse(stored);
-          console.log("Datos parseados:", parsedData);
-          
-          if (parsedData && parsedData.login && parsedData.token && parsedData.user) {
-            setDataUser(parsedData);
-          } else {
-            localStorage.removeItem("userSession");
-          }
+      if (stored) {
+        const parsedData: UserSession = JSON.parse(stored);
+        console.log("Datos parseados:", parsedData);
+
+        if (parsedData && parsedData.user) {
+          setDataUser(parsedData);
         }
-      } catch (error) {
-        console.error("Error loading stored user:", error);
-        localStorage.removeItem("userSession");
-      } finally {
-        setIsLoading(false);
       }
-    };
-
-    loadStoredUser();
+    } catch (error) {
+      console.error("Error loading stored user:", error);
+      localStorage.removeItem("userSession");
+    } finally {
+      setIsLoading(false);
+    }
   }, []);
 
-
-    const logOut = () => {
-        setDataUser(null);
-        localStorage.removeItem("userSession");
+  
+  useEffect(() => {
+    if (dataUser) {
+      localStorage.setItem("userSession", JSON.stringify(dataUser));
+      console.log("Guardando en localStorage:", dataUser);
     }
+  }, [dataUser]);
 
-    const userInitial = dataUser ? dataUser.user.name.charAt(0).toUpperCase() : null;
+  
+  const logOut = () => {
+    setDataUser(null);
+    localStorage.removeItem("userSession");
+  };
 
-
+    // const userInitial = dataUser ? dataUser.user.name.charAt(0).toUpperCase() : null;
 
     return (
-        <AuthContext.Provider value={{ dataUser, setDataUser, logOut, userInitial, isLoading}}>
+        <AuthContext.Provider value={{ dataUser, setDataUser, logOut, isLoading}}>
             {children}
         </AuthContext.Provider>
     )

@@ -33,10 +33,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body
-      
-        className={`text- foreground bg-background ${opensans.variable}${geistSans.variable} ${geistMono.variable} antialiased`}
-      >
+      <body className={`text- foreground bg-background ${opensans.variable}${geistSans.variable} ${geistMono.variable} antialiased`}>
 
         <AuthProvider>
           <NavBar />
