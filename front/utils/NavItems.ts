@@ -22,8 +22,9 @@ export const NavItems = [
         route: PATHROUTES.MEMBRESÍAS
     },
     {
-        id:4,
+        id:5,
         nameToRender: "Registro",
         route: PATHROUTES.REGISTER
     },
+    
 ]
