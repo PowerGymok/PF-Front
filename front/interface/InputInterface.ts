@@ -6,6 +6,7 @@ interface InputProps {
     value: string;
     onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
     name?: string;
+    onBlur?: (e: React.FocusEvent<HTMLInputElement>) => void;
     
 }
 
