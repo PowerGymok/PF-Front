@@ -24,7 +24,7 @@ const LoginComponent = () => {
         }, 1000);
         router.refresh();
       } catch (error) {
-        alert("Error al iniciar sesión");
+        alert("Inicio de sesion incorrecto ");
       }
     },
   });
