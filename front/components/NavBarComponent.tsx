@@ -5,7 +5,6 @@ import { NavItems } from "@/utils/NavItems";
 import { PATHROUTES } from "@/utils/PathRoutes";
 import { useAuth } from "@/app/contexts/AuthContext";
 import { GymLogoComponent } from "./GymLogoComponent";
-import DashboardPage from "./DashboardComponent";
 
 const NavBarComponent = () => {
 
