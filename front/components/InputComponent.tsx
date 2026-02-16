@@ -9,7 +9,7 @@ const InputComponent: React.FC<InputProps>= ({
     
 }) => {
     return (
-        <div>
+        <div className="w-full max-w-md mx-auto mb-4 mt-4">
             <input
                 type={type}
                 placeholder={placeholder}

@@ -6,6 +6,10 @@ interface ButtonInterface {
     color?: "blue" | "red" | "green"
     label: string
     rounded? : "sm" | "md" | "lg"
+    type?: "button" | "submit" | "reset"
+    text?: string,
+    className?: string
+
 
 }
 
