@@ -6,6 +6,8 @@ import { useRouter } from "next/navigation";
 import InputComponent from "./InputComponent";
 import { useAuth } from "@/app/contexts/AuthContext";
 
+
+
 const LoginComponent = () => {
   const router = useRouter();
   const {setDataUser} = useAuth();
@@ -43,8 +45,8 @@ const LoginComponent = () => {
 
 
   return (
-    <div>
-      <h1>Hola soy el login</h1>
+    <div className="max-w-md mx-auto mt-10 p-6">
+      
       <form onSubmit={formik.handleSubmit}>
         <InputComponent
           type="email"
@@ -71,7 +73,8 @@ const LoginComponent = () => {
                 <div className="text-red-500 text-sm">{formik.errors.password}</div>
             )
         }
-        <button type="submit">Iniciar Sesión</button>
+        <button type="submit" className="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-md transition-colors duration-300">Iniciar Sesión</button>
+        
       </form>
     </div>
   );
