@@ -21,7 +21,6 @@ export interface PricingCardProps {
   features: {
     icon: React.ReactNode;
     text: string;
-    premiumOnly?: boolean;
   }[];
   membershipVariant: MembershipVariant;
   highlighted?: boolean;
@@ -104,7 +103,6 @@ export function PricingCardComponent({
                 key={index}
                 icon={feature.icon}
                 text={feature.text}
-                premiumOnly={feature.premiumOnly}
                 membershipVariant={membershipVariant}
                 hoverTextStyle={styles.hoverText}
               />
