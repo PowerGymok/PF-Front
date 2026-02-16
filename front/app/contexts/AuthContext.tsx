@@ -10,7 +10,7 @@ const AuthContext = createContext<AuthContextProps>({
     dataUser: null,
     setDataUser: () => {},
     logOut: () => {},
-    // userInitial: null,
+    userInitial: null,
     isLoading: false,
 })
 
@@ -53,10 +53,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     localStorage.removeItem("userSession");
   };
 
-    // const userInitial = dataUser ? dataUser.user.name.charAt(0).toUpperCase() : null;
+    const userInitial = dataUser?.user?.email ? dataUser.user.email.charAt(0).toUpperCase() : null;
 
     return (
-        <AuthContext.Provider value={{ dataUser, setDataUser, logOut, isLoading}}>
+        <AuthContext.Provider value={{ dataUser, setDataUser, logOut, userInitial, isLoading}}>
             {children}
         </AuthContext.Provider>
     )
