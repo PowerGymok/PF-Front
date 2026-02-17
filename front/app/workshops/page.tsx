@@ -1,39 +1,70 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { workshopsMock } from "@/features/workshops/workshops.mock";
 import { WorkshopCardComponent } from "@/components/WorkshopCardComponent";
 import { Workshop } from "@/features/workshops/workshop.types";
 
+/**
+ * WorkshopsPage
+ *
+ * Página principal de listado de entrenamientos.
+ *
+ * Arquitectura actual:
+ * - Estado local con datos mockeados.
+ * - Filtros ejecutados en memoria con useMemo.
+ *
+ * Escalabilidad futura:
+ * - Reemplazar workshopsMock por fetch desde backend.
+ * - Convertir filtros en query params (?date=&intensity=&search=).
+ * - handleSchedule → request POST al backend.
+ */
 export default function WorkshopsPage() {
-  /* 
-    ESTADO LOCAL TEMPORAL
-    - Actualmente los workshops provienen de un mock estático.
-    - En producción este estado será reemplazado por:
-      * Fetch a /api/workshops
-      * React Query / SWR
-      * O Server Components con fetch en el servidor
-    - El backend será la fuente de verdad.
-  */
+  /* ======================================================
+     ESTADO PRINCIPAL (Mock temporal)
+     ====================================================== */
+
+  /**
+   * Contiene el listado completo de workshops.
+   *
+   * FUTURO:
+   * - Este estado se poblará mediante fetch a API.
+   * - Ej: GET /api/workshops?date=&intensity=&search=
+   */
   const [workshops, setWorkshops] = useState<Workshop[]>(workshopsMock);
 
-  /* 
-    FILTROS EN MEMORIA
-    - Estos estados son locales y temporales.
-    - En producción se enviarán como query params al backend:
-      * GET /api/workshops?search=value&intensity=MEDIO&time=09:00
-  */
-  const [search, setSearch] = useState("");
-  const [intensityFilter, setIntensityFilter] = useState("");
-  const [selectedTime, setSelectedTime] = useState("");
+  /* ======================================================
+     ESTADO DE FILTROS
+     ====================================================== */
 
-  /* 
-    SIMULACIÓN DE AGENDAR
-    - Actualmente reduce cupos en memoria.
-    - En producción será un POST:
-      * POST /api/workshops/:id/schedule
-    - El backend validará disponibilidad real y manejará concurrencia.
-  */
+  /**
+   * Fecha seleccionada en calendario.
+   * null = sin filtro de fecha.
+   */
+  const [selectedDate, setSelectedDate] = useState<string | null>(null);
+
+  /**
+   * Filtro de búsqueda general.
+   */
+  const [search, setSearch] = useState("");
+
+  /**
+   * Filtro de intensidad.
+   */
+  const [intensityFilter, setIntensityFilter] = useState("");
+
+  /* ======================================================
+     SIMULACIÓN DE AGENDAR
+     ====================================================== */
+
+  /**
+   * Simula reducción de cupos disponibles.
+   *
+   * FUTURO:
+   * - Reemplazar por:
+   *   await fetch("/api/bookings", { method: "POST" })
+   * - Luego refrescar listado o usar optimistic update.
+   */
   const handleSchedule = (id: number) => {
     setWorkshops((prev) =>
       prev.map((w) =>
@@ -44,56 +75,136 @@ export default function WorkshopsPage() {
     );
   };
 
-  /* 
-    FILTRO EN MEMORIA
-    - Actualmente filtra sobre el array local.
-    - En producción este filtro desaparecerá del frontend:
-      * El backend realizará el filtrado vía SQL.
-      * El frontend solo enviará parámetros de búsqueda.
-  */
-  const filtered = workshops.filter((w) => {
-    const searchValue = search.toLowerCase();
+  /* ======================================================
+     FILTRADO EN MEMORIA
+     ====================================================== */
 
-    const matchesSearch =
-      w.title.toLowerCase().includes(searchValue) ||
-      w.description.toLowerCase().includes(searchValue) ||
-      w.coach.toLowerCase().includes(searchValue) ||
-      w.intensity.toLowerCase().includes(searchValue);
+  /**
+   * Derivación computada del estado.
+   *
+   * Optimización:
+   * - useMemo evita recalcular en cada render.
+   *
+   * FUTURO:
+   * - Este bloque desaparecerá cuando backend maneje filtros.
+   */
+  const filteredWorkshops = useMemo(() => {
+    return (
+      workshops
+        // Filtro por fecha
+        .filter((w) => (selectedDate ? w.date === selectedDate : true))
+        // Filtro combinado
+        .filter((w) => {
+          const searchValue = search.toLowerCase();
 
-    const matchesIntensity =
-      intensityFilter === "" || w.intensity === intensityFilter;
+          const matchesSearch =
+            w.title.toLowerCase().includes(searchValue) ||
+            w.description.toLowerCase().includes(searchValue) ||
+            w.coach.toLowerCase().includes(searchValue) ||
+            w.intensity.toLowerCase().includes(searchValue);
 
-    const matchesTime = selectedTime === "" || w.time === selectedTime;
+          const matchesIntensity =
+            intensityFilter === "" || w.intensity === intensityFilter;
 
-    return matchesSearch && matchesIntensity && matchesTime;
-  });
+          return matchesSearch && matchesIntensity;
+        })
+        // Orden por hora ascendente
+        .sort((a, b) => a.time.localeCompare(b.time))
+    );
+  }, [workshops, selectedDate, search, intensityFilter]);
+
+  /* ======================================================
+     GENERADOR DE SEMANA DINÁMICA
+     ====================================================== */
+
+  /**
+   * Genera los 7 días de la semana actual.
+   *
+   * FUTURO:
+   * - Puede convertirse en componente independiente.
+   * - Soportar navegación semana anterior/siguiente.
+   */
+  const today = new Date();
+
+  const getWeekDays = () => {
+    const start = new Date(today);
+    start.setDate(today.getDate() - today.getDay());
+
+    return Array.from({ length: 7 }).map((_, i) => {
+      const date = new Date(start);
+      date.setDate(start.getDate() + i);
+
+      return {
+        iso: date.toISOString().split("T")[0],
+        month: date
+          .toLocaleDateString("es-MX", {
+            month: "short",
+          })
+          .toUpperCase(),
+        dayNumber: date.getDate(),
+        weekday: date
+          .toLocaleDateString("es-MX", {
+            weekday: "short",
+          })
+          .toUpperCase(),
+      };
+    });
+  };
+
+  const weekDays = getWeekDays();
 
   return (
     <div className="px-4 md:px-8 lg:px-12 py-10 space-y-10">
+      {/* ======================================================
+          HEADER
+      ====================================================== */}
       <h1 className="text-3xl font-bold">Entrenamientos</h1>
 
-      {/* 
-        FILTROS HORIZONTALES
-        - Distribuidos con flex para ocupar todo el ancho.
-        - En producción:
-          * El backend puede enviar arrays dinámicos de intensidades y horarios.
-          * El frontend solo renderiza las opciones.
-      */}
-      <div className="flex gap-4 max-w-5xl w-full">
-        {/* Buscador */}
-        <input
-          type="text"
-          placeholder="Buscar entrenamiento o coach..."
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          className="flex-1 p-4 rounded-xl bg-black border border-white/20 focus:outline-none focus:ring-2 focus:ring-white/30 transition"
-        />
+      {/* ======================================================
+          CALENDARIO DISTRIBUIDO (7 COLUMNAS IGUALES)
+      ====================================================== */}
 
+      <div className="grid grid-cols-7 gap-3 border-b border-white/10 pb-4">
+        {weekDays.map((day) => {
+          const isActive = selectedDate === day.iso;
+
+          return (
+            <button
+              key={day.iso}
+              onClick={() => setSelectedDate(isActive ? null : day.iso)}
+              className={`
+                flex flex-col items-center justify-center
+                py-4 rounded-2xl transition border text-sm
+                ${
+                  isActive
+                    ? "bg-white text-black border-white"
+                    : "bg-black text-white border-white/20 hover:border-white/40"
+                }
+              `}
+            >
+              <span className="opacity-70 text-xs">
+                {day.month} {day.dayNumber}
+              </span>
+              <span className="font-semibold">{day.weekday}</span>
+            </button>
+          );
+        })}
+      </div>
+
+      {/* ======================================================
+          FILTROS
+      ====================================================== */}
+
+      <div className="flex flex-col gap-4 max-w-5xl">
         {/* Intensidad */}
         <select
           value={intensityFilter}
           onChange={(e) => setIntensityFilter(e.target.value)}
-          className="flex-1 p-4 rounded-xl bg-black border border-white/20"
+          className="
+            w-full md:w-56
+            p-4 rounded-xl
+            bg-black border border-white/20
+          "
         >
           <option value="">Todas las intensidades</option>
           <option value="BAJO">Bajo</option>
@@ -101,43 +212,42 @@ export default function WorkshopsPage() {
           <option value="ALTO">Alto</option>
         </select>
 
-        {/* Horario */}
-        <select
-          value={selectedTime}
-          onChange={(e) => setSelectedTime(e.target.value)}
-          className="flex-1 p-4 rounded-xl bg-black border border-white/20"
-        >
-          <option value="">Todas las horas</option>
-          <option value="08:00">08:00 am</option>
-          <option value="09:00">09:00 am</option>
-          <option value="10:00">10:00 am</option>
-          <option value="11:00">11:00 am</option>
-          <option value="12:00">12:00 pm</option>
-          <option value="13:00">13:00 pm</option>
-          <option value="14:00">14:00 pm</option>
-          <option value="15:00">15:00 pm</option>
-          <option value="16:00">16:00 pm</option>
-          <option value="17:00">17:00 pm</option>
-          <option value="18:00">18:00 pm</option>
-          <option value="19:00">19:00 pm</option>
-        </select>
+        {/* Buscador general */}
+        <input
+          type="text"
+          placeholder="Buscar entrenamiento o coach..."
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          className="
+            w-full
+            p-4 rounded-xl
+            bg-black border border-white/20
+            focus:outline-none
+            focus:ring-2 focus:ring-white/30
+            transition
+          "
+        />
       </div>
 
-      {/* GRID DE WORKSHOPS */}
-      <div className="grid sm:grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8">
-        {filtered.map((workshop) => (
+      {/* ======================================================
+          GRID RESPONSIVE DE CARDS
+      ====================================================== */}
+
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+        {filteredWorkshops.map((workshop) => (
           <WorkshopCardComponent
             key={workshop.id}
             workshop={workshop}
             onSchedule={handleSchedule}
           />
         ))}
-      </div>
 
-      {/* EMPTY STATE */}
-      {filtered.length === 0 && (
-        <p className="text-red-400">No se encontraron resultados</p>
-      )}
+        {filteredWorkshops.length === 0 && (
+          <p className="text-red-400 col-span-full">
+            No hay entrenamientos disponibles
+          </p>
+        )}
+      </div>
     </div>
   );
 }

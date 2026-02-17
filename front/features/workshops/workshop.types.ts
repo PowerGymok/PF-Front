@@ -27,4 +27,5 @@ export interface Workshop {
   capacity: number;
   spotsAvailable: number;
   time: string;
+  date: string;
 }
