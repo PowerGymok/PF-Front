@@ -1,3 +1,4 @@
+import { User } from "@/interface/User";
 import { LoginSchema } from "@/validators/loginSchema";
 import { RegisterSchema } from "@/validators/registerSchema";
 
@@ -20,6 +21,7 @@ export const LoginUser = async (userData: LoginSchema) => {
     throw error;
   }
 };
+
 
 export const LoginUserMock = async (userData: LoginSchema) => {
   try {
@@ -55,16 +57,20 @@ export const RegisterUserMock = async (userData: RegisterSchema) => {
   try {
     // 1. Verificar si el email ya existe
     const checkRes = await fetch(
-      `https://69922fd08f29113acd3d5963.mockapi.io/users?email=${userData.email}`
+      `https://69922fd08f29113acd3d5963.mockapi.io/users`
     );
 
     if (!checkRes.ok) throw new Error("Error al verificar usuario");
 
-    const existingUsers = await checkRes.json();
+    const existingUsers: User[]  = await checkRes.json();
 
-    if (existingUsers.length > 0) {
-    throw new Error("El email ya está registrado");
-     }
+    const emailExists = existingUsers.some(
+  (u) => u.email === userData.email
+);
+
+if (emailExists) {
+  throw new Error("El email ya está registrado");
+}
 
     // 2. Sacar confirmPassword
     const { confirmPassword, ...userToSave } = userData;
