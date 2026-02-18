@@ -1,12 +1,12 @@
 import * as Yup from "yup";
 
 export interface RegisterSchema {
-    name:string;
+    name?:string;
     email:string;
     password:string;
-    confirmPassword:string;
-    address:string;
-    phone:string;
+    confirmPassword?:string;
+    address?:string;
+    phone?:string;
 }
 
 export const RegisterValues: RegisterSchema = {
