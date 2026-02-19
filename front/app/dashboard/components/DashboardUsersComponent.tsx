@@ -4,7 +4,7 @@ import { useAuth } from "@/app/contexts/AuthContext";
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 
-const DashboardPage = () => {
+const DashboardUsersPage = () => {
     const {isLoading, dataUser, logOut} = useAuth();
     const router = useRouter();
 
@@ -25,7 +25,7 @@ const DashboardPage = () => {
         <div className="flex items-center justify-center h-screen gap-4 flex-col">
             <div className="text-center bg-gray-800 p-8 rounded-lg shadow-lg">
                 <h1 className="text-3xl font-bold">
-                Dashboard
+                Dashboard de Usuarios
             </h1>
             <p className="mt-4 text-gray-400">
 
@@ -42,4 +42,4 @@ const DashboardPage = () => {
         </div>
     )
 }
-export default DashboardPage;
+export default DashboardUsersPage;

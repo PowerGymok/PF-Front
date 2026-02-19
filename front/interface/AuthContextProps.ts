@@ -6,5 +6,4 @@ export interface AuthContextProps {
     logOut: () => void;
     userInitial: string | null;
     isLoading: boolean;
-
 }

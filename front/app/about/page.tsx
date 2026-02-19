@@ -1,9 +1,9 @@
-
+import AboutComponent from "@/components/AboutComponent";
 
 const About = () => {
     return (
         <div>
-            <h1>Hola soy el About</h1>
+            <AboutComponent />
         </div>
     )
 }
