@@ -1,8 +1,8 @@
 import { PricingCardComponent } from "@/components/PricingCardComponent";
-import { ChatIcon } from "@/components/icons/ChatIcon";
-import { ShowerIcon } from "@/components/icons/ShowerIcon";
-import { TokenIcon } from "@/components/icons/TokenIcon";
-import { WorkshopIcon } from "@/components/icons/WorkshopIcon";
+import { Chat_Icon } from "@/components/icons/Chat_Icon";
+import { Shower_Icon } from "@/components/icons/Shower_Icon";
+import { Token_Icon } from "@/components/icons/Token_Icon";
+import { Workshop_Icon } from "@/components/icons/Workshop_Icon";
 import { PricingCardProps } from "@/components/PricingCardComponent";
 
 export default function Memberships() {
@@ -13,19 +13,19 @@ export default function Memberships() {
       membershipVariant: "firstTime",
       features: [
         {
-          icon: <WorkshopIcon className="w-10 h-10" />,
+          icon: <Workshop_Icon className="w-10 h-10" />,
           text: "AGENDA TU CLASE (SEGUN CUPO)",
         },
         {
-          icon: <TokenIcon className="w-10 h-10" />,
+          icon: <Token_Icon className="w-10 h-10" />,
           text: "X2 TOKENS",
         },
         {
-          icon: <ShowerIcon className="w-10 h-10" />,
+          icon: <Shower_Icon className="w-10 h-10" />,
           text: "ACCESO A REGADERAS",
         },
         {
-          icon: <ChatIcon className="w-10 h-10" />,
+          icon: <Chat_Icon className="w-10 h-10" />,
           text: "ATENCION PERSONALIZADA",
           premiumOnly: true,
         },
@@ -37,19 +37,19 @@ export default function Memberships() {
       membershipVariant: "bronze",
       features: [
         {
-          icon: <WorkshopIcon className="w-10 h-10" />,
+          icon: <Workshop_Icon className="w-10 h-10" />,
           text: "AGENDA TU CLASE (SEGUN CUPO)",
         },
         {
-          icon: <TokenIcon className="w-10 h-10" />,
+          icon: <Token_Icon className="w-10 h-10" />,
           text: "X4 TOKENS",
         },
         {
-          icon: <ShowerIcon className="w-10 h-10" />,
+          icon: <Shower_Icon className="w-10 h-10" />,
           text: "ACCESO REGADERAS",
         },
         {
-          icon: <ChatIcon className="w-10 h-10" />,
+          icon: <Chat_Icon className="w-10 h-10" />,
           text: "ATENCION PERSONALIZADA",
           premiumOnly: true,
         },
@@ -61,19 +61,19 @@ export default function Memberships() {
       membershipVariant: "silver",
       features: [
         {
-          icon: <WorkshopIcon className="w-10 h-10" />,
+          icon: <Workshop_Icon className="w-10 h-10" />,
           text: "AGENDA TU CLASE (SEGUN CUPO)",
         },
         {
-          icon: <TokenIcon className="w-10 h-10" />,
+          icon: <Token_Icon className="w-10 h-10" />,
           text: "X8 TOKENS",
         },
         {
-          icon: <ShowerIcon className="w-10 h-10" />,
+          icon: <Shower_Icon className="w-10 h-10" />,
           text: "ACCESO A REGADERAS",
         },
         {
-          icon: <ChatIcon className="w-10 h-10" />,
+          icon: <Chat_Icon className="w-10 h-10" />,
           text: "ATENCION PERSONALIZADA",
           premiumOnly: true,
         },
@@ -85,19 +85,19 @@ export default function Memberships() {
       membershipVariant: "gold",
       features: [
         {
-          icon: <WorkshopIcon className="w-10 h-10" />,
+          icon: <Workshop_Icon className="w-10 h-10" />,
           text: "AGENDA TU CLASE 3 DIAS ANTES",
         },
         {
-          icon: <TokenIcon className="w-10 h-10" />,
+          icon: <Token_Icon className="w-10 h-10" />,
           text: "16 TOKENS",
         },
         {
-          icon: <ShowerIcon className="w-10 h-10" />,
+          icon: <Shower_Icon className="w-10 h-10" />,
           text: "ACCESO A LOCKER & REGADERAS",
         },
         {
-          icon: <ChatIcon className="w-10 h-10" />,
+          icon: <Chat_Icon className="w-10 h-10" />,
           text: "ATENCION PERSONALIZADA",
           premiumOnly: true,
         },
@@ -109,19 +109,19 @@ export default function Memberships() {
       membershipVariant: "unlimited",
       features: [
         {
-          icon: <WorkshopIcon className="w-10 h-10" />,
+          icon: <Workshop_Icon className="w-10 h-10" />,
           text: "AGENDA TU CLASE 3 DIAS ANTES",
         },
         {
-          icon: <TokenIcon className="w-10 h-10" />,
+          icon: <Token_Icon className="w-10 h-10" />,
           text: "SIN LIMITE X MES",
         },
         {
-          icon: <ShowerIcon className="w-10 h-10" />,
+          icon: <Shower_Icon className="w-10 h-10" />,
           text: "ACCESO A LOCKER & REGADERAS",
         },
         {
-          icon: <ChatIcon className="w-10 h-10" />,
+          icon: <Chat_Icon className="w-10 h-10" />,
           text: "ATENCION PERSONALIZADA",
           premiumOnly: true,
         },
@@ -133,19 +133,19 @@ export default function Memberships() {
       membershipVariant: "singleToken",
       features: [
         {
-          icon: <WorkshopIcon className="w-10 h-10" />,
+          icon: <Workshop_Icon className="w-10 h-10" />,
           text: "AGENDA TU CLASE (SEGUN CUPO)",
         },
         {
-          icon: <TokenIcon className="w-10 h-10" />,
+          icon: <Token_Icon className="w-10 h-10" />,
           text: "X1 TOKENS",
         },
         {
-          icon: <ShowerIcon className="w-10 h-10" />,
+          icon: <Shower_Icon className="w-10 h-10" />,
           text: "ACCESO REGADERAS",
         },
         {
-          icon: <ChatIcon className="w-10 h-10" />,
+          icon: <Chat_Icon className="w-10 h-10" />,
           text: "ATENCION PERSONALIZADA",
           premiumOnly: true,
         },
