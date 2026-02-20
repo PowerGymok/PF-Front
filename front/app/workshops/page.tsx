@@ -5,6 +5,7 @@ import { workshopsMock } from "@/features/workshops/workshops.mock";
 import { WorkshopCardComponent } from "@/components/WorkshopCardComponent";
 import { Workshop } from "@/features/workshops/workshop.types";
 
+
 /**
  * WorkshopsPage
  *
@@ -239,7 +240,12 @@ export default function WorkshopsPage() {
             key={workshop.id}
             workshop={workshop}
             onSchedule={handleSchedule}
+
           />
+
+        
+
+          
         ))}
 
         {filteredWorkshops.length === 0 && (
