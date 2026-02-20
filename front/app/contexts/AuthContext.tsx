@@ -12,11 +12,22 @@ const AuthContext = createContext<AuthContextProps>({
     logOut: () => {},
     userInitial: null,
     isLoading: false,
+    userSesion: null
 })
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     const [dataUser, setDataUser] = useState<UserSession | null>(null);
     const [isLoading, setIsLoading] = useState<boolean>(true);
+    const [userSesion, setUserSesion] = useState<UserSession | null>(null);
+
+    useEffect(() => {
+      try {
+        
+        
+      } catch (error) {
+        
+      }
+    })
 
      useEffect(() => {
     try {
@@ -56,7 +67,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const userInitial = dataUser?.user?.email ? dataUser.user.email.charAt(0).toUpperCase() : null;
 
     return (
-        <AuthContext.Provider value={{ dataUser, setDataUser, logOut, userInitial, isLoading}}>
+        <AuthContext.Provider value={{ dataUser, userSesion, setDataUser, logOut, userInitial, isLoading}}>
             {children}
         </AuthContext.Provider>
     )

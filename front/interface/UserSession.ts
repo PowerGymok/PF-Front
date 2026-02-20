@@ -1,3 +1,4 @@
+export type Role = "coach" | "user" | "admin";
 
 export interface UserSession {
     login: boolean;
@@ -7,7 +8,7 @@ export interface UserSession {
         name: string;
         email: string;
         phone?: string
-        role: string;
+        role: Role;
         orders?: [];
     };
 
