@@ -1,7 +1,7 @@
 import { GymLogoComponent } from "@/components/GymLogoComponent";
-import { FacebookIcon } from "@/components/icons/FacebookIcon";
-import { InstagramIcon } from "@/components/icons/InstagramIcon";
-import { TwitterIcon } from "@/components/icons/TwitterIcon";
+import { Facebook_Icon } from "@/components/icons/Facebook_Icon";
+import { Instagram_Icon } from "@/components/icons/Instagram_Icon";
+import { Twitter_Icon } from "@/components/icons/Twitter_Icon";
 import Image from "next/image";
 
 export default function DemoPage() {
@@ -18,9 +18,9 @@ export default function DemoPage() {
         {/* Hover color */}
         <div className="flex flex-col items-center gap-2">
           <GymLogoComponent className="w-36 hover:text-red-400 transition-colors" />
-          <FacebookIcon className="w-8 hover:text-blue-400 transition-colors" />
-          <InstagramIcon className="w-8 hover:text-red-400 transition-colors" />
-          <TwitterIcon className="w-8 hover:text-blue-400 transition-colors" />
+          <Facebook_Icon className="w-8 hover:text-blue-400 transition-colors" />
+          <Instagram_Icon className="w-8 hover:text-red-400 transition-colors" />
+          <Twitter_Icon className="w-8 hover:text-blue-400 transition-colors" />
           <span className="text-sm text-gray-400">SVG: cambia color</span>
         </div>
         <div className="flex flex-col items-center gap-2">
