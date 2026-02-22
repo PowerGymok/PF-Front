@@ -1,10 +1,12 @@
 "use client";
 
-import { LoginUserMock } from "@/services/user.services";
+import { LoginUser, GetCurrentUser } from "@/services/user.services";
 import { useFormik } from "formik";
 import { useRouter } from "next/navigation";
 import InputComponent from "./InputComponent";
 import { useAuth } from "@/app/contexts/AuthContext";
+import { LoginInitialValues, LoginValidation } from "@/validators/loginSchema";
+
 
 
 
@@ -13,32 +15,40 @@ const LoginComponent = () => {
   const {setDataUser} = useAuth();
 
   const formik = useFormik({
-    initialValues: {
-      email: "",
-      password: "",
-    },
+    initialValues: LoginInitialValues,
+    validationSchema: LoginValidation,
 
-    onSubmit: async (values, {resetForm}) => {
-      try {
+    onSubmit: async (values, { resetForm }) => {
+  try {
+    const res = await LoginUser(values);
 
-        const user = await LoginUserMock(values);
-        const mockToken = "mock-token";
+    if (!res?.accessToken) {
+      throw new Error("Credenciales incorrectas");
+    }
 
-        alert("Inicio de sesión exitoso");
-        setDataUser({
-            login: true,
-            token: mockToken,
-            user: user,
-        });
-        resetForm()
+    const token = res.accessToken;
 
-        setTimeout(() => {
-          router.push("/home");
-        }, 1000);
+    const user = await GetCurrentUser(token);
+
+    setDataUser({
+      login: true,
+      token,
+      user: {
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+        phone: user.phone,
+        orders: [],
+      },
+    });
+
+    resetForm();
+    router.push("/dashboard");
 
       } catch (error) {
-        alert("Inicio de sesion incorrecto ");  
-    }
+    alert("Inicio de sesión incorrecto");
+      }
     },
   });
 

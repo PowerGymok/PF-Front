@@ -7,6 +7,8 @@ export interface RegisterSchema {
     confirmPassword?:string;
     address?:string;
     phone?:string;
+    city: string
+    Birthdate: string
 }
 
 export const RegisterValues: RegisterSchema = {
@@ -16,6 +18,8 @@ export const RegisterValues: RegisterSchema = {
     confirmPassword: "",
     address: "",
     phone: "",
+    city: "",
+    Birthdate: ""
 }
 
 export const RegisterSchemaYup = Yup.object().shape({
@@ -24,5 +28,7 @@ export const RegisterSchemaYup = Yup.object().shape({
     password: Yup.string().min(6, "La contraseña debe tener al menos 6 caracteres").required("La contraseña es requerida"),
     confirmPassword: Yup.string().oneOf([Yup.ref("password")], "Las contraseñas no coinciden").required("Debes confirmar tu contraseña"),
     address: Yup.string().required("La dirección es requerida"),
+    city: Yup.string().required("la ciudad es requerida"),
+    Birthdate: Yup.string().required("La fecha de nacimiento debe de ser valida"),
     phone: Yup.string().trim().matches(/^[0-9+\-\s()]+$/, "El teléfono debe tener caracteres válidos").min(8, "Muy corto").max(15, "Muy largo").required("Campo obligatorio")
 })

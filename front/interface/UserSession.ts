@@ -4,7 +4,7 @@ export interface UserSession {
     login: boolean;
     token: string;
     user: {
-        id: number;
+        id: string;
         name: string;
         email: string;
         phone?: string
