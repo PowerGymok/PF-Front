@@ -18,7 +18,7 @@ const AuthContext = createContext<AuthContextProps>({
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     const [dataUser, setDataUser] = useState<UserSession | null>(null);
     const [isLoading, setIsLoading] = useState<boolean>(true);
-    const [userSesion, setUserSesion] = useState<UserSession | null>(null);
+   
 
     useEffect(() => {
       try {
