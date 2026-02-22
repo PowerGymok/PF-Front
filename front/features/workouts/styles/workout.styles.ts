@@ -1,4 +1,4 @@
-import { Intensity } from "./types/workout.types";
+import { Intensity } from "../types/workout.types";
 
 export const intensityLabelMap: Record<Intensity, string> = {
   ALTO: "Alta Intensidad",
