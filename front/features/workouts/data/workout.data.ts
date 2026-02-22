@@ -1,4 +1,4 @@
-import { Workout } from "./workout.types";
+import { Workout } from "../types/workout.types";
 
 export const workoutsMock: Workout[] = [
   {
