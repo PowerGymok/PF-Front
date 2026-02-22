@@ -4,7 +4,7 @@ import { RegisterSchema } from "@/validators/registerSchema";
 
 export const LoginUser = async (userData: LoginSchema) => {
   try {
-    const res = await fetch("url_page_logn_real", {
+    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/login`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -22,83 +22,53 @@ export const LoginUser = async (userData: LoginSchema) => {
   }
 };
 
-
-export const LoginUserMock = async (userData: LoginSchema) => {
+export const GetCurrentUser = async (token: string) => {
   try {
     const res = await fetch(
-      `https://694619e2ed253f51719d0f95.mockapi.io/api/v1/users?email=${userData.email}`,
+      `${process.env.NEXT_PUBLIC_API_URL}/auth/me`,
       {
         method: "GET",
-      },
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
     );
+
     if (!res.ok) {
       const error = await res.json();
-      throw new Error(error.message("Error al iniciar sesión"));
+      throw new Error(error.message || "Error obteniendo usuario");
     }
 
-    const data = await res.json();
-    if (data.length === 0) {
-      throw new Error("Usuario no encontrado");
-    }
+    return await res.json();
 
-    const user = data[0];
-
-    if (user.password !== userData.password) {
-      throw new Error("Contraseña incorrecta");
-    } else {
-      return user;
-    }
   } catch (error) {
     throw error;
   }
 };
 
-export const RegisterUserMock = async (userData: RegisterSchema) => {
+export const RegisterUser = async (userData: RegisterSchema) => {
   try {
-    // 1. Verificar si el email ya existe
-    const checkRes = await fetch(
-      `https://69922fd08f29113acd3d5963.mockapi.io/users`
-    );
-
-    if (!checkRes.ok) throw new Error("Error al verificar usuario");
-
-    const existingUsers: User[]  = await checkRes.json();
-
-    const emailExists = existingUsers.some(
-  (u) => u.email === userData.email
-);
-
-if (emailExists) {
-  throw new Error("El email ya está registrado");
-}
-
-    // 2. Sacar confirmPassword
-    const { confirmPassword, ...userToSave } = userData;
-
-    // 3. Crear usuario
     const res = await fetch(
-      "https://69922fd08f29113acd3d5963.mockapi.io/users",
+      `${process.env.NEXT_PUBLIC_API_URL}/auth/signup`,
       {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(userToSave),
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(userData),
       }
     );
 
     if (!res.ok) {
-      throw new Error("Error al registrar el usuario");
+      const error = await res.json().catch(() => ({}));
+      throw new Error(error.message || "Error al registrar el usuario");
     }
 
-    const newUser = await res.json();
-
-    // 4. Devolver sin password
-    const { password, ...userWithoutPassword } = newUser;
-    return userWithoutPassword;
-
+    return await res.json(); 
   } catch (error) {
-  if (error instanceof Error) {
-    throw new Error(error.message);
+    if (error instanceof Error) {
+      throw new Error(error.message);
+    }
+    throw new Error("Error al registrar el usuario");
   }
-  throw new Error("Error al registrar el usuario");
-}
 };
