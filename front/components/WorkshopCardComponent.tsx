@@ -2,10 +2,10 @@
 
 import Image from "next/image";
 import { Workshop } from "@/features/workshops/workshop.types";
-import { SpotsIcon } from "./icons/SpotsIcon";
-import { CoachIcon } from "./icons/CoachIcon";
-import { IntensityIcon } from "./icons/IntensityIcon";
-import { ClockIcon } from "./icons/ClockIcon";
+import { Spots_Icon } from "./icons/Spots_Icon";
+import { Coach_Icon } from "./icons/Coach_Icon";
+import { Intensity_Icon } from "./icons/Intensity_Icon";
+import { Clock_Icon } from "./icons/Clock_Icon";
 
 interface Props {
   workshop: Workshop;
@@ -104,7 +104,7 @@ export function WorkshopCardComponent({ workshop, onSchedule }: Props) {
             <div
               className={`flex items-center gap-2 transition-colors duration-300 ${intensityStyles.text}`}
             >
-              <IntensityIcon className="w-5 h-5 text-white transition-colors duration-300 group-hover:text-inherit" />
+              <Intensity_Icon className="w-5 h-5 text-white transition-colors duration-300 group-hover:text-inherit" />
               <span>Intensidad {workshop.intensity}</span>
             </div>
 
@@ -112,7 +112,7 @@ export function WorkshopCardComponent({ workshop, onSchedule }: Props) {
             <div
               className={`flex items-center gap-2 justify-end transition-colors duration-300 ${intensityStyles.text}`}
             >
-              <ClockIcon className="w-5 h-5 text-white transition-colors duration-300 group-hover:text-inherit" />
+              <Clock_Icon className="w-5 h-5 text-white transition-colors duration-300 group-hover:text-inherit" />
               <span>{workshop.time}</span>
             </div>
 
@@ -120,13 +120,13 @@ export function WorkshopCardComponent({ workshop, onSchedule }: Props) {
             <div
               className={`flex items-center gap-2 transition-colors duration-300 ${intensityStyles.text}`}
             >
-              <CoachIcon className="w-5 h-5 text-white transition-colors duration-300 group-hover:text-inherit" />
+              <Coach_Icon className="w-5 h-5 text-white transition-colors duration-300 group-hover:text-inherit" />
               <span>{workshop.coach}</span>
             </div>
 
             {/* Spots */}
             <div className="flex items-center gap-2 justify-end">
-              <SpotsIcon
+              <Spots_Icon
                 className={`w-5 h-5 transition-colors duration-300 ${progressTextColor}`}
               />
               <span className={progressTextColor}>

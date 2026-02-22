@@ -1,8 +1,8 @@
 import Link from "next/link";
 import { GymLogoComponent } from "./GymLogoComponent";
-import { FacebookIcon } from "./icons/FacebookIcon";
-import { TwitterIcon } from "./icons/TwitterIcon";
-import { InstagramIcon } from "./icons/InstagramIcon";
+import { Facebook_Icon } from "./icons/Facebook_Icon";
+import { Twitter_Icon } from "./icons/Twitter_Icon";
+import { Instagram_Icon } from "./icons/Instagram_Icon";
 
 const FooterComponent = () => {
   return (
@@ -45,19 +45,19 @@ const FooterComponent = () => {
 
           <div className="flex md:justify-end gap-6 text-sm">
             <span className="flex items-center gap-2 cursor-pointer transition hover:text-white relative">
-              <FacebookIcon className="w-5 h-5 text-blue-400" />
+              <Facebook_Icon className="w-5 h-5 text-blue-400" />
               <span className="after:content-[''] after:block after:w-0 after:h-0.5 after:bg-white after:transition-all after:duration-300 hover:after:w-full">
                 Facebook
               </span>
             </span>
             <span className="flex items-center gap-2 cursor-pointer transition hover:text-white relative">
-              <TwitterIcon className="w-5 h-5 text-blue-400" />
+              <Twitter_Icon className="w-5 h-5 text-blue-400" />
               <span className="after:content-[''] after:block after:w-0 after:h-0.5 after:bg-white after:transition-all after:duration-300 hover:after:w-full">
                 Twitter
               </span>
             </span>
             <span className="flex items-center gap-2 cursor-pointer transition hover:text-white relative">
-              <InstagramIcon className="w-5 h-5 text-red-400" />
+              <Instagram_Icon className="w-5 h-5 text-red-400" />
               <span className="after:content-[''] after:block after:w-0 after:h-0.5 after:bg-white after:transition-all after:duration-300 hover:after:w-full">
                 Instagram
               </span>
