@@ -21,6 +21,7 @@ export interface PricingCardProps {
   features: {
     icon: React.ReactNode;
     text: string;
+    premiumOnly?: boolean;
   }[];
   membershipVariant: MembershipVariant;
   highlighted?: boolean;
