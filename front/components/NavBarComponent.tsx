@@ -1,4 +1,4 @@
-'use client'
+"use client";
 
 import Link from "next/link";
 import { useState } from "react";
@@ -6,18 +6,20 @@ import { NavItems } from "@/utils/NavItems";
 import { PATHROUTES } from "@/utils/PathRoutes";
 import { useAuth } from "@/app/contexts/AuthContext";
 import { GymLogoComponent } from "./GymLogoComponent";
+import clsx from "clsx";
+import { usePathname } from "next/navigation";
 
 const NavBarComponent = () => {
   const { dataUser, logOut, userInitial } = useAuth();
   const [isOpen, setIsOpen] = useState(false);
+  const pathname = usePathname();
 
   return (
     <header className="w-full bg-black px-4 md:px-10">
       <div className="flex items-center justify-between h-[70px]">
-
         {/* Logo */}
         <Link href="/">
-          <GymLogoComponent className="w-12 h-12 md:w-16 md:h-16" />
+          <GymLogoComponent className="w-14 h-14 sm:w-16 sm:h-16 md:w-20 md:h-20 lg:w-24 lg:h-24" />
         </Link>
 
         {/* Botón hamburguesa (solo mobile) */}
@@ -34,7 +36,10 @@ const NavBarComponent = () => {
             <Link
               key={item.id}
               href={item.route}
-              className="hover:text-gray-400 transition"
+              className={clsx(
+                "transition-colors hover:text-gray-500",
+                pathname === item.route && "text-gray-500 font-bold",
+              )}
             >
               {item.nameToRender}
             </Link>
@@ -51,9 +56,9 @@ const NavBarComponent = () => {
               >
                 {userInitial}
               </Link>
-              <button onClick={logOut} className="hover:text-gray-400">
+              {/* <button onClick={logOut} className="hover:text-gray-400">
                 Logout
-              </button>
+              </button> */}
             </>
           ) : (
             <Link href={PATHROUTES.LOGIN} className="hover:text-gray-400">
@@ -90,10 +95,7 @@ const NavBarComponent = () => {
                 <button onClick={logOut}>Logout</button>
               </>
             ) : (
-              <Link
-                href={PATHROUTES.LOGIN}
-                onClick={() => setIsOpen(false)}
-              >
+              <Link href={PATHROUTES.LOGIN} onClick={() => setIsOpen(false)}>
                 Login
               </Link>
             )}
