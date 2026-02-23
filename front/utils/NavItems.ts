@@ -26,9 +26,9 @@ export const NavItems = [
     nameToRender: "Membresias",
     route: PATHROUTES.MEMBERSHIPS,
   },
-  {
-    id: 6,
-    nameToRender: "Registro",
-    route: PATHROUTES.REGISTER,
-  },
+  // {
+  //   id: 6,
+  //   nameToRender: "Registro",
+  //   route: PATHROUTES.REGISTER,
+  // },
 ];
