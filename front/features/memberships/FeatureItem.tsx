@@ -1,48 +1,39 @@
-import { MembershipVariant } from "./membership.types";
+import clsx from "clsx";
+import { Feature, FeatureIconType } from "./types/membership.types";
+
+import { Workshop_Icon } from "@/components/icons/Workshop_Icon";
+import { Token_Icon } from "@/components/icons/Token_Icon";
+import { Shower_Icon } from "@/components/icons/Shower_Icon";
+import { Chat_Icon } from "@/components/icons/Chat_Icon";
 
 interface FeatureItemProps {
-  icon: React.ReactNode;
-  text: string;
-  premiumOnly?: boolean;
-  membershipVariant: MembershipVariant;
+  feature: Feature;
   hoverTextStyle: string;
 }
 
-/*
-  FEATURE ITEM COMPONENT
+const iconMap: Record<FeatureIconType, React.ElementType> = {
+  workshop: Workshop_Icon,
+  token: Token_Icon,
+  shower: Shower_Icon,
+  chat: Chat_Icon,
+};
 
-  - Componente presentacional para mostrar un beneficio individual de la membresía.
-  - Separarlo permite:
-    * Reutilización futura en otros contextos (ej. landing, dashboard).
-    * Mantener PricingCard más limpio y enfocado.
-    * Facilitar testeo unitario de cada feature.
-*/
-export function FeatureItem({ icon, text, hoverTextStyle }: FeatureItemProps) {
+export function FeatureItem({ feature, hoverTextStyle }: FeatureItemProps) {
+  const IconComponent = iconMap[feature.icon];
+
   return (
     <div className="flex flex-col items-center text-center space-y-3">
-      {/* ICONO DEL FEATURE */}
-      <div
-        className={`
-          transition-colors
-          duration-300
-          ${hoverTextStyle}
-        `}
-      >
-        {icon}
+      <div className={clsx("transition-colors duration-300", hoverTextStyle)}>
+        <IconComponent className="w-10 h-10" />
       </div>
 
-      {/* TEXTO DEL FEATURE */}
       <span
-        className={`
-          text-xs
-          uppercase
-          tracking-wide
-          leading-snug
-          max-w-30
-          }
-        `}
+        className={clsx(
+          "text-xs uppercase tracking-wide leading-snug max-w-30 transition-colors duration-300",
+          hoverTextStyle,
+        )}
       >
-        {text}
+        {feature.text}
       </span>
     </div>
   );
