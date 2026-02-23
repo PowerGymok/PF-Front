@@ -17,15 +17,15 @@ export type Intensity = "BAJO" | "MEDIO" | "ALTO";
     * coach debería ser relación (workshop -> coach_id -> tabla coaches).
     * spotsAvailable debe actualizarse mediante lógica transaccional segura.
 */
-export interface Workshop {
-  id: number;
+export interface Booking {
+  id: string; // UUID
   title: string;
   description: string;
-  intensity: Intensity;
   coach: string;
-  image: string;
+  intensity: Intensity;
+  image?: string;
   capacity: number;
-  spotsAvailable: number;
+  spots_available: number;
   time: string;
   date: string;
 }
