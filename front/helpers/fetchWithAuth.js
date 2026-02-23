@@ -16,6 +16,8 @@ export const fetchWithAuth = async (
 
   // 🟥 NO LOGUEADO
   if (res.status === 401) {
+    localStorage.removeItem("token");
+    window.location.href = "/login";
     throw new Error("401");
   }
 
