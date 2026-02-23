@@ -3,7 +3,7 @@ import { Membership } from "./types/membership.types";
 export const memberships: Membership[] = [
   {
     title: "BRONZE",
-    price: "00 USD",
+    price: "40 USD",
     membershipVariant: "bronze",
     features: [
       {
@@ -12,21 +12,21 @@ export const memberships: Membership[] = [
       },
       {
         icon: "token",
-        text: "Acceso básico",
+        text: "Incluye CUATRO TOKENS",
       },
       {
         icon: "chat",
-        text: "Acceso básico",
+        text: "Seguimiento Coach",
       },
       {
         icon: "shower",
-        text: "Acceso básico",
+        text: "Acceso a regaderas",
       },
     ],
   },
   {
     title: "SILVER",
-    price: "00 USD",
+    price: "80 USD",
     membershipVariant: "silver",
     features: [
       {
@@ -35,21 +35,21 @@ export const memberships: Membership[] = [
       },
       {
         icon: "token",
-        text: "Acceso básico",
+        text: "Incluye OCHO TOKENS",
       },
       {
         icon: "chat",
-        text: "Acceso básico",
+        text: "Seguimiento Coach",
       },
       {
         icon: "shower",
-        text: "Acceso básico",
+        text: "Acceso a regaderas",
       },
     ],
   },
   {
     title: "GOLD",
-    price: "00 USD",
+    price: "160 USD",
     membershipVariant: "gold",
     features: [
       {
@@ -58,22 +58,22 @@ export const memberships: Membership[] = [
       },
       {
         icon: "token",
-        text: "Acceso básico",
+        text: "Incluye DIECISÉIS TOKENS",
       },
       {
         icon: "chat",
-        text: "Acceso básico",
+        text: "Seguimiento Coach",
       },
       {
         icon: "shower",
-        text: "Acceso básico",
+        text: "Acceso a regaderas",
       },
     ],
   },
   {
     title: "SINGLE TOKEN",
-    price: "00 USD",
-    membershipVariant: "singleToken",
+    price: "10 USD",
+    membershipVariant: "single",
     features: [
       {
         icon: "workshop",
@@ -81,15 +81,15 @@ export const memberships: Membership[] = [
       },
       {
         icon: "token",
-        text: "Acceso básico",
+        text: "Recarga TOKEN individual",
       },
       {
         icon: "chat",
-        text: "Acceso básico",
+        text: "Seguimiento Coach",
       },
       {
         icon: "shower",
-        text: "Acceso básico",
+        text: "Acceso a regaderas",
       },
     ],
   },

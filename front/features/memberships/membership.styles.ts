@@ -19,7 +19,7 @@ export const variantStyles: Record<
     hoverBorder: "group-hover:border-yellow-400",
     hoverText: "group-hover:text-yellow-400",
   },
-  singleToken: {
+  single: {
     border: "border-white/30",
     hoverBorder: "group-hover:border-green-400",
     hoverText: "group-hover:text-green-400",

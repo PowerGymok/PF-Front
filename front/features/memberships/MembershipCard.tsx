@@ -2,9 +2,11 @@
 
 import clsx from "clsx";
 import { useRouter } from "next/navigation";
+import { useAuth } from "@/app/contexts/AuthContext";
 import { variantStyles } from "./membership.styles";
 import { FeatureItem } from "./FeatureItem";
 import { Membership } from "./types/membership.types";
+import { variantToMembershipType } from "./membership.mapper";
 
 export function MembershipCard({
   title,
@@ -13,10 +15,18 @@ export function MembershipCard({
   membershipVariant,
 }: Membership) {
   const router = useRouter();
+  const { dataUser } = useAuth();
   const styles = variantStyles[membershipVariant];
 
-  const handleRegister = () => {
-    router.push(`/register?plan=${membershipVariant}`);
+  const handleCheckout = () => {
+    const planId = variantToMembershipType[membershipVariant];
+
+    if (!dataUser) {
+      router.push(`/login?redirect=/checkout?plan=${planId}`);
+      return;
+    }
+
+    router.push(`/checkout?plan=${planId}`);
   };
 
   return (
@@ -67,7 +77,7 @@ export function MembershipCard({
         </p>
 
         <button
-          onClick={handleRegister}
+          onClick={handleCheckout}
           className="w-full py-3 rounded-full border border-white font-semibold hover:bg-white hover:text-black transition-all duration-300"
         >
           ¡INSCRÍBETE AHORA!
