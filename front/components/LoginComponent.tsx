@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import InputComponent from "./InputComponent";
 import { useAuth } from "@/app/contexts/AuthContext";
 import { LoginInitialValues, LoginValidation } from "@/validators/loginSchema";
+import ButtonComponent from "./ButtonComponent";
 
 
 
@@ -28,6 +29,8 @@ const LoginComponent = () => {
 
     const token = res.accessToken;
 
+    localStorage.setItem("token", token)
+    
     const user = await GetCurrentUser(token);
 
     setDataUser({
@@ -83,7 +86,8 @@ const LoginComponent = () => {
                 <div className="text-red-500 text-sm">{formik.errors.password}</div>
             )
         }
-        <button type="submit" className="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-md transition-colors duration-300">Iniciar Sesión</button>
+        <ButtonComponent type="submit" label="Iniciar Sesión" />
+
         
       </form>
     </div>
