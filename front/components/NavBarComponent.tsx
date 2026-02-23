@@ -56,9 +56,9 @@ const NavBarComponent = () => {
               >
                 {userInitial}
               </Link>
-              <button onClick={logOut} className="hover:text-gray-400">
+              {/* <button onClick={logOut} className="hover:text-gray-400">
                 Logout
-              </button>
+              </button> */}
             </>
           ) : (
             <Link href={PATHROUTES.LOGIN} className="hover:text-gray-400">

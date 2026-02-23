@@ -33,7 +33,7 @@ const ButtonComponent: React.FC<ButtonInterface> = ({
 
     return (
         <div>
-                <button disabled={disabled} onClick={onClick} type={type} className={`${sizes[size]} ${colors[color]} ${roundedClasses[rounded]} bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded hover:scale-105 transition`}>
+                <button disabled={disabled} onClick={onClick} type={type} className={`${sizes[size]} ${colors[color]} ${roundedClasses[rounded]} bg-blue-500 hover:bg-blue-700 cursor-pointer text-white font-bold py-2 px-4 rounded hover:scale-105 transition`}>
                     {label}
                 </button>
         </div>

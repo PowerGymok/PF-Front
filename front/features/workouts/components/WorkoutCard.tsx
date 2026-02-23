@@ -79,7 +79,7 @@ export default function WorkoutCard({ workout }: WorkoutCardProps) {
 
           {/* Button */}
           <button
-            className={`mt-2 py-2 text-sm font-semibold rounded-lg border transition-all duration-200 ${intensityStyles.button}`}
+            className={`cursor-pointer mt-2 py-2 text-sm font-semibold rounded-lg border transition-all duration-200 ${intensityStyles.button}`}
           >
             Ver más →
           </button>
