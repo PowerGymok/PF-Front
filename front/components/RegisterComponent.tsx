@@ -186,9 +186,6 @@ const RegisterComponent = () => {
             )}
           </div>
 
-
-
-
           {/* Teléfono */}
           <div>
             <label className="text-sm">Teléfono*</label>
