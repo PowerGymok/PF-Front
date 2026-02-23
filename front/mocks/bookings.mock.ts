@@ -1,0 +1,40 @@
+import { Booking } from "../features/booking/types/booking.types";
+
+export const mockBookings: Booking[] = [
+  {
+    id: "27e9032a-7722-4518-93d6-a27f54539Wzs",
+    title: "MINDFULNESS",
+    description: "lorem ipsum",
+    coach: "Laura",
+    intensity: "BAJO",
+    image: "image.example",
+    capacity: 20,
+    spots_available: 15,
+    time: "10:00",
+    date: "2026-02-22",
+  },
+  {
+    id: "27e9032a-7722-4518-93d6-a27f54539dba",
+    title: "YOGA FLOW",
+    description: "lorem ipsum",
+    coach: "Miguel",
+    intensity: "MEDIO",
+    image: "image.example",
+    capacity: 20,
+    spots_available: 10,
+    time: "11:00",
+    date: "2026-02-23",
+  },
+  {
+    id: "47752a7e-b20e-4c20-87bd-4e6046ecf0d3",
+    title: "BOX",
+    description: "lorem ipsum",
+    coach: "Juan",
+    intensity: "ALTO",
+    image: "image.example",
+    capacity: 20,
+    spots_available: 0,
+    time: "12:00",
+    date: "2026-02-24",
+  },
+];

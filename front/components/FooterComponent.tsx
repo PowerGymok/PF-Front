@@ -29,7 +29,7 @@ const FooterComponent = () => {
           </div>
 
           <div className="flex gap-6 pt-4">
-            <Link href="/workshops" className="hover:text-white transition">
+            <Link href="/booking" className="hover:text-white transition">
               Reserva
             </Link>
             <Link href="/login" className="hover:text-white transition">
