@@ -10,6 +10,6 @@ export interface UserSession {
         phone?: string
         role: Role;
         orders?: [];
-    };
+    } ;
 
 }
