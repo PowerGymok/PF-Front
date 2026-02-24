@@ -55,20 +55,9 @@ const DashboardUsersPage = () => {
         </h2>
         <p className="text-gray-500">Este mes has asistido a 15 clases</p>
       </div>
-
-    
-    <div className="bg-white p-6 rounded-xl shadow-md">
-      <h2 className="text-lg font-semibold mb-4 text-gray-700">
-        Resumen Personal
-      </h2>
-      <p className="text-gray-500">
-        Este mes has asistido a 15 clases 
-      </p>
-    </div>
-
     
     <div className="mt-10 flex gap-4 flex-wrap">
-      <Link href={"/workshops"}className="bg-blue-500 hover:bg-blue-600 text-white px-6 py-2 rounded-lg transition">
+      <Link href={"/booking"}className="bg-blue-500 hover:bg-blue-600 text-white px-6 py-2 rounded-lg transition">
         Agendar Nueva Clase
       </Link>
 
@@ -86,6 +75,9 @@ const DashboardUsersPage = () => {
         Cerrar sesión
       </button>
     </div>
+    </div>
   );
+  
 };
+
 export default DashboardUsersPage;

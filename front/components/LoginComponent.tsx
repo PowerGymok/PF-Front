@@ -100,7 +100,7 @@ const LoginComponent = () => {
 
         <div>
           <p className="text-gray-600 flex px-4 py-4 justify-center gap-2">
-            Dont have an account ? <Link href={"register"} className="text-white">Sign up</Link>
+            Dont have an account ? <Link href={"register"} className="text-white relative transition-all duration-300 hover:after:w-full after:content-[''] after:absolute after:left-0 after:-bottom-1 after:h-[1px] after:w-0 after:bg-white after:transition-all after:duration-300 hover:text-gray-300">Sign up</Link>
           </p>
         </div>
         

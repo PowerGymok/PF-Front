@@ -17,24 +17,25 @@ const ButtonComponent: React.FC<ButtonInterface> = ({
         large: "text-lg px-6 py-3",
     }
 
-    const colors = {
-        blue: "bg-blue-500 hover:bg-blue-700 text-white",
-        red: "bg-red-500 hover:bg-red-700 text-white",
-        green: "bg-green-500 hover:bg-green-700 text-white",
-    }
+    // const colors = {
+    //     blue: "bg-blue-500 hover:bg-blue-700 text-white",
+    //     red: "bg-red-500 hover:bg-red-700 text-white",
+    //     green: "bg-green-500 hover:bg-green-700 text-white",
+    // }
 
-    const roundedClasses = {
-        sm: "rounded-sm",
-        md: "rounded-md",
-        lg: "rounded-lg",
-    }
+    // const roundedClasses = {
+    //     sm: "rounded-sm",
+    //     md: "rounded-md",
+    //     lg: "rounded-lg",
+    // }
 
 
 
     return (
         <div>
-                <button disabled={disabled} onClick={onClick} type={type} className={`${sizes[size]} ${colors[color]} ${roundedClasses[rounded]} bg-blue-500 hover:bg-blue-700 cursor-pointer text-white font-bold py-2 px-4 rounded hover:scale-105 transition`}>
-                    {label}
+                <button disabled={disabled} onClick={onClick} type={type} className={`${sizes[size]} relative text-white font-light tracking-wide transition-all
+                duration-300 after:content-[''] after:absolute after:left-0 after:-bottom-1 after:h-[1px] after:w-0 after:bg-white after:transition-all after:duration-300
+                hover:after:w-full cursor-pointer hover:text-gray-300`}> {label}
                 </button>
         </div>
     )

@@ -3,71 +3,82 @@ import { GymLogoComponent } from "./GymLogoComponent";
 import { Facebook_Icon } from "./icons/Facebook_Icon";
 import { Twitter_Icon } from "./icons/Twitter_Icon";
 import { Instagram_Icon } from "./icons/Instagram_Icon";
-
 const FooterComponent = () => {
   return (
-    <footer className="bg-gray-900 text-gray-300 mt-20">
-      <div className="max-w-7xl mx-auto px-20 py-16 grid grid-cols-1 md:grid-cols-2 gap-12">
-        <div className="space-y-6">
-          <Link href="/" className="relative flex items-center gap-2 group">
-            <GymLogoComponent className="w-30 text-white transition-colors duration-300 group-hover:text-red-400" />
-            <span
-              className="text-xl font-bold text-white relative
-               after:content-[''] after:block after:w-0 after:h-0.5
-               after:bg-red-500 after:transition-all after:duration-300
-               group-hover:after:w-full"
-            ></span>
+    <footer className="bg-black text-gray-400 mt-24">
+      <div className="max-w-7xl mx-auto px-8 md:px-20 py-20 grid grid-cols-1 md:grid-cols-2 gap-16">
+
+        {/* LEFT */}
+        <div className="space-y-8">
+          <Link href="/" className="flex items-center gap-3 group">
+            <GymLogoComponent className="w-20 text-white" />
           </Link>
 
-          <p className="text-gray-400">Your daily dose of glow</p>
+          <p className="text-gray-500 font-light tracking-wide">
+            Disciplina. Comunidad. Rendimiento.
+          </p>
 
-          <div className="text-sm space-y-1 text-gray-400 py-2">
-            <p>Elegir nombre de la ciudad : </p>
-            <p>Ciudad, Estado, 12345</p>
-            <p>Email: PowerGym@gmail.com</p>
-            <p>Phone: (123) 456-7890</p>
+          <div className="text-sm space-y-2 text-gray-600 font-light">
+            <p>Puebla, México</p>
+            <p>Email: contact@powergym.com</p>
+            <p>Phone: +52 222 000 0000</p>
           </div>
 
-          <div className="flex gap-6 pt-4">
-            <Link href="/booking" className="hover:text-white transition">
+          <div className="flex gap-8 pt-6">
+            <Link
+              href="/workouts"
+              className="relative text-white font-light after:content-[''] after:absolute after:left-0 after:-bottom-1 after:h-[1px] after:w-0 after:bg-white after:transition-all after:duration-300 hover:after:w-full"
+            >
               Reserva
             </Link>
-            <Link href="/login" className="hover:text-white transition">
+
+            <Link
+              href="/login"
+              className="relative text-white font-light after:content-[''] after:absolute after:left-0 after:-bottom-1 after:h-[1px] after:w-0 after:bg-white after:transition-all after:duration-300 hover:after:w-full"
+            >
               Iniciar Sesión
             </Link>
           </div>
         </div>
 
-        <div className="md:text-right space-y-6">
-          <h2 className="text-xl font-semibold text-white">Contact Us</h2>
+        {/* RIGHT */}
+        <div className="md:text-right space-y-8">
+          <h2 className="text-2xl font-light text-white tracking-wide">
+            Síguenos
+          </h2>
 
-          <p className="text-gray-400">Follow us on:</p>
+          <div className="flex md:justify-end gap-10">
 
-          <div className="flex md:justify-end gap-6 text-sm">
-            <span className="flex items-center gap-2 cursor-pointer transition hover:text-white relative">
-              <Facebook_Icon className="w-5 h-5 text-blue-400" />
-              <span className="after:content-[''] after:block after:w-0 after:h-0.5 after:bg-white after:transition-all after:duration-300 hover:after:w-full">
-                Facebook
-              </span>
-            </span>
-            <span className="flex items-center gap-2 cursor-pointer transition hover:text-white relative">
-              <Twitter_Icon className="w-5 h-5 text-blue-400" />
-              <span className="after:content-[''] after:block after:w-0 after:h-0.5 after:bg-white after:transition-all after:duration-300 hover:after:w-full">
-                Twitter
-              </span>
-            </span>
-            <span className="flex items-center gap-2 cursor-pointer transition hover:text-white relative">
-              <Instagram_Icon className="w-5 h-5 text-red-400" />
-              <span className="after:content-[''] after:block after:w-0 after:h-0.5 after:bg-white after:transition-all after:duration-300 hover:after:w-full">
-                Instagram
-              </span>
-            </span>
+            <Link
+              href="#"
+              className="flex items-center gap-2 text-gray-400 hover:text-white transition relative after:content-[''] after:absolute after:left-0 after:-bottom-1 after:h-[1px] after:w-0 after:bg-white after:transition-all after:duration-300 hover:after:w-full"
+            >
+              <Facebook_Icon className="w-5 h-5" />
+              <span>Facebook</span>
+            </Link>
+
+            <Link
+              href="#"
+              className="flex items-center gap-2 text-gray-400 hover:text-white transition relative after:content-[''] after:absolute after:left-0 after:-bottom-1 after:h-[1px] after:w-0 after:bg-white after:transition-all after:duration-300 hover:after:w-full"
+            >
+              <Twitter_Icon className="w-5 h-5" />
+              <span>Twitter</span>
+            </Link>
+
+            <Link
+              href="#"
+              className="flex items-center gap-2 text-gray-400 hover:text-white transition relative after:content-[''] after:absolute after:left-0 after:-bottom-1 after:h-[1px] after:w-0 after:bg-white after:transition-all after:duration-300 hover:after:w-full"
+            >
+              <Instagram_Icon className="w-5 h-5" />
+              <span>Instagram</span>
+            </Link>
+
           </div>
         </div>
       </div>
 
-      <div className="border-t border-gray-800 py-6 text-center text-sm text-gray-500">
-        &copy; {new Date().getFullYear()} PowerGym. All rights reserved.
+      <div className="border-t border-neutral-900 py-8 text-center text-sm text-gray-600 font-light tracking-wide">
+        © {new Date().getFullYear()} PowerGym. All rights reserved.
       </div>
     </footer>
   );

@@ -106,7 +106,7 @@ export default function WorkoutModal({ workout, onClose }: WorkoutModalProps) {
 
           {/* CTA */}
           <button
-            onClick={() => router.push("/booking")}
+            onClick={() => router.push("/login")}
             className={`mt-2 py-3 text-sm font-semibold rounded-lg border transition-all duration-300 transform hover:-translate-y-1 hover:scale-[1.02] active:scale-95 ${intensityStyles.button}`}
           >
             Agendar Lugar →
