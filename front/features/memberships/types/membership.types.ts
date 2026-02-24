@@ -1,4 +1,4 @@
-export type MembershipVariant = "bronze" | "silver" | "gold" | "singleToken";
+export type MembershipVariant = "bronze" | "silver" | "gold" | "single";
 
 export type FeatureIconType = "workshop" | "token" | "shower" | "chat";
 
