@@ -31,14 +31,13 @@ const NavBarComponent = () => {
         </button>
 
         {/* Menú desktop */}
-        <nav className="hidden md:flex gap-8 text-white uppercase text-sm tracking-widest font-semibold">
+        <nav className="hidden md:flex gap-14 text-white text-md tracking-wide font-light">
           {NavItems.map((item) => (
             <Link
               key={item.id}
               href={item.route}
-              className={clsx(
-                "transition-colors hover:text-gray-500",
-                pathname === item.route && "text-gray-500 font-bold",
+              className={clsx(" hover:text-gray-300 relative transition-all duration-300 hover:after:w-full after:content-[''] after:absolute after:left-0 after:-bottom-1 after:h-[1px] after:w-0 after:bg-white after:transition-all after:duration-300",
+              pathname === item.route && "after:w-full"
               )}
             >
               {item.nameToRender}
@@ -61,7 +60,7 @@ const NavBarComponent = () => {
               </button> */}
             </>
           ) : (
-            <Link href={PATHROUTES.LOGIN} className="hover:text-gray-400">
+            <Link href={PATHROUTES.LOGIN} className="text-md mr-4 hover:text-gray-300 relative transition-all duration-300 hover:after:w-full after:content-[''] after:absolute after:left-0 after:-bottom-1 after:h-[1px] after:w-0 after:bg-white after:transition-all after:duration-300">
               Login
             </Link>
           )}
@@ -70,7 +69,7 @@ const NavBarComponent = () => {
 
       {/* Menú mobile desplegable */}
       {isOpen && (
-        <div className="md:hidden flex flex-col gap-4 pb-4 text-white uppercase text-sm tracking-widest">
+        <div className="md:hidden flex flex-col gap-4 pb-4 text-white uppercase text-md tracking-widest">
           {NavItems.map((item) => (
             <Link
               key={item.id}
