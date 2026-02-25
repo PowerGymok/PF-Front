@@ -1,4 +1,4 @@
-import { MembershipVariant } from "./types/membership.types";
+import { MembershipVariant } from "@/features/memberships/types/membership.types";
 
 export const variantStyles: Record<
   MembershipVariant,

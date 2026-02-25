@@ -1,4 +1,4 @@
-import { memberships } from "./membership.data";
+import { memberships } from "../data/membership.data";
 import { MembershipCard } from "./MembershipCard";
 
 export function MembershipSection() {

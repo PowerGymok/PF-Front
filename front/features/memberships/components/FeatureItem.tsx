@@ -1,5 +1,8 @@
 import clsx from "clsx";
-import { Feature, FeatureIconType } from "./types/membership.types";
+import {
+  Feature,
+  FeatureIconType,
+} from "@/features/memberships/types/membership.types";
 
 import { Workshop_Icon } from "@/components/icons/Workshop_Icon";
 import { Token_Icon } from "@/components/icons/Token_Icon";
