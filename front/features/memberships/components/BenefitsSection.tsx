@@ -1,4 +1,4 @@
-import { benefits, Benefit } from "./benefits.data";
+import { benefits, Benefit } from "@/features/memberships/data/benefits.data";
 
 import { Class_Icon } from "@/components/icons/Class_Icon";
 import { Equipment_Icon } from "@/components/icons/Equipment_Icon";
