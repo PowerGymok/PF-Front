@@ -1,4 +1,4 @@
-export type Role = "coach" | "user" | "admin";
+export type Role = "Coach" | "user" | "Admin";
 
 export interface UserSession {
     login: boolean;
