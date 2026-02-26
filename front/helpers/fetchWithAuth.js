@@ -1,27 +1,25 @@
-"use client"
-export const fetchWithAuth = async (
-  url,
-  options= {}
-) => {
+"use client";
 
+export const fetchWithAuth = async (url, options = {}) => {
   const token = localStorage.getItem("token");
 
   const res = await fetch(url, {
     ...options,
     headers: {
-      ...options.headers,
-      Authorization: `Bearer ${token}`,
+      "Content-Type": "application/json",
+      ...(options.headers || {}),
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
     },
   });
 
-  // 🟥 NO LOGUEADO
+    // 🟥 NO LOGUEADO
   if (res.status === 401) {
     localStorage.removeItem("token");
     window.location.href = "/login";
     throw new Error("401");
   }
 
-  // 🟨 PERFIL INCOMPLETO (Google)
+  // 🟨 PERFIL INCOMPLETO
   if (res.status === 403) {
     throw new Error("403");
   }

@@ -4,18 +4,15 @@ import { useAuth } from "@/app/contexts/AuthContext";
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import CompleteProfileAlert from "./CompleteProfileAlert";
 
 const DashboardUsersPage = () => {
   const { isLoading, dataUser, logOut } = useAuth();
   const router = useRouter();
 
-  console.log("DATAUSER", dataUser);
-
   useEffect(() => {
     if (!dataUser && !isLoading) {
-      setTimeout(() => {
-        router.push("/");
-      });
+      router.push("/");
     }
   }, [isLoading, dataUser, router]);
 
@@ -26,6 +23,10 @@ const DashboardUsersPage = () => {
 
   return (
     <div className="min-h-screen bg-gray-100 p-8">
+
+      {/* 🔴 ALERTA SI EL PERFIL NO ESTÁ COMPLETO */}
+      <CompleteProfileAlert />
+
       <div className="mb-10">
         <h1 className="text-3xl font-bold text-gray-800">
           Dashboard de {dataUser?.user?.email.split("@")[0]}
@@ -44,7 +45,7 @@ const DashboardUsersPage = () => {
         </div>
 
         <div className="bg-white p-6 rounded-xl shadow-md hover:shadow-lg transition">
-          <h2 className="text-sm text-gray-500">Tokens Acitvos</h2>
+          <h2 className="text-sm text-gray-500">Tokens Activos</h2>
           <p className="text-3xl font-bold text-purple-600 mt-2">10</p>
         </div>
       </div>
@@ -55,11 +56,14 @@ const DashboardUsersPage = () => {
         </h2>
         <p className="text-gray-500">Este mes has asistido a 15 clases</p>
       </div>
-    
-    <div className="mt-10 flex gap-4 flex-wrap">
-      <Link href={"/booking"}className="bg-blue-500 hover:bg-blue-600 text-white px-6 py-2 rounded-lg transition">
-        Agendar Nueva Clase
-      </Link>
+
+      <div className="mt-10 flex gap-4 flex-wrap">
+        <Link
+          href={"/booking"}
+          className="bg-blue-500 hover:bg-blue-600 text-white px-6 py-2 rounded-lg transition"
+        >
+          Agendar Nueva Clase
+        </Link>
 
         <button className="bg-gray-700 hover:bg-gray-800 text-white px-6 py-2 rounded-lg transition cursor-pointer">
           Ver Historial
@@ -74,10 +78,9 @@ const DashboardUsersPage = () => {
           Cerrar sesión
         </button>
       </div>
+
     </div>
-    
   );
-  
 };
 
 export default DashboardUsersPage;
