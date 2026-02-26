@@ -13,9 +13,8 @@ const DashboardUsersPage = () => {
 
   useEffect(() => {
     if (!dataUser && !isLoading) {
-      setTimeout(() => {
         router.push("/");
-      });
+      
     }
   }, [isLoading, dataUser, router]);
 
