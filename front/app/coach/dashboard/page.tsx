@@ -13,7 +13,7 @@ const CoachDashboardPage = () => {
     if (!isLoading) {
       if (!dataUser) {
         router.replace("/");
-      } else if (dataUser.user.role !== "coach") {
+      } else if (dataUser.user.role !== "Coach") {
         router.replace("/dashboard");
       }
     }

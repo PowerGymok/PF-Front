@@ -18,7 +18,7 @@ const Dashboard = () => {
 
       const role = dataUser.user.role;
 
-      if (role === "admin") {
+      if (role === "Admin") {
         router.replace("/admin/dashboard");
       } else if (role === "coach") {
         router.replace("/coach/dashboard");

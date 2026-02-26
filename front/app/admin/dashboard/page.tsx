@@ -13,7 +13,7 @@ const AdminDashboardPage = () => {
     if (!isLoading) {
       if (!dataUser) {
         router.replace("/");
-      } else if (dataUser.user.role !== "admin") {
+      } else if (dataUser.user.role !== "Admin") {
         router.replace("/dashboard"); 
       }
     }
