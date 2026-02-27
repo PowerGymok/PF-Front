@@ -6,13 +6,16 @@ export interface Plan {
   id: MembershipType;
   price: number;
   currency: "USD";
-  interval?: BillingInterval; // SINGLE_TOKEN no tiene intervalo
+  interval?: BillingInterval;
 }
 
 export interface CheckoutRequest {
-  planId: MembershipType;
+  userId: string;
+  membershipId: string; // UUID real del backend
 }
 
+// El backend devuelve clientSecret para usar Stripe Elements embebido.
 export interface CheckoutResponse {
-  url: string;
+  clientSecret: string;
+  transactionId: string;
 }

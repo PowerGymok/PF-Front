@@ -3,6 +3,7 @@
 import { RegisterUser, GetCurrentUser } from "@/services/user.services";
 import {
   RegisterSchema,
+  RegisterPayload,
   RegisterValues,
   RegisterSchemaYup,
 } from "@/validators/registerSchema";
@@ -20,8 +21,24 @@ const RegisterComponent = () => {
 
     onSubmit: async (values, { resetForm }) => {
       try {
-       
-        const res = await RegisterUser(values);
+        // quitar cualquier cosa que no sea número (por seguridad extra)
+        const cleanPhone = values.phone?.replace(/\D/g, "") || "";
+
+        // validar que no esté vacío después de limpiar
+        if (!cleanPhone) {
+          throw new Error("Teléfono inválido");
+        }
+        const payload: RegisterPayload = {
+          name: values.name,
+          email: values.email,
+          password: values.password,
+          confirmPassword: values.confirmPassword,
+          address: values.address,
+          city: values.city,
+          Birthdate: values.Birthdate,
+          phone: parseInt(cleanPhone, 10),
+        };
+        const res = await RegisterUser(payload);
 
         if (!res?.accessToken) {
           throw new Error("Error al registrarse");
@@ -29,12 +46,10 @@ const RegisterComponent = () => {
 
         const token = res.accessToken;
 
-        
         const user = await GetCurrentUser(token);
 
-        console.log(formik.values.Birthdate)
+        console.log(formik.values.Birthdate);
 
-        
         setDataUser({
           login: true,
           token,
@@ -50,15 +65,9 @@ const RegisterComponent = () => {
 
         resetForm();
 
-        
         router.push("/dashboard");
-
       } catch (error: unknown) {
-        alert(
-          error instanceof Error
-            ? error.message
-            : "Error al registrarse"
-        );
+        alert(error instanceof Error ? error.message : "Error al registrarse");
       }
     },
   });
@@ -157,32 +166,28 @@ const RegisterComponent = () => {
           <div>
             <label className="text-sm">Ciudad*</label>
             <input
-            type="text"
-            name="city"
-            value={formik.values.city}
-            onChange={formik.handleChange}
-            className="w-full bg-transparent border-b border-gray-500 focus:outline-none py-2"
+              type="text"
+              name="city"
+              value={formik.values.city}
+              onChange={formik.handleChange}
+              className="w-full bg-transparent border-b border-gray-500 focus:outline-none py-2"
             />
             {formik.errors.city && (
-            <p className="text-red-400 text-xs">
-            {formik.errors.city}
-            </p>
+              <p className="text-red-400 text-xs">{formik.errors.city}</p>
             )}
           </div>
-          
+
           <div>
             <label className="text-sm">Fecha de nacimiento*</label>
             <input
-            type="date"
-            name="Birthdate"
-            value={formik.values.Birthdate}
-            onChange={formik.handleChange}
-            className="w-full bg-transparent border-b border-gray-500 focus:outline-none py-2"
+              type="date"
+              name="Birthdate"
+              value={formik.values.Birthdate}
+              onChange={formik.handleChange}
+              className="w-full bg-transparent border-b border-gray-500 focus:outline-none py-2"
             />
             {formik.errors.Birthdate && (
-            <p className="text-red-400 text-xs">
-            {formik.errors.Birthdate}
-            </p>
+              <p className="text-red-400 text-xs">{formik.errors.Birthdate}</p>
             )}
           </div>
 

@@ -5,6 +5,9 @@ import { useRouter } from "next/navigation";
 import { variantStyles } from "@/features/memberships/styles/membership.styles";
 import { FeatureItem } from "@/features/memberships/components/FeatureItem";
 import { Membership } from "@/features/memberships/types/membership.types";
+import { useAuth } from "@/app/contexts/AuthContext";
+
+import { useEffect } from "react";
 
 export function MembershipCard({
   title,
@@ -13,10 +16,19 @@ export function MembershipCard({
   membershipVariant,
 }: Membership) {
   const router = useRouter();
+  const { dataUser, isLoading } = useAuth();
   const styles = variantStyles[membershipVariant];
 
-  const handleRegister = () => {
-    router.push(`/register?plan=${membershipVariant}`);
+  const handleClick = () => {
+    if (isLoading) return; // espera a que se hidrate el estado
+
+    if (dataUser?.user) {
+      //  Logueado → ir al checkout con la membresía seleccionada
+      router.push(`/payment/checkout?plan=${membershipVariant}`);
+    } else {
+      //  No logueado → ir al registro indicando el plan
+      router.push(`/register?plan=${membershipVariant}`);
+    }
   };
 
   return (
@@ -67,10 +79,15 @@ export function MembershipCard({
         </p>
 
         <button
-          onClick={handleRegister}
-          className="w-full py-3 rounded-full border border-white font-semibold hover:bg-white hover:text-black transition-all duration-300"
+          onClick={handleClick}
+          disabled={isLoading}
+          className="w-full py-3 rounded-full border border-white font-semibold hover:bg-white hover:text-black transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          ¡INSCRÍBETE AHORA!
+          {isLoading
+            ? "Cargando…"
+            : dataUser?.user
+              ? "¡COMPRAR AHORA!"
+              : "¡INSCRÍBETE AHORA!"}
         </button>
       </div>
     </div>
