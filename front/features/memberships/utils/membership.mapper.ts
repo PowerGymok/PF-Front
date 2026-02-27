@@ -5,7 +5,7 @@ import {
   Feature,
 } from "@/features/memberships/types/membership.types";
 
-function resolveVariant(name: string): MembershipVariant {
+export function resolveVariant(name: string): MembershipVariant {
   const lower = name.toLowerCase();
   if (lower.includes("oro") || lower.includes("oro")) return "gold";
   if (lower.includes("silver") || lower.includes("plata")) return "silver";

@@ -21,26 +21,14 @@ export default async function MembershipsPage() {
           <div className="mt-2 h-0.5 w-16" />
         </div>
 
-        {/* Cards — grid que se adapta al número de items */}
+        {/* Cards */}
         <div className="max-w-7xl mx-auto">
           {cards.length === 0 ? (
             <p className="text-white/50 text-center py-12">
               No hay membresías disponibles.
             </p>
           ) : (
-            <div
-              className="
-                grid gap-6
-                grid-cols-1
-                sm:grid-cols-2
-                lg:grid-cols-3
-                xl:grid-cols-4
-              "
-              style={{
-                // Si hay menos de 4 cards, centra sin estirar
-                gridTemplateColumns: `repeat(${Math.min(cards.length, 4)}, minmax(0, 1fr))`,
-              }}
-            >
+            <div className="grid gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
               {cards.map((card) => (
                 <MembershipCard key={card.title} {...card} />
               ))}
