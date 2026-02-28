@@ -1,81 +1,54 @@
-"use client";
+import { GetMemberships } from "@/features/memberships/services/membership.service";
+import { MembershipCard } from "@/features/memberships/components/MembershipCard";
+import { mapToMembershipCard } from "@/features/memberships/utils/membership.mapper";
+import { BenefitsSection } from "@/features/memberships/components/BenefitsSection";
+import { DescriptionSection } from "@/features/memberships/components/DescriptionSection";
 
-import { useEffect, useState } from "react";
-import { useAuth } from "@/app/contexts/AuthContext";
-import { GetAdminMemberships } from "@/features/memberships/services/membership.service";
-import { MembershipAdminResponse } from "@/features/memberships/validators/membershipSchema";
-import MembershipAdminCard from "@/features/memberships/pages/GetAllMembership";
-
-export default function AdminMembershipsPage() {
-  const { dataUser } = useAuth();
-  const [memberships, setMemberships] = useState<MembershipAdminResponse[]>([]);
-  const [status, setStatus] = useState<"loading" | "error" | "success">(
-    "loading",
-  );
-  const [errorMsg, setErrorMsg] = useState("");
-
-  useEffect(() => {
-    const token = dataUser?.token;
-    if (!token) {
-      setStatus("error");
-      setErrorMsg("No hay sesión activa.");
-      return;
-    }
-
-    GetAdminMemberships(token)
-      .then((data) => {
-        setMemberships(data);
-        setStatus("success");
-      })
-      .catch((err) => {
-        setErrorMsg(err.message);
-        setStatus("error");
-      });
-  }, [dataUser]);
-
-  const handleDeleted = (id: string) => {
-    setMemberships((prev) => prev.filter((m) => m.id !== id));
-  };
+export default async function MembershipsPage() {
+  const memberships = await GetMemberships();
+  const cards = memberships.map((m) => ({
+    ...mapToMembershipCard(m),
+    id: m.id,
+  }));
 
   return (
-    <main
-      style={{
-        maxWidth: 960,
-        margin: "2rem auto",
-        padding: "1.5rem",
-        fontFamily: "sans-serif",
-      }}
-    >
-      <h1
-        style={{ fontSize: "1.4rem", fontWeight: 700, marginBottom: "1.5rem" }}
-      >
-        Membresías — Admin
-      </h1>
+    <main className="bg-black">
+      <DescriptionSection />
 
-      {status === "loading" && <p style={{ color: "#888" }}>Cargando...</p>}
+      <section className="py-12 px-4 sm:px-6 lg:px-8">
+        <div className="max-w-7xl mx-auto mb-10">
+          <h1 className="text-2xl sm:text-3xl font-extrabold text-white">
+            Planes de membresía
+          </h1>
+          <div className="mt-2 h-0.5 w-16 bg-red-500" />
+        </div>
 
-      {status === "error" && <p style={{ color: "red" }}>{errorMsg}</p>}
+        <div className="max-w-7xl mx-auto">
+          {cards.length === 0 ? (
+            <p className="text-white/50 text-center py-12">
+              No hay membresías disponibles.
+            </p>
+          ) : (
+            <div
+              className="grid gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
+              style={{
+                gridTemplateColumns: `repeat(${Math.min(cards.length, 4)}, minmax(0, 1fr))`,
+              }}
+            >
+              {cards.map(({ id, ...card }) => (
+                <div key={id} className="flex flex-col gap-2">
+                  <MembershipCard {...card} />
+                  <p className="text-white/30 text-xs text-center font-mono break-all">
+                    {id}
+                  </p>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      </section>
 
-      {status === "success" &&
-        (memberships.length === 0 ? (
-          <p style={{ color: "#888" }}>No hay membresías registradas.</p>
-        ) : (
-          <div
-            style={{
-              display: "grid",
-              gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))",
-              gap: "1.25rem",
-            }}
-          >
-            {memberships.map((membership) => (
-              <MembershipAdminCard
-                key={membership.id}
-                membership={membership}
-                onDeleted={handleDeleted}
-              />
-            ))}
-          </div>
-        ))}
+      <BenefitsSection />
     </main>
   );
 }
