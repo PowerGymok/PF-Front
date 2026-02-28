@@ -3,11 +3,10 @@
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/app/contexts/AuthContext";
-import { useMembershipForm } from "@/features/memberships/hooks/useMembershipForm";
-import TextField from "@/features/memberships/fields/TextField";
-import ToggleField from "@/features/memberships/fields/ToogleField";
+import { useTokenPackageForm } from "@/features/token-packages/hooks/useTokenPackageForm";
+import TextField from "@/features/token-packages/fields/TextField";
 
-export default function MembershipForm() {
+export default function TokenPackageForm() {
   const { dataUser, isLoading } = useAuth();
   const router = useRouter();
 
@@ -23,22 +22,22 @@ export default function MembershipForm() {
     );
   if (dataUser?.user.role !== "Admin") return null;
 
-  return <MembershipFormContent />;
+  return <TokenPackageFormContent />;
 }
 
-function MembershipFormContent() {
+function TokenPackageFormContent() {
   const { form, status, message, handleChange, handleSubmit } =
-    useMembershipForm();
+    useTokenPackageForm();
 
   return (
     <form onSubmit={handleSubmit} style={styles.form}>
-      <h2 style={styles.title}>Nueva membresía</h2>
+      <h2 style={styles.title}>Nuevo paquete de tokens</h2>
 
       <TextField
         label="Nombre"
         value={form.name}
         onChange={(v) => handleChange("name", v)}
-        placeholder="Plan Premium"
+        placeholder="Starter Pack"
         required
       />
 
@@ -47,58 +46,36 @@ function MembershipFormContent() {
         value={form.description}
         onChange={(v) => handleChange("description", v)}
         type="textarea"
-        placeholder="Acceso completo al gimnasio..."
+        placeholder="Ideal para probar clases especiales..."
       />
 
       <div style={styles.row}>
         <TextField
+          label="Cantidad de tokens"
+          value={form.tokenAmount}
+          onChange={(v) =>
+            handleChange("tokenAmount", v ? parseInt(v) : undefined)
+          }
+          type="number"
+          placeholder="100"
+          required
+          min={1}
+          step={1}
+        />
+        <TextField
           label="Precio (USD)"
           value={form.price}
-          onChange={(v) => handleChange("price", parseFloat(v))}
+          onChange={(v) => handleChange("price", v ? parseFloat(v) : undefined)}
           type="number"
-          placeholder="29.99"
+          placeholder="9.99"
           required
           min={0}
           step={0.01}
         />
-        <TextField
-          label="Duración (días)"
-          value={form.durationDays}
-          onChange={(v) =>
-            handleChange("durationDays", v ? parseInt(v) : undefined)
-          }
-          type="number"
-          placeholder="30"
-          min={1}
-        />
       </div>
 
-      <TextField
-        label="Descuento (%)"
-        value={form.discountPercentage}
-        onChange={(v) =>
-          handleChange("discountPercentage", v ? parseFloat(v) : undefined)
-        }
-        type="number"
-        placeholder="0"
-        min={0}
-        step={1}
-      />
-
-      <ToggleField
-        label="Incluye clases especiales"
-        checked={form.includesSpecialClasses ?? false}
-        onChange={(v) => handleChange("includesSpecialClasses", v)}
-      />
-
-      <ToggleField
-        label="Incluye chat con coach"
-        checked={form.includesCoachChat ?? false}
-        onChange={(v) => handleChange("includesCoachChat", v)}
-      />
-
       <button type="submit" disabled={status === "loading"} style={styles.btn}>
-        {status === "loading" ? "Creando..." : "Crear membresía"}
+        {status === "loading" ? "Creando..." : "Crear paquete"}
       </button>
 
       {message && (

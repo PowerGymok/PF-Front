@@ -1,5 +1,3 @@
-// test http://localhost:3001/test/memberships/4e4811f7-1da6-418a-bbd7-570888696e57/edit
-
 import { GetMembershipById } from "@/features/memberships/services/membership.service";
 import MembershipEditForm from "@/features/memberships/components/MembershipEditForm";
 import MembershipDeleteModal from "@/features/memberships/components/MembershipDeleteModal";

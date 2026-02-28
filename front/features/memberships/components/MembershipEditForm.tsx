@@ -1,5 +1,8 @@
 "use client";
 
+import { useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { useAuth } from "@/app/contexts/AuthContext";
 import { MembershipResponse } from "@/features/memberships/validators/membershipSchema";
 import { useMembershipEditForm } from "@/features/memberships/hooks/useMembershipEditForm";
 import TextField from "@/features/memberships/fields/TextField";
@@ -12,6 +15,25 @@ interface MembershipEditFormProps {
 export default function MembershipEditForm({
   membership,
 }: MembershipEditFormProps) {
+  const { dataUser, isLoading } = useAuth();
+  const router = useRouter();
+
+  useEffect(() => {
+    if (!isLoading && dataUser?.user.role !== "Admin") {
+      router.replace("/");
+    }
+  }, [dataUser, isLoading]);
+
+  if (isLoading)
+    return (
+      <p style={{ fontFamily: "sans-serif", padding: "2rem" }}>Cargando...</p>
+    );
+  if (dataUser?.user.role !== "Admin") return null;
+
+  return <MembershipEditFormContent membership={membership} />;
+}
+
+function MembershipEditFormContent({ membership }: MembershipEditFormProps) {
   const { form, status, message, handleChange, handleSubmit } =
     useMembershipEditForm(membership);
 
