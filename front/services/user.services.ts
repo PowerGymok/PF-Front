@@ -1,6 +1,6 @@
 import { User } from "@/interface/User";
 import { LoginSchema } from "@/validators/loginSchema";
-import { RegisterSchema } from "@/validators/registerSchema";
+import { RegisterSchema, RegisterPayload } from "@/validators/registerSchema";
 
 export const LoginUser = async (userData: LoginSchema) => {
   try {
@@ -24,15 +24,12 @@ export const LoginUser = async (userData: LoginSchema) => {
 
 export const GetCurrentUser = async (token: string) => {
   try {
-    const res = await fetch(
-      `${process.env.NEXT_PUBLIC_API_URL}/auth/me`,
-      {
-        method: "GET",
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      }
-    );
+    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/me`, {
+      method: "GET",
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
 
     if (!res.ok) {
       const error = await res.json();
@@ -40,31 +37,27 @@ export const GetCurrentUser = async (token: string) => {
     }
 
     return await res.json();
-
   } catch (error) {
     throw error;
   }
 };
 
-export const RegisterUser = async (userData: RegisterSchema) => {
+export const RegisterUser = async (userData: RegisterPayload) => {
   try {
-    const res = await fetch(
-      `${process.env.NEXT_PUBLIC_API_URL}/auth/signup`,
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(userData),
-      }
-    );
+    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/signup`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(userData),
+    });
 
     if (!res.ok) {
       const error = await res.json().catch(() => ({}));
       throw new Error(error.message || "Error al registrar el usuario");
     }
 
-    return await res.json(); 
+    return await res.json();
   } catch (error) {
     if (error instanceof Error) {
       throw new Error(error.message);
