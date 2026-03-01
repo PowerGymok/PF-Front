@@ -1,6 +1,7 @@
 import { User } from "@/interface/User";
 import { LoginSchema } from "@/validators/loginSchema";
 import { RegisterSchema, RegisterPayload } from "@/validators/registerSchema";
+import { AllUsers } from "@/interface/AllUsers";
 
 export const LoginUser = async (userData: LoginSchema) => {
   try {
@@ -65,3 +66,24 @@ export const RegisterUser = async (userData: RegisterPayload) => {
     throw new Error("Error al registrar el usuario");
   }
 };
+
+export const GetAllUsers = async (token: string): Promise<AllUsers[]> => {
+
+  try {
+    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/users`, {
+      method: "GET",
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    if (!res.ok) {
+      const error = await res.json();
+      throw new Error(error.message || "Error obteniendo usuarios");
+    }
+    return await res.json();
+  } catch (error) {
+    throw error;
+  }
+};
+
