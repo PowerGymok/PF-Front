@@ -1,104 +1,110 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
-import {fetchWithAuth} from '@/helpers/fetchWithAuth';
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { fetchWithAuth } from "@/helpers/fetchWithAuth";
 
 export default function CompleteProfilePage() {
   const router = useRouter();
 
   const [formData, setFormData] = useState({
-    address: '',
-    city: '',
-    birthdate: '',
-    phone: '',
+    address: "",
+    city: "",
+    birthdate: "",
+    phone: "",
   });
 
+  const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement>
+  ) => {
     setFormData({
       ...formData,
       [e.target.name]: e.target.value,
     });
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (
+    e: React.FormEvent<HTMLFormElement>
+  ) => {
     e.preventDefault();
     setLoading(true);
-    setError('');
+    setError("");
 
     try {
-      const res = await fetchWithAuth('/users/complete-profile', {
-        method: 'PUT',
-        body: JSON.stringify(formData),
-      });
-
-      if (!res.ok) {
-        throw new Error('Error al completar el perfil');
-      }
-
-      router.push('/dashboard');
-    } catch (err) {
-  if (err instanceof Error) {
-    setError(err.message);
-  } else {
-    setError("Ocurrió un error inesperado");
+      await fetchWithAuth(
+  `${process.env.NEXT_PUBLIC_API_URL}/users/complete-profile`,
+  {
+    method: "PATCH",
+    body: JSON.stringify({
+      address: formData.address,
+      city: formData.city,
+      phone: Number(formData.phone),
+      Birthdate: formData.birthdate,
+    }),
   }
-}
+);
+
+      router.push("/dashboard");
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        setError(err.message);
+      } else {
+        setError("Error inesperado");
+      }
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center">
+    <div className="min-h-screen flex items-center justify-center bg-black text-white">
       <form
         onSubmit={handleSubmit}
-        className="flex flex-col gap-4 w-96 p-6 shadow-lg rounded-2xl"
+        className="flex flex-col gap-4 w-80"
       >
-        <h2 className="text-xl font-semibold text-center">
+        <h1 className="text-xl text-center mb-4">
           Completar Perfil
-        </h2>
+        </h1>
 
-        {/* ADDRESS */}
         <input
           type="text"
           name="address"
           placeholder="Dirección"
           value={formData.address}
           onChange={handleChange}
-          className="border p-2 rounded-md"
+          className="border p-2 rounded-md bg-white text-black"
           required
         />
 
-        {/* CITY */}
         <input
           type="text"
           name="city"
           placeholder="Ciudad"
           value={formData.city}
           onChange={handleChange}
-          className="border p-2 rounded-md"
+          className="border p-2 rounded-md bg-white text-black"
           required
         />
 
-        {/* BIRTHDATE */}
         <input
           type="date"
           name="birthdate"
           value={formData.birthdate}
           onChange={handleChange}
-          className="border p-2 rounded-md"
+          className="border p-2 rounded-md bg-white text-black"
           required
         />
 
-        {/* PHONE */}
         <input
-          type="text"
+          type="number"
           name="phone"
           placeholder="Teléfono"
           value={formData.phone}
           onChange={handleChange}
-          className="border p-2 rounded-md"
+          className="border p-2 rounded-md bg-white text-black"
           required
         />
 
@@ -110,10 +116,10 @@ export default function CompleteProfilePage() {
 
         <button
           type="submit"
+          className="bg-blue-600 py-2 rounded-md"
           disabled={loading}
-          className="bg-black text-white p-2 rounded-md"
         >
-          {loading ? 'Guardando...' : 'Guardar'}
+          {loading ? "Guardando..." : "Guardar"}
         </button>
       </form>
     </div>

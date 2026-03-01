@@ -45,6 +45,7 @@ const LoginComponent = () => {
         role: user.role,
         phone: user.phone,
         orders: [],
+       isProfileComplete: user.isProfileComplete
       },
     });
 

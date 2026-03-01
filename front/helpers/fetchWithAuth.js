@@ -12,22 +12,27 @@ export const fetchWithAuth = async (url, options = {}) => {
     },
   });
 
-    // 🟥 NO LOGUEADO
   if (res.status === 401) {
     localStorage.removeItem("token");
     window.location.href = "/login";
-    throw new Error("401");
+    throw new Error("No autorizado");
   }
 
-  // 🟨 PERFIL INCOMPLETO
   if (res.status === 403) {
-    throw new Error("403");
+    throw new Error("Perfil incompleto");
   }
 
-  // 🟥 OTRO ERROR
+  const contentType = res.headers.get("content-type");
+
+  if (!contentType || !contentType.includes("application/json")) {
+    throw new Error("El servidor no devolvió JSON válido");
+  }
+
+  const data = await res.json();
+
   if (!res.ok) {
-    throw new Error("Error");
+    throw new Error(data?.message || "Error en la petición");
   }
 
-  return res.json();
+  return data;
 };
