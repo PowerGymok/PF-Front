@@ -4,6 +4,7 @@ import { useAuth } from "@/app/contexts/AuthContext";
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import CompleteProfileAlert from "@/app/dashboard/components/CompleteProfileAlert";
 
 const DashboardUsersPage = () => {
   const { isLoading, dataUser, logOut } = useAuth();
@@ -13,8 +14,7 @@ const DashboardUsersPage = () => {
 
   useEffect(() => {
     if (!dataUser && !isLoading) {
-        router.push("/");
-      
+      router.push("/");
     }
   }, [isLoading, dataUser, router]);
 
@@ -23,8 +23,14 @@ const DashboardUsersPage = () => {
     router.push("/");
   };
 
+  const isProfileComplete = dataUser?.user?.isProfileComplete;
+
   return (
     <div className="min-h-screen bg-gray-100 p-8">
+
+      {/* 🔴 ALERTA PERFIL INCOMPLETO */}
+      {!isProfileComplete && <CompleteProfileAlert />}
+
       <div className="mb-10">
         <h1 className="text-3xl font-bold text-gray-800">
           Dashboard de {dataUser?.user?.email.split("@")[0]}
@@ -55,10 +61,13 @@ const DashboardUsersPage = () => {
         <p className="text-gray-500">Este mes has asistido a 15 clases</p>
       </div>
     
-    <div className="mt-10 flex gap-4 flex-wrap">
-      <Link href={"/booking"}className="bg-blue-500 hover:bg-blue-600 text-white px-6 py-2 rounded-lg transition">
-        Agendar Nueva Clase
-      </Link>
+      <div className="mt-10 flex gap-4 flex-wrap">
+        <Link
+          href={"/booking"}
+          className="bg-blue-500 hover:bg-blue-600 text-white px-6 py-2 rounded-lg transition"
+        >
+          Agendar Nueva Clase
+        </Link>
 
         <button className="bg-gray-700 hover:bg-gray-800 text-white px-6 py-2 rounded-lg transition cursor-pointer">
           Ver Historial
@@ -74,9 +83,7 @@ const DashboardUsersPage = () => {
         </button>
       </div>
     </div>
-    
   );
-  
 };
 
 export default DashboardUsersPage;
