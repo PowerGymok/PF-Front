@@ -1,10 +1,32 @@
 "use client";
 
+import { useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { useAuth } from "@/app/contexts/AuthContext";
 import { useMembershipForm } from "@/features/memberships/hooks/useMembershipForm";
 import TextField from "@/features/memberships/fields/TextField";
 import ToggleField from "@/features/memberships/fields/ToogleField";
 
 export default function MembershipForm() {
+  const { dataUser, isLoading } = useAuth();
+  const router = useRouter();
+
+  useEffect(() => {
+    if (!isLoading && dataUser?.user.role !== "Admin") {
+      router.replace("/");
+    }
+  }, [dataUser, isLoading]);
+
+  if (isLoading)
+    return (
+      <p style={{ fontFamily: "sans-serif", padding: "2rem" }}>Cargando...</p>
+    );
+  if (dataUser?.user.role !== "Admin") return null;
+
+  return <MembershipFormContent />;
+}
+
+function MembershipFormContent() {
   const { form, status, message, handleChange, handleSubmit } =
     useMembershipForm();
 
