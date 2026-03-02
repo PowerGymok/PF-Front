@@ -60,6 +60,7 @@ const RegisterComponent = () => {
             role: user.role,
             phone: user.phone,
             orders: [],
+            isProfileComplete: user.isProfileComplete
           },
         });
 
