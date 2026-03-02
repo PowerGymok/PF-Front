@@ -68,7 +68,6 @@ export const RegisterUser = async (userData: RegisterPayload) => {
 };
 
 export const GetAllUsers = async (token: string): Promise<AllUsers[]> => {
-
   try {
     const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/users`, {
       method: "GET",
@@ -79,6 +78,7 @@ export const GetAllUsers = async (token: string): Promise<AllUsers[]> => {
 
     if (!res.ok) {
       const error = await res.json();
+
       throw new Error(error.message || "Error obteniendo usuarios");
     }
     return await res.json();
@@ -87,3 +87,27 @@ export const GetAllUsers = async (token: string): Promise<AllUsers[]> => {
   }
 };
 
+export const UpdateUserRole = async (
+  userId: string,
+  role: string,
+  token: string,
+) => {
+  const response = await fetch(
+    `${process.env.NEXT_PUBLIC_API_URL}/coach/promote/${userId}`,
+    {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({ role }),
+    },
+  );
+
+  if (!response.ok) {
+    const error = await response.text();
+    throw new Error(error);
+  }
+
+  return response.text();
+};

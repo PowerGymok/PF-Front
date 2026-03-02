@@ -27,14 +27,13 @@ const DashboardUsersPage = () => {
 
   return (
     <div className="min-h-screen bg-gray-100 p-8">
-
-      {/* 🔴 ALERTA PERFIL INCOMPLETO */}
       {!isProfileComplete && <CompleteProfileAlert />}
 
       <div className="mb-10">
         <h1 className="text-3xl font-bold text-gray-800">
           Dashboard de {dataUser?.user?.email.split("@")[0]}
         </h1>
+        <h2 className="text-gray-700">Este es dashboard de Usuarios</h2>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
@@ -60,7 +59,7 @@ const DashboardUsersPage = () => {
         </h2>
         <p className="text-gray-500">Este mes has asistido a 15 clases</p>
       </div>
-    
+
       <div className="mt-10 flex gap-4 flex-wrap">
         <Link
           href={"/booking"}
