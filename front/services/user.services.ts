@@ -2,6 +2,7 @@ import { User } from "@/interface/User";
 import { LoginSchema } from "@/validators/loginSchema";
 import { RegisterSchema, RegisterPayload } from "@/validators/registerSchema";
 import { AllUsers } from "@/interface/AllUsers";
+import { CompleteProfileInterface } from "@/interface/CompleteProfileInterface";
 
 export const LoginUser = async (userData: LoginSchema) => {
   try {
@@ -110,4 +111,109 @@ export const UpdateUserRole = async (
   }
 
   return response.text();
+};
+
+export const GetUserById = async (id: string, token: string) => {
+  try {
+    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/users/${id}`, {
+      method: "GET",
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    if (!res.ok) {
+      const error = await res.json().catch(() => ({}));
+      throw new Error(error.message || "Error obteniendo usuario");
+    }
+
+    return await res.json();
+  } catch (error) {
+    if (error instanceof Error) throw error;
+    throw new Error("Error obteniendo usuario");
+  }
+};
+
+export const UpdateUserProfile = async (
+  id: string,
+  profileData: Partial<User>,
+  token: string,
+) => {
+  try {
+    const res = await fetch(
+      `${process.env.NEXT_PUBLIC_API_URL}/users/update/${id}`,
+      {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(profileData),
+      },
+    );
+
+    if (!res.ok) {
+      const error = await res.json().catch(() => ({}));
+      throw new Error(error.message || "Error actualizando perfil");
+    }
+
+    return await res.json();
+  } catch (error) {
+    if (error instanceof Error) throw error;
+    throw new Error("Error actualizando perfil");
+  }
+};
+
+export const UserInactive = async (id: string, token: string) => {
+  try {
+    const res = await fetch(
+      `${process.env.NEXT_PUBLIC_API_URL}/users/inactive/${id}`,
+      {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      },
+    );
+
+    if (!res.ok) {
+      const error = await res.json().catch(() => ({}));
+      throw new Error(error.message || "Error desactivando usuario");
+    }
+
+    return await res.json();
+  } catch (error) {
+    if (error instanceof Error) throw error;
+    throw new Error("Error desactivando usuario");
+  }
+};
+
+export const UsersCompleteProfile = async (
+  data: CompleteProfileInterface,
+  token: string,
+) => {
+  try {
+    const res = await fetch(
+      `${process.env.NEXT_PUBLIC_API_URL}/users/complete-profile`,
+      {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(data),
+      },
+    );
+
+    if (!res.ok) {
+      const error = await res.json().catch(() => ({}));
+      throw new Error(error.message || "Error completando perfil");
+    }
+
+    return await res.json();
+  } catch (error) {
+    if (error instanceof Error) throw error;
+    throw new Error("Error completando perfil");
+  }
 };

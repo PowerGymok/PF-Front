@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { Elements } from "@stripe/react-stripe-js";
 import { useAuth } from "@/app/contexts/AuthContext";
@@ -10,8 +10,8 @@ import { resolveVariant } from "@/features/memberships/utils/membership.mapper";
 import { MembershipResponse } from "@/features/memberships/validators/membershipSchema";
 import { PaymentSummary } from "@/features/payments/components/PaymentSummary";
 import { CheckoutForm } from "@/features/payments/components/CheckoutForm";
+import { TokenPackage } from "@/features/payments/types/payment.types";
 
-// Extrae el userId (sub) del JWT sin librerías externas
 function getUserIdFromToken(token: string): string {
   const payload = JSON.parse(atob(token.split(".")[1]));
   return payload.sub;
@@ -23,6 +23,7 @@ export default function PaymentPage() {
   const { dataUser, isLoading: isAuthLoading } = useAuth();
   const {
     initPayment,
+    initTokenPayment,
     clientSecret,
     transactionId,
     loading,
@@ -31,43 +32,49 @@ export default function PaymentPage() {
   } = useCheckout();
 
   const plan = searchParams.get("plan");
+  const packageId = searchParams.get("packageId");
+  const isTokenFlow = !!packageId;
 
   const [membership, setMembership] = useState<MembershipResponse | null>(null);
+  const [tokenPackage, setTokenPackage] = useState<TokenPackage | null>(null);
   const [fetchError, setFetchError] = useState<string | null>(null);
   const [isFetching, setIsFetching] = useState(true);
 
-  // ── Guardia: si no está logueado, manda al registro ──────────────────────
-  useEffect(() => {
-    if (!isAuthLoading && !dataUser?.user) {
-      router.replace(`/register?plan=${plan}`);
-    }
-  }, [isAuthLoading, dataUser, plan, router]);
+  // ── Refs para evitar doble ejecución ─────────────────────────────────────
+  const membershipInitiated = useRef(false);
+  const tokenInitiated = useRef(false);
 
-  // ── Resuelve el membershipId y arranca el PaymentIntent ──────────────────
+  // ── Guardia: si no está logueado ──────────────────────────────────────────
   useEffect(() => {
-    if (!plan || isAuthLoading || !dataUser?.user) return;
+    if (isAuthLoading) return;
+    if (!dataUser?.user) {
+      const redirect = isTokenFlow
+        ? `/register?packageId=${packageId}`
+        : `/register?plan=${plan}`;
+      router.replace(redirect);
+    }
+  }, [isAuthLoading, dataUser]);
+
+  // ── Flujo MEMBRESÍAS ──────────────────────────────────────────────────────
+  useEffect(() => {
+    if (isTokenFlow || !plan || isAuthLoading || !dataUser?.user) return;
+    if (membershipInitiated.current) return;
+    membershipInitiated.current = true;
 
     const resolveMembership = async () => {
       setIsFetching(true);
       setFetchError(null);
-
       try {
         const memberships = await GetMemberships();
-
         const match = memberships.find(
           (m) => resolveVariant(m.name) === plan.toLowerCase(),
         );
-
         if (!match) throw new Error(`No se encontró el plan "${plan}"`);
-
         setMembership(match);
-
-        // ✅ Sacamos el userId del JWT (campo sub) en lugar de dataUser.user.id
         const userId = getUserIdFromToken(dataUser.token);
-
         await initPayment({ userId, membershipId: match.id }, dataUser.token);
       } catch (err: any) {
-        console.error("[PaymentPage]", err);
+        console.error("[PaymentPage/membership]", err);
         setFetchError(err.message);
       } finally {
         setIsFetching(false);
@@ -75,18 +82,64 @@ export default function PaymentPage() {
     };
 
     resolveMembership();
-  }, [plan, isAuthLoading, dataUser]);
+  }, [plan, isTokenFlow, isAuthLoading, dataUser]);
+
+  // ── Flujo TOKENS ──────────────────────────────────────────────────────────
+  useEffect(() => {
+    if (!isTokenFlow || !packageId || isAuthLoading || !dataUser?.user) return;
+    if (tokenInitiated.current) return;
+    tokenInitiated.current = true;
+
+    const resolveTokenPackage = async () => {
+      setIsFetching(true);
+      setFetchError(null);
+      try {
+        const name = searchParams.get("packageName") ?? "Paquete de tokens";
+        const tokenAmount = Number(searchParams.get("tokenAmount") ?? 0);
+        const price = Number(searchParams.get("price") ?? 0);
+        const currency =
+          (searchParams.get("currency") as "USD" | "MXN") ?? "USD";
+
+        setTokenPackage({ id: packageId, name, tokenAmount, price, currency });
+
+        const userId = getUserIdFromToken(dataUser.token);
+        sessionStorage.setItem("paymentFlow", "tokens");
+
+        await initTokenPayment({ userId, packageId }, dataUser.token);
+      } catch (err: any) {
+        console.error("[PaymentPage/tokens]", err);
+        setFetchError(err.message);
+      } finally {
+        setIsFetching(false);
+      }
+    };
+
+    resolveTokenPackage();
+  }, [packageId, isTokenFlow, isAuthLoading, dataUser]);
+
+  // Guardar transactionId en sessionStorage para redirect 3DS
+  useEffect(() => {
+    if (transactionId) {
+      sessionStorage.setItem("transactionId", transactionId);
+    }
+  }, [transactionId]);
 
   // ── Handlers ─────────────────────────────────────────────────────────────
-  const handleSuccess = (transactionId: string) => {
-    router.push(`/payment/success?transactionId=${transactionId}&plan=${plan}`);
+  const handleSuccess = (txId: string) => {
+    const base = isTokenFlow
+      ? `/payment/success?transactionId=${txId}&packageId=${packageId}`
+      : `/payment/success?transactionId=${txId}&plan=${plan}`;
+
+    const url = clientSecret
+      ? `${base}&clientSecret=${encodeURIComponent(clientSecret)}`
+      : base;
+
+    router.push(url);
   };
 
-  const handleError = (message: string) => {
-    setFetchError(message);
-  };
+  const handleError = (message: string) => setFetchError(message);
 
-  // ── Estados de carga y error ──────────────────────────────────────────────
+  // ── Loading ───────────────────────────────────────────────────────────────
   if (isAuthLoading || isFetching) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-black text-white">
@@ -98,6 +151,7 @@ export default function PaymentPage() {
     );
   }
 
+  // ── Error ─────────────────────────────────────────────────────────────────
   if (fetchError || error) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-black text-white">
@@ -114,13 +168,14 @@ export default function PaymentPage() {
     );
   }
 
+  // ── Render ────────────────────────────────────────────────────────────────
   return (
     <main className="min-h-screen bg-black text-white flex items-center justify-center px-6">
       <div className="w-full max-w-xl bg-zinc-900 p-8 rounded-2xl border border-white/10 space-y-8">
         <h1 className="text-2xl font-semibold text-center">Confirmar Pago</h1>
 
-        {/* Resumen del plan */}
-        {membership && (
+        {/* Resumen — membresía */}
+        {!isTokenFlow && membership && (
           <PaymentSummary
             plan={{
               id: plan?.toUpperCase() as any,
@@ -131,7 +186,27 @@ export default function PaymentPage() {
           />
         )}
 
-        {/* Stripe Elements con el formulario de tarjeta */}
+        {/* Resumen — tokens */}
+        {isTokenFlow && tokenPackage && (
+          <div className="rounded-xl bg-white/5 border border-white/10 p-4 space-y-1">
+            <p className="text-sm text-white/50">Paquete seleccionado</p>
+            <p className="text-lg font-semibold">{tokenPackage.name}</p>
+            <p className="text-white/70 text-sm">
+              🪙 {tokenPackage.tokenAmount} tokens
+            </p>
+            <p className="text-xl font-bold mt-2">
+              {tokenPackage.price.toLocaleString("es-MX", {
+                style: "currency",
+                currency: tokenPackage.currency,
+              })}{" "}
+              <span className="text-sm font-normal text-white/40">
+                {tokenPackage.currency}
+              </span>
+            </p>
+          </div>
+        )}
+
+        {/* Stripe Elements */}
         {clientSecret ? (
           <Elements
             stripe={stripePromise}
