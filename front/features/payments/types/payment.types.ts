@@ -19,3 +19,32 @@ export interface CheckoutResponse {
   clientSecret: string;
   transactionId: string;
 }
+
+// ─── Tokens ───────────────────────────────────────────────────────────────────
+
+export interface TokenCheckoutRequest {
+  userId: string;
+  packageId: string; // UUID del paquete de tokens
+}
+
+// Misma forma de respuesta que membresías
+export type TokenCheckoutResponse = CheckoutResponse;
+
+export interface TokenPackage {
+  id: string;
+  name: string;
+  description?: string;
+  tokenAmount: number;
+  price: number;
+  currency: "usd";
+}
+
+export interface SpendTokensRequest {
+  userId: string;
+  amount: number;
+  description: string;
+}
+
+export interface SpendTokensResponse {
+  newBalance: number;
+}

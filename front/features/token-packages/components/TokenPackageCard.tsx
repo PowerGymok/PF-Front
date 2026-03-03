@@ -10,52 +10,34 @@ export function TokenPackageCard({
   id,
   name,
   price,
+  priceRaw,
+  tokenAmount,
   description,
   features,
+  currency = "USD",
 }: TokenPackageCardProps) {
   const router = useRouter();
   const { dataUser, isLoading } = useAuth();
   const [loading, setLoading] = useState(false);
 
-  const handleClick = async () => {
-    if (isLoading) return;
+  const handleClick = () => {
+    if (isLoading || loading) return;
 
     if (!dataUser?.user) {
       router.push(`/register?package=${id}`);
       return;
     }
 
-    try {
-      setLoading(true);
-      const res = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/payments/tokens`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${dataUser.token}`,
-          },
-          body: JSON.stringify({
-            userId: dataUser.user.id,
-            packageId: id,
-          }),
-        },
-      );
+    // priceRaw es número limpio → no hay riesgo de NaN en checkout
+    const params = new URLSearchParams({
+      packageId: id,
+      packageName: name,
+      price: String(priceRaw),
+      currency,
+      tokenAmount: String(tokenAmount),
+    });
 
-      if (!res.ok) {
-        const error = await res.json().catch(() => ({}));
-        throw new Error(error.message || "Error al iniciar el pago");
-      }
-
-      const { clientSecret, transactionId } = await res.json();
-      router.push(
-        `/payment/checkout?clientSecret=${clientSecret}&transactionId=${transactionId}`,
-      );
-    } catch (error) {
-      console.error(error);
-    } finally {
-      setLoading(false);
-    }
+    router.push(`/payment/checkout?${params.toString()}`);
   };
 
   return (
@@ -67,7 +49,7 @@ export function TokenPackageCard({
         </h3>
       </div>
 
-      {/* Features con FeatureItem */}
+      {/* Features */}
       <div className="mt-10 flex justify-center">
         <div className="flex gap-10">
           {features.map((feature, index) => (

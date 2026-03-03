@@ -42,6 +42,9 @@ export function CheckoutForm({
       redirect: "if_required",
     });
 
+    console.log("[CheckoutForm] error:", error);
+    console.log("[CheckoutForm] paymentIntent:", paymentIntent);
+
     if (error) {
       setErrorMessage(error.message ?? "Error al procesar el pago");
       onError?.(error.message ?? "Error al procesar el pago");
