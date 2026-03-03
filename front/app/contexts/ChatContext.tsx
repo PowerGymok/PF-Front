@@ -1,17 +1,11 @@
 "use client";
 
-import {
-  createContext,
-  useContext,
-  useEffect,
-  useRef,
-  useState,
-} from "react";
+import { createContext, useContext, useEffect, useRef, useState } from "react";
 import { io, Socket } from "socket.io-client";
 import { useAuth } from "@/app/contexts/AuthContext";
 import { getUserIdFromToken } from "@/utils/decodeToken";
 import {
-  getUserConversations,
+  getConversationsByRole,
   getMessagesByConversation,
 } from "@/services/chat.services";
 import { MessageSessionProps } from "@/interface/MessageSession";
@@ -28,16 +22,10 @@ interface ChatContextProps {
 
 const ChatContext = createContext<ChatContextProps | undefined>(undefined);
 
-export const ChatProvider = ({
-  children,
-}: {
-  children: React.ReactNode;
-}) => {
+export const ChatProvider = ({ children }: { children: React.ReactNode }) => {
   const { dataUser } = useAuth();
 
-  const [conversations, setConversations] = useState<
-    ConversationSession[]
-  >([]);
+  const [conversations, setConversations] = useState<ConversationSession[]>([]);
   const [activeConversation, setActiveConversation] =
     useState<ConversationSession | null>(null);
   const [messages, setMessages] = useState<MessageSessionProps[]>([]);
@@ -45,20 +33,14 @@ export const ChatProvider = ({
 
   const socketRef = useRef<Socket | null>(null);
 
- 
-  const userId = dataUser?.token
-    ? getUserIdFromToken(dataUser.token)
-    : null;
+  const userId = dataUser?.token ? getUserIdFromToken(dataUser.token) : null;
 
   useEffect(() => {
     if (!dataUser?.token || !userId) return;
 
-    const socketInstance = io(
-      `${process.env.NEXT_PUBLIC_API_URL}/chat`,
-      {
-        query: { userId },
-      }
-    );
+    const socketInstance = io(`${process.env.NEXT_PUBLIC_API_URL}/chat`, {
+      query: { userId },
+    });
 
     socketRef.current = socketInstance;
 
@@ -72,12 +54,9 @@ export const ChatProvider = ({
       setIsConnected(false);
     });
 
-    socketInstance.on(
-      "newMessage",
-      (message: MessageSessionProps) => {
-        setMessages((prev) => [...prev, message]);
-      }
-    );
+    socketInstance.on("newMessage", (message: MessageSessionProps) => {
+      setMessages((prev) => [...prev, message]);
+    });
 
     socketInstance.on("connect_error", (err) => {
       console.error("Error socket:", err);
@@ -92,11 +71,16 @@ export const ChatProvider = ({
     if (!dataUser?.token || !userId) return;
 
     const loadConversations = async () => {
+      if (!dataUser) return;
+
+      const role = dataUser.user.role;
+      const userId = dataUser.user.id;
+
+      if (role === "Admin") return;
+
       try {
-        const data = await getUserConversations(
-          userId,
-          dataUser.token
-        );
+        const data = await getConversationsByRole(role, userId, dataUser.token);
+
         setConversations(data);
       } catch (error) {
         console.error("Error cargando conversaciones:", error);
@@ -114,7 +98,7 @@ export const ChatProvider = ({
         const data = await getMessagesByConversation(
           activeConversation.id,
           userId,
-          dataUser.token
+          dataUser.token,
         );
         setMessages(data);
       } catch (error) {
@@ -152,7 +136,6 @@ export const ChatProvider = ({
 
 export const useChat = () => {
   const context = useContext(ChatContext);
-  if (!context)
-    throw new Error("useChat debe usarse dentro de ChatProvider");
+  if (!context) throw new Error("useChat debe usarse dentro de ChatProvider");
   return context;
 };
