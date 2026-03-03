@@ -53,10 +53,10 @@ export default function CallbackPage() {
         });
 
         // 🔴 Redirección según perfil
-        if (!data.isProfileComplete) {
-          router.push("/complete-profile");
-          return;
-        }
+        // if (!data.isProfileComplete) {
+        //   router.push("/complete-profile");
+        //   return;
+        // }
 
         // ✅ Siempre ir a /dashboard
        router.push("/dashboard");
