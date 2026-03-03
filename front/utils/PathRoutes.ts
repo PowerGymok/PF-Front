@@ -7,4 +7,6 @@ export enum PATHROUTES {
   REGISTER = "/register",
   LOGIN = "/login",
   DASHBOARD = "/dashboard",
+  COACH_CHAT = "/coach/chat",
+  USERS_CHAT = "/users/chat",
 }
