@@ -6,12 +6,11 @@ import ButtonComponent from "./ButtonComponent";
 import { useState } from "react";
 
 const coaches = [
-  { id: 1, name: "Coach 1", image: "/coach1.jpg" },
-  { id: 2, name: "Coach 2", image: "/coach2.jpg" },
-  { id: 3, name: "Coach 3", image: "/coach3.jpg" },
-  { id: 4, name: "Coach 4", image: "/coach4.jpg" },
-  { id: 5, name: "Coach 5", image: "/coach5.jpg" },
-  { id: 6, name: "Coach 6", image: "/coach6.jpg" },
+  { id: 1, name: "Coach 1", image: "/images/coach1.jpg" },
+  { id: 2, name: "Coach 2", image: "/images/coach2.jpg" },
+  { id: 3, name: "Coach 3", image: "/images/coach3.jpg" },
+  { id: 4, name: "Coach 4", image: "/images/coach4.jpg" },
+  { id: 5, name: "Coach 5", image: "/images/coach5.jpg" },
 ];
 
 const classesMock = [

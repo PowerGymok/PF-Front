@@ -5,6 +5,8 @@ import MembershipTester from "./componentes/MembershipTester";
 import { useChatAccess } from "./hooks/useChatAccess";
 
 export default function ChatPage() {
+
+    
   const [membership, setMembership] = useState<any>(null);
 
   const hasAccess = useChatAccess(membership);

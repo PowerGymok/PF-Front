@@ -7,7 +7,7 @@ const GoogleLoginButton = () => {
   const handleGoogleLogin = () => {
 
     window.location.href =
-      "http://localhost:3001/auth/google";
+      "http://localhost:3000/auth/google";
 
   };
 

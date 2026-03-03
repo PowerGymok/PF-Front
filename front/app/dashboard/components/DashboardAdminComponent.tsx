@@ -3,6 +3,7 @@
 import { useAuth } from "@/app/contexts/AuthContext";
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
+import AdminUserManage from "@/app/admin/dashboard/AdminUserManage";
 
 const DashboardAdminPage = () => {
   const { isLoading, dataUser, logOut } = useAuth();
@@ -56,16 +57,14 @@ const DashboardAdminPage = () => {
         <h2 className="text-lg font-semibold mb-4 text-gray-700">
           Resumen del mes
         </h2>
-        <p className="text-gray-500">
-          Este mes se han registrado 15 nuevos usuarios y se han impartido 36
-          clases con los 8 coach que tenemos activos
-        </p>
+
+        <AdminUserManage />
       </div>
 
       <div className="mt-10">
         <button
           onClick={handleLogout}
-          className="bg-red-500 hover:bg-red-600 text-white px-6 py-2 rounded-lg transition"
+          className="bg-red-500 hover:bg-red-600 text-white px-6 py-2 rounded-lg transition cursor-pointer"
         >
           Cerrar sesión
         </button>
