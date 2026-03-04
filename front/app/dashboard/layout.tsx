@@ -20,7 +20,7 @@ export default function DashboardLayout({
       try {
 
         await fetchWithAuth(
-          "http://localhost:3000/auth/me"
+          "http://localhost:3030/auth/me"
         );
 
         setLoading(false);

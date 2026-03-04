@@ -24,7 +24,7 @@ export default function CallbackPage() {
         localStorage.setItem("token", token);
 
         // ✅ Ahora pedimos el usuario al backend
-        const res = await fetch("http://localhost:3000/auth/me", {
+        const res = await fetch("http://localhost:3030/auth/me", {
           headers: {
             Authorization: `Bearer ${token}`,
           },
