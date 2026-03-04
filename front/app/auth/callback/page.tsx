@@ -20,11 +20,13 @@ export default function CallbackPage() {
           return;
         }
 
-        // 🟢 Guardamos token en localStorage
         localStorage.setItem("token", token);
 
+
         // ✅ Ahora pedimos el usuario al backend
-        const res = await fetch("http://localhost:3030/auth/me", {
+        
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/me`, {
+
           headers: {
             Authorization: `Bearer ${token}`,
           },
@@ -59,7 +61,7 @@ export default function CallbackPage() {
         // }
 
         // ✅ Siempre ir a /dashboard
-       router.push("/dashboard");
+        router.push("/dashboard");
       } catch (error) {
         console.error("Error en Google callback:", error);
         router.push("/login");
