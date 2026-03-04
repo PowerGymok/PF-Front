@@ -4,6 +4,8 @@ import "./globals.css";
 import NavBar from "./navbar/page";
 import Footer from "./footer/page";
 import { AuthProvider } from "../app/contexts/AuthContext";
+import { ChatProvider } from "../app/contexts/ChatContext";
+import ChatFloating from "@/features/chat/componentes/ChatFloating";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -36,10 +38,14 @@ export default function RootLayout({
       <body className={`text- foreground bg-background ${opensans.variable}${geistSans.variable} ${geistMono.variable} antialiased`}>
 
         <AuthProvider>
+          <ChatProvider>
           <NavBar />
             {children}
-          <Footer />
+            <ChatFloating />
+            <Footer />
+          </ChatProvider>
         </AuthProvider>
+        
         
         
       </body>

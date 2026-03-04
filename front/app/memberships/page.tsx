@@ -1,165 +1,85 @@
-import { PricingCardComponent } from "@/components/PricingCardComponent";
-import { Chat_Icon } from "@/components/icons/Chat_Icon";
-import { Shower_Icon } from "@/components/icons/Shower_Icon";
-import { Token_Icon } from "@/components/icons/Token_Icon";
-import { Workshop_Icon } from "@/components/icons/Workshop_Icon";
-import { PricingCardProps } from "@/components/PricingCardComponent";
+import { GetMemberships } from "@/features/memberships/services/membership.service";
+import { GetTokenPackages } from "@/features/token-packages/services/tokenPackageService";
+import { MembershipCard } from "@/features/memberships/components/MembershipCard";
+import { TokenPackageCard } from "@/features/token-packages/components/TokenPackageCard";
+import { mapToMembershipCard } from "@/features/memberships/utils/membership.mapper";
+import { mapToTokenPackageCard } from "@/features/token-packages/utils/tokenpackage.mapper";
+import { BenefitsSection } from "@/features/memberships/components/BenefitsSection";
+import { DescriptionSection } from "@/features/memberships/components/DescriptionSection";
 
-export default function Memberships() {
-  const plans: PricingCardProps[] = [
-    {
-      title: "FIRST TIME",
-      price: "20 USD",
-      membershipVariant: "firstTime",
-      features: [
-        {
-          icon: <Workshop_Icon className="w-10 h-10" />,
-          text: "AGENDA TU CLASE (SEGUN CUPO)",
-        },
-        {
-          icon: <Token_Icon className="w-10 h-10" />,
-          text: "X2 TOKENS",
-        },
-        {
-          icon: <Shower_Icon className="w-10 h-10" />,
-          text: "ACCESO A REGADERAS",
-        },
-        {
-          icon: <Chat_Icon className="w-10 h-10" />,
-          text: "ATENCION PERSONALIZADA",
-          premiumOnly: true,
-        },
-      ],
-    },
-    {
-      title: "BRONZE",
-      price: "50 USD",
-      membershipVariant: "bronze",
-      features: [
-        {
-          icon: <Workshop_Icon className="w-10 h-10" />,
-          text: "AGENDA TU CLASE (SEGUN CUPO)",
-        },
-        {
-          icon: <Token_Icon className="w-10 h-10" />,
-          text: "X4 TOKENS",
-        },
-        {
-          icon: <Shower_Icon className="w-10 h-10" />,
-          text: "ACCESO REGADERAS",
-        },
-        {
-          icon: <Chat_Icon className="w-10 h-10" />,
-          text: "ATENCION PERSONALIZADA",
-          premiumOnly: true,
-        },
-      ],
-    },
-    {
-      title: "SILVER",
-      price: "100 USD",
-      membershipVariant: "silver",
-      features: [
-        {
-          icon: <Workshop_Icon className="w-10 h-10" />,
-          text: "AGENDA TU CLASE (SEGUN CUPO)",
-        },
-        {
-          icon: <Token_Icon className="w-10 h-10" />,
-          text: "X8 TOKENS",
-        },
-        {
-          icon: <Shower_Icon className="w-10 h-10" />,
-          text: "ACCESO A REGADERAS",
-        },
-        {
-          icon: <Chat_Icon className="w-10 h-10" />,
-          text: "ATENCION PERSONALIZADA",
-          premiumOnly: true,
-        },
-      ],
-    },
-    {
-      title: "GOLD",
-      price: "140 USD",
-      membershipVariant: "gold",
-      features: [
-        {
-          icon: <Workshop_Icon className="w-10 h-10" />,
-          text: "AGENDA TU CLASE 3 DIAS ANTES",
-        },
-        {
-          icon: <Token_Icon className="w-10 h-10" />,
-          text: "16 TOKENS",
-        },
-        {
-          icon: <Shower_Icon className="w-10 h-10" />,
-          text: "ACCESO A LOCKER & REGADERAS",
-        },
-        {
-          icon: <Chat_Icon className="w-10 h-10" />,
-          text: "ATENCION PERSONALIZADA",
-          premiumOnly: true,
-        },
-      ],
-    },
-    {
-      title: "UNLIMITED",
-      price: "160 USD / mes ",
-      membershipVariant: "unlimited",
-      features: [
-        {
-          icon: <Workshop_Icon className="w-10 h-10" />,
-          text: "AGENDA TU CLASE 3 DIAS ANTES",
-        },
-        {
-          icon: <Token_Icon className="w-10 h-10" />,
-          text: "SIN LIMITE X MES",
-        },
-        {
-          icon: <Shower_Icon className="w-10 h-10" />,
-          text: "ACCESO A LOCKER & REGADERAS",
-        },
-        {
-          icon: <Chat_Icon className="w-10 h-10" />,
-          text: "ATENCION PERSONALIZADA",
-          premiumOnly: true,
-        },
-      ],
-    },
-    {
-      title: "TOKEN",
-      price: "16 USD",
-      membershipVariant: "singleToken",
-      features: [
-        {
-          icon: <Workshop_Icon className="w-10 h-10" />,
-          text: "AGENDA TU CLASE (SEGUN CUPO)",
-        },
-        {
-          icon: <Token_Icon className="w-10 h-10" />,
-          text: "X1 TOKENS",
-        },
-        {
-          icon: <Shower_Icon className="w-10 h-10" />,
-          text: "ACCESO REGADERAS",
-        },
-        {
-          icon: <Chat_Icon className="w-10 h-10" />,
-          text: "ATENCION PERSONALIZADA",
-          premiumOnly: true,
-        },
-      ],
-    },
-  ];
+export default async function MembershipsPage() {
+  const [memberships, tokenPackages] = await Promise.all([
+    GetMemberships(),
+    GetTokenPackages(),
+  ]);
+
+  const membershipCards = memberships.map(mapToMembershipCard);
+  const tokenCards = tokenPackages.map(mapToTokenPackageCard);
 
   return (
-    <main className="min-h-screen bg-black py-20 px-6">
-      <div className="grid gap-10 md:grid-cols-3 max-w-7xl mx-auto">
-        {plans.map((plan, index) => (
-          <PricingCardComponent key={index} {...plan} />
-        ))}
-      </div>
+    <main className="bg-black">
+      <DescriptionSection />
+
+      <section className="py-12 px-4 sm:px-6 lg:px-8">
+        {/* Membresías */}
+        <div className="max-w-7xl mx-auto mb-10">
+          <h1 className="text-2xl sm:text-3xl font-extrabold text-white">
+            Planes de membresía
+          </h1>
+          <div className="mt-2 h-0.5 w-16 bg-red-500" />
+        </div>
+
+        <div className="max-w-7xl mx-auto">
+          {membershipCards.length === 0 ? (
+            <p className="text-white/50 text-center py-12">
+              No hay membresías disponibles.
+            </p>
+          ) : (
+            <div
+              className="grid gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
+              style={{
+                gridTemplateColumns: `repeat(${Math.min(membershipCards.length, 4)}, minmax(0, 1fr))`,
+              }}
+            >
+              {membershipCards.map((card) => (
+                <MembershipCard key={card.title} {...card} />
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* Divisor */}
+        <div className="max-w-7xl mx-auto my-16 h-px bg-white/10" />
+
+        {/* Token Packages */}
+        <div className="max-w-7xl mx-auto mb-10">
+          <h2 className="text-2xl sm:text-3xl font-extrabold text-white">
+            Paquetes de tokens
+          </h2>
+          <div className="mt-2 h-0.5 w-16 bg-red-500" />
+        </div>
+
+        <div className="max-w-7xl mx-auto">
+          {tokenCards.length === 0 ? (
+            <p className="text-white/50 text-center py-12">
+              No hay paquetes disponibles.
+            </p>
+          ) : (
+            <div
+              className="grid gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
+              style={{
+                gridTemplateColumns: `repeat(${Math.min(tokenCards.length, 4)}, minmax(0, 1fr))`,
+              }}
+            >
+              {tokenCards.map((card) => (
+                <TokenPackageCard key={card.id} {...card} />
+              ))}
+            </div>
+          )}
+        </div>
+      </section>
+
+      <BenefitsSection />
     </main>
   );
 }

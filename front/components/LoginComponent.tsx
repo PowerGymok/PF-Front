@@ -1,10 +1,15 @@
 "use client";
 
-import { LoginUserMock } from "@/services/user.services";
+import { LoginUser, GetCurrentUser } from "@/services/user.services";
 import { useFormik } from "formik";
 import { useRouter } from "next/navigation";
 import InputComponent from "./InputComponent";
 import { useAuth } from "@/app/contexts/AuthContext";
+import { LoginInitialValues, LoginValidation } from "@/validators/loginSchema";
+import ButtonComponent from "./ButtonComponent";
+import GoogleLoginButton from "./GoogleLoginButton";
+import Link from "next/link";
+
 
 
 
@@ -13,39 +18,56 @@ const LoginComponent = () => {
   const {setDataUser} = useAuth();
 
   const formik = useFormik({
-    initialValues: {
-      email: "",
-      password: "",
-    },
+    initialValues: LoginInitialValues,
+    validationSchema: LoginValidation,
 
-    onSubmit: async (values, {resetForm}) => {
-      try {
+    onSubmit: async (values, { resetForm }) => {
+  try {
+    const res = await LoginUser(values);
 
-        const user = await LoginUserMock(values);
-        const mockToken = "mock-token";
+    if (!res?.accessToken) {
+      throw new Error("Credenciales incorrectas");
+    }
 
-        alert("Inicio de sesión exitoso");
-        setDataUser({
-            login: true,
-            token: mockToken,
-            user: user,
-        });
-        resetForm()
+    const token = res.accessToken;
 
-        setTimeout(() => {
-          router.push("/home");
-        }, 1000);
+    localStorage.setItem("token", token)
+    
+    const user = await GetCurrentUser(token);
+
+    setDataUser({
+      login: true,
+      token,
+      user: {
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+        phone: user.phone,
+        orders: [],
+       isProfileComplete: user.isProfileComplete
+      },
+    });
+
+    resetForm();
+    router.push("/dashboard");
 
       } catch (error) {
-        alert("Inicio de sesion incorrecto ");  
-    }
+    alert("Inicio de sesión incorrecto");
+      }
     },
   });
 
 
 
   return (
-    <div className="max-w-md mx-auto mt-10 p-6">
+    <div className="max-w-md mx-auto mt-10 p-10 px-4 mt-4">
+
+      <section>
+        <GoogleLoginButton />
+      </section>
+
+      <hr/>
       
       <form onSubmit={formik.handleSubmit}>
         <InputComponent
@@ -73,9 +95,20 @@ const LoginComponent = () => {
                 <div className="text-red-500 text-sm">{formik.errors.password}</div>
             )
         }
-        <button type="submit" className="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-md transition-colors duration-300">Iniciar Sesión</button>
+        <div className="flex justify-center max-w-md mx-auto mt-10 ">
+          <ButtonComponent type="submit" label="Iniciar Sesión" />
+        </div>
+
+        <div>
+          <p className="text-gray-600 flex px-4 py-4 justify-center gap-2">
+            Dont have an account ? <Link href={"register"} className="text-white relative transition-all duration-300 hover:after:w-full after:content-[''] after:absolute after:left-0 after:-bottom-1 after:h-[1px] after:w-0 after:bg-white after:transition-all after:duration-300 hover:text-gray-300">Sign up</Link>
+          </p>
+        </div>
+        
+
         
       </form>
+      
     </div>
   );
 };

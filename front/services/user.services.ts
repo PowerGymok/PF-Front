@@ -1,10 +1,12 @@
 import { User } from "@/interface/User";
 import { LoginSchema } from "@/validators/loginSchema";
-import { RegisterSchema } from "@/validators/registerSchema";
+import { RegisterSchema, RegisterPayload } from "@/validators/registerSchema";
+import { AllUsers } from "@/interface/AllUsers";
+import { CompleteProfileInterface } from "@/interface/CompleteProfileInterface";
 
 export const LoginUser = async (userData: LoginSchema) => {
   try {
-    const res = await fetch("url_page_logn_real", {
+    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/login`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -22,83 +24,196 @@ export const LoginUser = async (userData: LoginSchema) => {
   }
 };
 
-
-export const LoginUserMock = async (userData: LoginSchema) => {
+export const GetCurrentUser = async (token: string) => {
   try {
-    const res = await fetch(
-      `https://694619e2ed253f51719d0f95.mockapi.io/api/v1/users?email=${userData.email}`,
-      {
-        method: "GET",
+    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/me`, {
+      method: "GET",
+      headers: {
+        Authorization: `Bearer ${token}`,
       },
-    );
+    });
+
     if (!res.ok) {
       const error = await res.json();
-      throw new Error(error.message("Error al iniciar sesión"));
+      throw new Error(error.message || "Error obteniendo usuario");
     }
 
-    const data = await res.json();
-    if (data.length === 0) {
-      throw new Error("Usuario no encontrado");
-    }
-
-    const user = data[0];
-
-    if (user.password !== userData.password) {
-      throw new Error("Contraseña incorrecta");
-    } else {
-      return user;
-    }
+    return await res.json();
   } catch (error) {
     throw error;
   }
 };
 
-export const RegisterUserMock = async (userData: RegisterSchema) => {
+export const RegisterUser = async (userData: RegisterPayload) => {
   try {
-    // 1. Verificar si el email ya existe
-    const checkRes = await fetch(
-      `https://69922fd08f29113acd3d5963.mockapi.io/users`
-    );
+    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/signup`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(userData),
+    });
 
-    if (!checkRes.ok) throw new Error("Error al verificar usuario");
+    if (!res.ok) {
+      const error = await res.json().catch(() => ({}));
+      throw new Error(error.message || "Error al registrar el usuario");
+    }
 
-    const existingUsers: User[]  = await checkRes.json();
+    return await res.json();
+  } catch (error) {
+    if (error instanceof Error) {
+      throw new Error(error.message);
+    }
+    throw new Error("Error al registrar el usuario");
+  }
+};
 
-    const emailExists = existingUsers.some(
-  (u) => u.email === userData.email
-);
+export const GetAllUsers = async (token: string): Promise<AllUsers[]> => {
+  try {
+    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/users`, {
+      method: "GET",
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
 
-if (emailExists) {
-  throw new Error("El email ya está registrado");
-}
+    if (!res.ok) {
+      const error = await res.json();
 
-    // 2. Sacar confirmPassword
-    const { confirmPassword, ...userToSave } = userData;
+      throw new Error(error.message || "Error obteniendo usuarios");
+    }
+    return await res.json();
+  } catch (error) {
+    throw error;
+  }
+};
 
-    // 3. Crear usuario
+export const UpdateUserRole = async (
+  userId: string,
+  role: string,
+  token: string,
+) => {
+  const response = await fetch(
+    `${process.env.NEXT_PUBLIC_API_URL}/coach/promote/${userId}`,
+    {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({ role }),
+    },
+  );
+
+  if (!response.ok) {
+    const error = await response.text();
+    throw new Error(error);
+  }
+
+  return response.text();
+};
+
+export const GetUserById = async (id: string, token: string) => {
+  try {
+    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/users/${id}`, {
+      method: "GET",
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    if (!res.ok) {
+      const error = await res.json().catch(() => ({}));
+      throw new Error(error.message || "Error obteniendo usuario");
+    }
+
+    return await res.json();
+  } catch (error) {
+    if (error instanceof Error) throw error;
+    throw new Error("Error obteniendo usuario");
+  }
+};
+
+export const UpdateUserProfile = async (
+  id: string,
+  profileData: Partial<User>,
+  token: string,
+) => {
+  try {
     const res = await fetch(
-      "https://69922fd08f29113acd3d5963.mockapi.io/users",
+      `${process.env.NEXT_PUBLIC_API_URL}/users/update/${id}`,
       {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(userToSave),
-      }
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(profileData),
+      },
     );
 
     if (!res.ok) {
-      throw new Error("Error al registrar el usuario");
+      const error = await res.json().catch(() => ({}));
+      throw new Error(error.message || "Error actualizando perfil");
     }
 
-    const newUser = await res.json();
-
-    // 4. Devolver sin password
-    const { password, ...userWithoutPassword } = newUser;
-    return userWithoutPassword;
-
+    return await res.json();
   } catch (error) {
-  if (error instanceof Error) {
-    throw new Error(error.message);
+    if (error instanceof Error) throw error;
+    throw new Error("Error actualizando perfil");
   }
-  throw new Error("Error al registrar el usuario");
-}
+};
+
+export const UserInactive = async (id: string, token: string) => {
+  try {
+    const res = await fetch(
+      `${process.env.NEXT_PUBLIC_API_URL}/users/inactive/${id}`,
+      {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      },
+    );
+
+    if (!res.ok) {
+      const error = await res.json().catch(() => ({}));
+      throw new Error(error.message || "Error desactivando usuario");
+    }
+
+    return await res.json();
+  } catch (error) {
+    if (error instanceof Error) throw error;
+    throw new Error("Error desactivando usuario");
+  }
+};
+
+export const UsersCompleteProfile = async (
+  data: CompleteProfileInterface,
+  token: string,
+) => {
+  try {
+    const res = await fetch(
+      `${process.env.NEXT_PUBLIC_API_URL}/users/complete-profile`,
+      {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(data),
+      },
+    );
+
+    if (!res.ok) {
+      const error = await res.json().catch(() => ({}));
+      throw new Error(error.message || "Error completando perfil");
+    }
+
+    return await res.json();
+  } catch (error) {
+    if (error instanceof Error) throw error;
+    throw new Error("Error completando perfil");
+  }
 };

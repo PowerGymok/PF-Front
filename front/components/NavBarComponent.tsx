@@ -1,26 +1,46 @@
-'use client'
+"use client";
 
 import Link from "next/link";
 import { useState } from "react";
-import { NavItems } from "@/utils/NavItems";
 import { PATHROUTES } from "@/utils/PathRoutes";
 import { useAuth } from "@/app/contexts/AuthContext";
 import { GymLogoComponent } from "./GymLogoComponent";
+import clsx from "clsx";
+import { usePathname } from "next/navigation";
+
+import { navAdmin } from "../utils/Navigation/navAdmin";
+import { navCoach } from "../utils/Navigation/navCoach";
+import { navPublic } from "../utils/Navigation/navPublic";
+import { navUser } from "../utils/Navigation/navUsers";
 
 const NavBarComponent = () => {
   const { dataUser, logOut, userInitial } = useAuth();
+  const role = dataUser?.user?.role;
+
   const [isOpen, setIsOpen] = useState(false);
+  const pathname = usePathname();
+
+  
+  let navItems = navPublic;
+
+  if (role === "Admin") {
+    navItems = navAdmin;
+  } else if (role === "Coach") {
+    navItems = navCoach;
+  } else if (role === "user") {
+    navItems = navUser;
+  }
 
   return (
     <header className="w-full bg-black px-4 md:px-10">
       <div className="flex items-center justify-between h-[70px]">
-
+        
         {/* Logo */}
-        <Link href="/">
-          <GymLogoComponent className="w-12 h-12 md:w-16 md:h-16" />
+        <Link href={PATHROUTES.HOME}>
+          <GymLogoComponent className="w-14 h-14 sm:w-16 sm:h-16 md:w-20 md:h-20 lg:w-24 lg:h-24" />
         </Link>
 
-        {/* Botón hamburguesa (solo mobile) */}
+        {/* Botón hamburguesa */}
         <button
           onClick={() => setIsOpen(!isOpen)}
           className="text-white md:hidden text-2xl"
@@ -29,44 +49,45 @@ const NavBarComponent = () => {
         </button>
 
         {/* Menú desktop */}
-        <nav className="hidden md:flex gap-8 text-white uppercase text-sm tracking-widest font-semibold">
-          {NavItems.map((item) => (
+        <nav className="hidden md:flex gap-14 text-white text-md tracking-wide font-light">
+          {navItems.map((item) => (
             <Link
               key={item.id}
               href={item.route}
-              className="hover:text-gray-400 transition"
+              className={clsx(
+                "hover:text-gray-300 relative transition-all duration-300 hover:after:w-full after:content-[''] after:absolute after:left-0 after:-bottom-1 after:h-[1px] after:w-0 after:bg-white after:transition-all after:duration-300",
+                pathname === item.route && "after:w-full"
+              )}
             >
               {item.nameToRender}
             </Link>
           ))}
         </nav>
 
-        {/* Auth desktop */}
+        {/* Login / Dashboard */}
         <div className="hidden md:flex text-white gap-4">
           {dataUser ? (
-            <>
-              <Link
-                href={PATHROUTES.DASHBOARD}
-                className="w-8 h-8 rounded-full bg-gray-500 flex items-center justify-center font-bold"
-              >
-                {userInitial}
-              </Link>
-              <button onClick={logOut} className="hover:text-gray-400">
-                Logout
-              </button>
-            </>
+            <Link
+              href={PATHROUTES.DASHBOARD}
+              className="w-8 h-8 rounded-full bg-gray-500 flex items-center justify-center font-bold"
+            >
+              {userInitial}
+            </Link>
           ) : (
-            <Link href={PATHROUTES.LOGIN} className="hover:text-gray-400">
+            <Link
+              href={PATHROUTES.LOGIN}
+              className="text-md mr-4 hover:text-gray-300 relative transition-all duration-300 hover:after:w-full after:content-[''] after:absolute after:left-0 after:-bottom-1 after:h-[1px] after:w-0 after:bg-white after:transition-all after:duration-300"
+            >
               Login
             </Link>
           )}
         </div>
       </div>
 
-      {/* Menú mobile desplegable */}
+      {/* Menú mobile */}
       {isOpen && (
-        <div className="md:hidden flex flex-col gap-4 pb-4 text-white uppercase text-sm tracking-widest">
-          {NavItems.map((item) => (
+        <div className="md:hidden flex flex-col gap-4 pb-4 text-white uppercase text-md tracking-widest">
+          {navItems.map((item) => (
             <Link
               key={item.id}
               href={item.route}
