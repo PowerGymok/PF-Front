@@ -43,9 +43,9 @@ const AdminUserManage = () => {
     try {
       await UpdateUserRole(userId, "Coach", dataUser.token);
 
-      setUsers((prevUsers) =>
-        prevUsers.map((u) => (u.id === userId ? { ...u, role: "Coach" } : u)),
-      );
+      const data = await GetAllUsers(dataUser.token);
+      setUsers(data);
+      router.push("/dashboard");
     } catch (error: any) {
       console.error(error.message);
     }
@@ -66,6 +66,12 @@ const AdminUserManage = () => {
       <h1 className="text-2xl font-bold mb-4 text-gray-700">
         Gestión de Usuarios
       </h1>
+      <button
+        onClick={() => router.push("/admin/dashboard")}
+        className="px-4 py-2 mt-4 mb-4 flex rounded-lg border text-gray-700 hover:bg-gray-50 transition cursor-pointer"
+      >
+        Volver al Dashboard
+      </button>
 
       <input
         type="text"
@@ -96,11 +102,6 @@ const AdminUserManage = () => {
           </div>
         ))
       )}
-      <div>
-        <p className="text-gray-500">
-          Total de usuarios registrados: {users.length}
-        </p>
-      </div>
     </div>
   );
 };
