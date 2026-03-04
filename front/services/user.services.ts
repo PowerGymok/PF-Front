@@ -67,10 +67,16 @@ export const RegisterUser = async (userData: RegisterPayload) => {
     throw new Error("Error al registrar el usuario");
   }
 };
-
-export const GetAllUsers = async (token: string): Promise<AllUsers[]> => {
+export const GetAllUsers = async (
+  token: string,
+  limit?: number,
+): Promise<AllUsers[]> => {
   try {
-    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/users`, {
+    const url = limit
+      ? `${process.env.NEXT_PUBLIC_API_URL}/users?limit=${limit}`
+      : `${process.env.NEXT_PUBLIC_API_URL}/users`;
+
+    const res = await fetch(url, {
       method: "GET",
       headers: {
         Authorization: `Bearer ${token}`,
@@ -79,15 +85,14 @@ export const GetAllUsers = async (token: string): Promise<AllUsers[]> => {
 
     if (!res.ok) {
       const error = await res.json();
-
       throw new Error(error.message || "Error obteniendo usuarios");
     }
+
     return await res.json();
   } catch (error) {
     throw error;
   }
 };
-
 export const UpdateUserRole = async (
   userId: string,
   role: string,
@@ -215,5 +220,30 @@ export const UsersCompleteProfile = async (
   } catch (error) {
     if (error instanceof Error) throw error;
     throw new Error("Error completando perfil");
+  }
+};
+
+export const getAllCoaches = async (token: string, limit?: number) => {
+  try {
+    const url = limit
+      ? `${process.env.NEXT_PUBLIC_API_URL}/coach?limit=${limit}`
+      : `${process.env.NEXT_PUBLIC_API_URL}/coach`;
+
+    const res = await fetch(url, {
+      method: "GET",
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    if (!res.ok) {
+      const error = await res.json().catch(() => ({}));
+      throw new Error(error.message || "Error obteniendo coaches");
+    }
+
+    return await res.json();
+  } catch (error) {
+    if (error instanceof Error) throw error;
+    throw new Error("Error obteniendo coaches");
   }
 };

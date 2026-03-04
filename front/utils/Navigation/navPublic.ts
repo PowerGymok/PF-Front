@@ -8,7 +8,7 @@ export const navPublic = [
   },
   {
     id: 2,
-    nameToRender: "About",
+    nameToRender: "Acerca De",
     route: PATHROUTES.ABOUT,
   },
   {
