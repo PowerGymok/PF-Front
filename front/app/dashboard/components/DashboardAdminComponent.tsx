@@ -98,7 +98,7 @@ const DashboardAdminPage = () => {
         </Link>
 
         <Link
-          href="/admin/memberships"
+          href="/admin/dashboard/memberships"
           className="bg-white p-6 rounded-xl shadow-md hover:shadow-lg transition"
         >
           <h3 className="text-lg font-semibold text-gray-800">
