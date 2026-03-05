@@ -136,23 +136,7 @@ const AdminCoachManage = () => {
                   </div>
                 </div>
 
-                <div className="flex flex-col sm:flex-row gap-2">
-                  <button
-                    disabled={!active || isBusy}
-                    onClick={() => handleDeactivate(coach.id)}
-                    className="px-4 py-2 rounded-lg bg-gray-500 text-white hover:bg-gray-600 transition disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
-                  >
-                    Dar de baja
-                  </button>
-
-                  <button
-                    disabled={isBusy}
-                    onClick={() => handleDemoteToUser(coach.id)}
-                    className="px-4 py-2 rounded-lg bg-gray-600 text-white hover:bg-gray-700 transition disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
-                  >
-                    Convertir a Usuario
-                  </button>
-                </div>
+                <div className="flex flex-col sm:flex-row gap-2"></div>
               </div>
             );
           })}
