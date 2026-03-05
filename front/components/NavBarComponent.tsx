@@ -20,7 +20,6 @@ const NavBarComponent = () => {
   const [isOpen, setIsOpen] = useState(false);
   const pathname = usePathname();
 
-  
   let navItems = navPublic;
 
   if (role === "Admin") {
@@ -34,7 +33,6 @@ const NavBarComponent = () => {
   return (
     <header className="w-full bg-black px-4 md:px-10">
       <div className="flex items-center justify-between h-[70px]">
-        
         {/* Logo */}
         <Link href={PATHROUTES.HOME}>
           <GymLogoComponent className="w-14 h-14 sm:w-16 sm:h-16 md:w-20 md:h-20 lg:w-24 lg:h-24" />
@@ -56,7 +54,7 @@ const NavBarComponent = () => {
               href={item.route}
               className={clsx(
                 "hover:text-gray-300 relative transition-all duration-300 hover:after:w-full after:content-[''] after:absolute after:left-0 after:-bottom-1 after:h-[1px] after:w-0 after:bg-white after:transition-all after:duration-300",
-                pathname === item.route && "after:w-full"
+                pathname === item.route && "after:w-full",
               )}
             >
               {item.nameToRender}
@@ -111,10 +109,7 @@ const NavBarComponent = () => {
                 <button onClick={logOut}>Logout</button>
               </>
             ) : (
-              <Link
-                href={PATHROUTES.LOGIN}
-                onClick={() => setIsOpen(false)}
-              >
+              <Link href={PATHROUTES.LOGIN} onClick={() => setIsOpen(false)}>
                 Login
               </Link>
             )}

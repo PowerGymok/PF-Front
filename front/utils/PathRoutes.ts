@@ -9,4 +9,5 @@ export enum PATHROUTES {
   DASHBOARD = "/dashboard",
   COACH_CHAT = "/coach/chat",
   USERS_CHAT = "/users/chat",
+  COACHES = "/coaches",
 }

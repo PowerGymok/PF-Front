@@ -3,6 +3,7 @@ import { LoginSchema } from "@/validators/loginSchema";
 import { RegisterSchema, RegisterPayload } from "@/validators/registerSchema";
 import { AllUsers } from "@/interface/AllUsers";
 import { CompleteProfileInterface } from "@/interface/CompleteProfileInterface";
+import { mockCoaches } from "./mockCoaches";
 
 export const LoginUser = async (userData: LoginSchema) => {
   try {
@@ -245,5 +246,15 @@ export const getAllCoaches = async (token: string, limit?: number) => {
   } catch (error) {
     if (error instanceof Error) throw error;
     throw new Error("Error obteniendo coaches");
+  }
+};
+
+export const getPublicCoaches = async () => {
+  try {
+    //esperar a generar mi const res...
+    return mockCoaches;
+  } catch (error) {
+    console.error("Error obteniendo coaches:", error);
+    return [];
   }
 };

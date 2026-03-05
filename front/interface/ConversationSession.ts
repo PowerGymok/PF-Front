@@ -14,4 +14,6 @@ export interface ConversationSession {
   };
 
   createdAt?: string;
+  userId: string;
+  coachId: string;
 }
