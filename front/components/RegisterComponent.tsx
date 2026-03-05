@@ -36,7 +36,7 @@ const RegisterComponent = () => {
           address: values.address,
           city: values.city,
           Birthdate: values.Birthdate,
-          phone: parseInt(cleanPhone, 10),
+          phone: cleanPhone,
         };
         const res = await RegisterUser(payload);
 
@@ -60,7 +60,7 @@ const RegisterComponent = () => {
             role: user.role,
             phone: user.phone,
             orders: [],
-            isProfileComplete: user.isProfileComplete
+            isProfileComplete: user.isProfileComplete,
           },
         });
 

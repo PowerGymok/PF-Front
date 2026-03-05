@@ -17,7 +17,7 @@ export interface RegisterPayload {
   password: string;
   confirmPassword: string;
   address: string;
-  phone: number; // backend lo exige como number
+  phone: string; 
   city: string;
   Birthdate: string;
 }
