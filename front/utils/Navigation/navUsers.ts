@@ -21,4 +21,9 @@ export const navUser = [
     nameToRender: "Membresías",
     route: PATHROUTES.MEMBERSHIPS,
   },
+  {
+    id: 5,
+    nameToRender: "Coaches",
+    route: PATHROUTES.COACHES,
+  },
 ];

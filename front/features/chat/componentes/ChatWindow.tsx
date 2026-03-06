@@ -1,155 +1,161 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
-import BubbleMessage from "./BubbleMessages";
+import { useEffect, useState, useRef } from "react";
+import { MessageSessionProps } from "@/interface/MessageSession";
+import { getMessagesByConversation } from "@/services/chat.services";
 import { useAuth } from "@/app/contexts/AuthContext";
-import {
-  getConversationsByRole,
-  getMessagesByConversation,
-  getAccesChat,
-} from "../../../services/chat.services";
+import { useChat } from "@/app/contexts/ChatContext";
 
-interface Message {
-  id: string;
-  content: string;
-  sender: "user" | "coach";
-  createdAt: string;
+interface ChatWindowProps {
+  conversationId: string | undefined;
 }
 
-export default function ChatWindow() {
+const ChatWindow = ({ conversationId }: ChatWindowProps) => {
   const { dataUser } = useAuth();
+  const { socket } = useChat();
 
-  const [messages, setMessages] = useState<Message[]>([]);
+  const token = dataUser?.token;
+
+  const [messages, setMessages] = useState<MessageSessionProps[]>([]);
   const [newMessage, setNewMessage] = useState("");
-  const [selectedConversation, setSelectedConversation] = useState<any>(null);
-  const [loading, setLoading] = useState(true);
 
-  const bottomRef = useRef<HTMLDivElement>(null);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  const currentUserRole = dataUser?.user?.role === "Coach" ? "coach" : "user";
+  /*
+  ─────────────────────────────────────────
+  CARGAR MENSAJES
+  ─────────────────────────────────────────
+  */
 
   useEffect(() => {
-    if (!dataUser) return;
+    const loadMessages = async () => {
+      if (!conversationId || !token) return;
 
-    const initChat = async () => {
       try {
-        const role = dataUser.user.role as "user" | "Coach";
-        const userId = dataUser.user.id;
-        const token = dataUser.token;
-
-        if (role === "user") {
-          const access = await getAccesChat(token, userId);
-          if (!access) {
-            setLoading(false);
-            return;
-          }
-        }
-
-        const conversations = await getConversationsByRole(role, userId, token);
-
-        if (conversations.length > 0) {
-          const conversation = conversations[0];
-          setSelectedConversation(conversation);
-
-          const msgs = await getMessagesByConversation(
-            userId,
-            conversation.id,
-            token,
-          );
-
-          const formattedMessages: Message[] = msgs.map((msg: any) => ({
-            id: msg.id,
-            content: msg.content,
-            sender:
-              msg.senderId === userId
-                ? currentUserRole
-                : currentUserRole === "user"
-                  ? "coach"
-                  : "user",
-            createdAt: new Date(msg.createdAt).toLocaleTimeString([], {
-              hour: "2-digit",
-              minute: "2-digit",
-            }),
-          }));
-
-          setMessages(formattedMessages);
-        }
+        const data = await getMessagesByConversation(conversationId, token);
+        setMessages(data);
       } catch (error) {
-        console.error("Error initializing chat:", error);
-      } finally {
-        setLoading(false);
+        console.error("Error cargando mensajes:", error);
       }
     };
 
-    initChat();
-  }, [dataUser]);
+    loadMessages();
+  }, [conversationId, token]);
 
-  const sendMessage = () => {
-    if (!newMessage.trim() || !selectedConversation) return;
+  /*
+  ─────────────────────────────────────────
+  ESCUCHAR MENSAJES NUEVOS (SOCKET)
+  ─────────────────────────────────────────
+  */
 
-    const message: Message = {
-      id: crypto.randomUUID(),
-      content: newMessage,
-      sender: currentUserRole,
-      createdAt: new Date().toLocaleTimeString([], {
-        hour: "2-digit",
-        minute: "2-digit",
-      }),
+  useEffect(() => {
+    if (!socket) return;
+
+    const handleMessage = (message: MessageSessionProps) => {
+      if (message.conversationId === conversationId) {
+        setMessages((prev) => [...prev, message]);
+      }
     };
 
-    setMessages((prev) => [...prev, message]);
+    socket.on("newMessage", handleMessage);
+
+    return () => {
+      socket.off("newMessage", handleMessage);
+    };
+  }, [socket, conversationId]);
+
+  /*
+  ─────────────────────────────────────────
+  ENVIAR MENSAJE
+  ─────────────────────────────────────────
+  */
+
+  const handleSendMessage = () => {
+    if (!socket || !conversationId) return;
+    if (!newMessage.trim()) return;
+
+    socket.emit("sendMessage", {
+      conversationId,
+      content: newMessage,
+    });
+
     setNewMessage("");
   };
 
+  /*
+  ─────────────────────────────────────────
+  AUTO SCROLL
+  ─────────────────────────────────────────
+  */
+
   useEffect(() => {
-    bottomRef.current?.scrollIntoView({ behavior: "smooth" });
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center h-[600px]">
-        Cargando chat
-      </div>
-    );
-  }
-
-  if (!dataUser || dataUser.user.role === "Admin") {
-    return null;
-  }
+  /*
+  ─────────────────────────────────────────
+  UI
+  ─────────────────────────────────────────
+  */
 
   return (
-    <div className="flex flex-col h-[600px] max-w-2xl mx-auto bg-white rounded-2xl shadow-xl overflow-hidden">
-      <div className="bg-gray-600 text-white p-4 font-semibold">
-        Coach PowerGym
+    <div className="flex flex-col h-full bg-white rounded-lg shadow-md">
+      {/* HEADER */}
+
+      <div className="border-b p-4 font-semibold text-gray-700">
+        Chat con tu coach
       </div>
 
-      <div className="flex-1 overflow-y-auto p-4 bg-gray-100">
-        {messages.map((msg) => (
-          <BubbleMessage
-            key={msg.id}
-            message={msg}
-            currentUserRole={currentUserRole}
-          />
-        ))}
-        <div ref={bottomRef} />
+      {/* MENSAJES */}
+
+      <div className="flex-1 overflow-y-auto p-4 space-y-3">
+        {messages.map((msg) => {
+          const isMine = msg.senderId === dataUser?.user.id;
+
+          return (
+            <div
+              key={msg.id}
+              className={`flex ${isMine ? "justify-end" : "justify-start"}`}
+            >
+              <div
+                className={`
+                max-w-xs px-4 py-2 rounded-lg text-sm
+                ${
+                  isMine
+                    ? "bg-blue-500 text-white"
+                    : "bg-gray-200 text-gray-800"
+                }
+                `}
+              >
+                {msg.content}
+              </div>
+            </div>
+          );
+        })}
+
+        <div ref={messagesEndRef} />
       </div>
 
-      <div className="p-4 border-t flex gap-2">
+      {/* INPUT */}
+
+      <div className="border-t p-3 flex gap-2">
         <input
           type="text"
           value={newMessage}
           onChange={(e) => setNewMessage(e.target.value)}
           placeholder="Escribe un mensaje..."
-          className="flex-1 border rounded-full px-4 py-2 focus:outline-none focus:ring-2 focus:ring-gray-500"
-          onKeyDown={(e) => e.key === "Enter" && sendMessage()}
+          className="border rounded-md flex-1 bg-gray-100 text-black px-3 py-2 text-sm outline-none"
         />
+
         <button
-          onClick={sendMessage}
-          className="bg-gray-600 text-white px-5 rounded-full hover:bg-blue-700 transition"
+          onClick={handleSendMessage}
+          className="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 text-sm"
         >
           Enviar
         </button>
       </div>
     </div>
   );
-}
+};
+
+export default ChatWindow;
