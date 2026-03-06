@@ -6,10 +6,20 @@ import { BookingCard } from "./BookingCard";
 interface Props {
   bookings: Booking[];
   variant?: "user" | "coach" | "admin";
-  onSchedule?: (id: string) => void;
+  onReserve?: (
+    booking: Booking,
+  ) => Promise<{ success: boolean; message: string }>;
+  onCancelSchedule?: (
+    idClassSchedule: string,
+  ) => Promise<{ success: boolean; message: string }>;
 }
 
-export default function BookingGrid({ bookings, variant, onSchedule }: Props) {
+export default function BookingGrid({
+  bookings,
+  variant,
+  onReserve,
+  onCancelSchedule,
+}: Props) {
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
       {bookings.map((booking) => (
@@ -17,7 +27,8 @@ export default function BookingGrid({ bookings, variant, onSchedule }: Props) {
           key={booking.id}
           booking={booking}
           variant={variant}
-          onSchedule={onSchedule}
+          onReserve={onReserve}
+          onCancelSchedule={onCancelSchedule}
         />
       ))}
 
