@@ -14,33 +14,49 @@ export default function UsersChatPage() {
   const searchParams = useSearchParams();
   const coachId = searchParams.get("coachId");
 
-  const { activeConversation, setActiveConversation } = useChat();
-  const { dataUser } = useAuth();
+  const { setActiveConversation } = useChat();
+  const { dataUser, isLoading} = useAuth();
 
   useEffect(() => {
     const initConversation = async () => {
-      if (!coachId || !dataUser?.token) return;
 
-      const conversations = await getConversationsByRole(
-        "user",
-        dataUser.token,
-      );
+      if (isLoading) return;
+      if (!coachId) return;
+      if (!dataUser?.token || !dataUser?.user?.id) return;
 
-      let conversation = conversations.find((c) => c.coach?.id === coachId);
+      try {
+        const userId = dataUser.user.id;
 
-      if (!conversation) {
-        conversation = await createConversation(coachId, dataUser.token);
+
+        const conversations = await getConversationsByRole(
+          "user",
+          dataUser.token,
+          userId,
+        );
+
+        let conversation = conversations.find(
+          (c) => c.coach?.id === coachId
+        );
+
+        if (!conversation) {
+          conversation = await createConversation(coachId, dataUser.token);
+        }
+
+  
+        setActiveConversation(conversation);
+
+      } catch (error) {
+        console.error("Error iniciando conversación:", error);
       }
-
-      setActiveConversation(conversation);
     };
 
     initConversation();
-  }, [coachId, dataUser, setActiveConversation]);
+
+  }, [coachId, dataUser, setActiveConversation, isLoading]);
 
   return (
     <div className="h-screen flex bg-gray-100">
-      <ChatWindow conversationId={activeConversation?.id} />
+      <ChatWindow />
     </div>
   );
 }

@@ -11,7 +11,7 @@ export const mockCoaches: CoachPublic[] = [
     image: "/images/coach1.jpg",
   },
   {
-    id: "91bc2211-d3f1-4fa1-8c92-abc222111111",
+    id: "870bc9d1-e196-4655-a95a-fc69a979a00e",
     name: "Maria Jose",
     image: "/images/coach2.jpg",
   },

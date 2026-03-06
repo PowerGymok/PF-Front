@@ -6,21 +6,32 @@ const API = process.env.NEXT_PUBLIC_API_URL;
 export const getConversationsByRole = async (
   role: "user" | "Coach" | "Admin",
   token: string,
-): Promise<ConversationSession[]> => {
-  if (role === "Admin") return [];
+  userId: string
+) => {
 
-  const endpoint =
-    role === "Coach" ? "/chat/conversations/coach" : "/chat/conversations/user";
+  const decoded = JSON.parse(atob(token.split(".")[1]));
+const realUserId = decoded.sub;
 
-  const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}${endpoint}`, {
+const endpoint =
+  role === "Coach"
+    ? `/chat/conversations/coach/${realUserId}`
+    : `/chat/conversations/user/${realUserId}`;
+
+  console.log("FULL URL:", `${API}${endpoint}`);
+  console.log("TOKEN ENVIADO:", token);
+
+  const res = await fetch(`${API}${endpoint}`, {
     method: "GET",
     headers: {
-      Authorization: `Bearer ${token}`,
+      "Authorization": `Bearer ${token}`,
+      "Content-Type": "application/json",
     },
   });
 
   if (!res.ok) {
-    throw new Error("Error obteniendo conversaciones");
+    const error = await res.text();
+    console.log("BACKEND ERROR:", error);
+    throw new Error(`Error obteniendo conversaciones: ${res.status}`);
   }
 
   return res.json();
@@ -29,15 +40,16 @@ export const getConversationsByRole = async (
 export const getMessagesByConversation = async (
   conversationId: string,
   token: string,
-): Promise<MessageSessionProps[]> => {
+  userId: string
+) => {
   const res = await fetch(
-    `${API}/chat/conversations/${conversationId}/messages`,
+    `${API}/chat/conversations/${conversationId}/messages?userId=${userId}`,
     {
-      method: "GET",
       headers: {
-        Authorization: `Bearer ${token}`,
+        "Authorization": `Bearer ${token}`,
+        "Content-Type": "application/json",
       },
-    },
+    }
   );
 
   if (!res.ok) {
@@ -49,13 +61,13 @@ export const getMessagesByConversation = async (
 
 export const createConversation = async (
   coachId: string,
-  token: string,
+  token: string
 ): Promise<ConversationSession> => {
   const res = await fetch(`${API}/chat/conversations`, {
     method: "POST",
     headers: {
+      "Authorization": `Bearer ${token}`,
       "Content-Type": "application/json",
-      Authorization: `Bearer ${token}`,
     },
     body: JSON.stringify({ coachId }),
   });
@@ -73,11 +85,13 @@ export const closeChat = async (conversationId: string, token: string) => {
     method: "PATCH",
     headers: {
       Authorization: `Bearer ${token}`,
+      "Content-Type": "application/json",
     },
   });
 
   if (!res.ok) {
-    throw new Error("Error cerrando conversación");
+    const error = await res.json().catch(() => ({}));
+    throw new Error(error.message || "Error cerrando conversación");
   }
 
   return res.json();
