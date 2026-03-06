@@ -11,5 +11,5 @@ export interface MessageSessionProps {
   senderId: string | null;
   createdAt: string;
   isRead: boolean;
-  messages: MessageSessionProps[];
+
 }

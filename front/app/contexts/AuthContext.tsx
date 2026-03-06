@@ -18,30 +18,18 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   children,
 }) => {
   const [dataUser, setDataUser] = useState<UserSession | null>(null);
-  const [isLoading, setIsLoading] = useState<boolean>(true);
-  const [isProfileComplete, setIsProfileComplete] = useState<boolean>(true);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isProfileComplete, setIsProfileComplete] = useState(true);
 
   useEffect(() => {
-    const loadUser = () => {
-      try {
-        const stored = localStorage.getItem("userSession");
+    const stored = localStorage.getItem("userSession");
 
-        if (stored) {
-          const parsedData: UserSession = JSON.parse(stored);
+    if (stored) {
+      const parsed = JSON.parse(stored);
+      setDataUser(parsed);
+    }
 
-          if (parsedData?.user) {
-            setDataUser(parsedData);
-          }
-        }
-      } catch (error) {
-        console.error("Error loading stored user:", error);
-        localStorage.removeItem("userSession");
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    loadUser();
+    setIsLoading(false);
   }, []);
 
   useEffect(() => {

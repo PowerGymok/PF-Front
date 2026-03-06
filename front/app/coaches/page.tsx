@@ -32,7 +32,7 @@ const CoachesPage = () => {
       <h1 className="text-2xl font-bold">Coaches</h1>
 
       <div className="grid grid-cols-3 gap-4">
-        {coaches.map((coach: any) => (
+        {coaches.map((coach) => (
           <div key={coach.id} className="border p-4 rounded">
             <img src={coach.image} alt={coach.name} />
             <h2>{coach.name}</h2>
