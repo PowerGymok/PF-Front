@@ -27,3 +27,24 @@ export const createClass = async (
     throw error;
   }
 };
+
+export const getUserClasses = async (token: string) => {
+  try {
+    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/clases/user`, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    if (!res.ok) {
+      const error = await res.json();
+      throw new Error(error.message || "Error obteniendo las clases del usuario");
+    }
+
+    return await res.json();
+  } catch (error) {
+    throw error;
+  }
+}

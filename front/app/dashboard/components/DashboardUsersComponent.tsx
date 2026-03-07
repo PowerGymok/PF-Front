@@ -35,8 +35,6 @@ const DashboardUsersPage = () => {
   //     }
   //   };
 
-  const hasActiveMembership = (dataUser?.user?.orders?.length ?? 0) > 0;
-
   const isProfileComplete = dataUser?.user?.isProfileComplete;
 
   const hasBookedClasses = false
@@ -65,7 +63,7 @@ const DashboardUsersPage = () => {
 
         <div className="bg-white p-6 rounded-xl shadow-md hover:shadow-lg transition">
           <h2 className="text-sm text-gray-500">Tokens Acitvos</h2>
-          <p className="text-3xl font-bold text-purple-600 mt-2">10</p>
+          <p className="text-3xl font-bold text-purple-600 mt-2">15</p>
         </div>
       </div>
 
@@ -78,17 +76,13 @@ const DashboardUsersPage = () => {
 
       <div className="mt-10 flex gap-4 flex-wrap">
         <Link
-          href={"/booking"}
+          href={"/workouts"}
           className="bg-blue-500 hover:bg-blue-600 text-white px-6 py-2 rounded-lg transition"
         >
           Agendar Nueva Clase
         </Link>
 
-        {!hasActiveMembership ? (
-          <Link href="/memberships" className="bg-yellow-500 hover:bg-yellow-600 text-white px-6 py-2 rounded-lg transition">
-            Adquiere una membresía
-          </Link>
-        ) : !hasBookedClasses ? (
+        {!hasBookedClasses ? (
           <Link href="/booking" className="bg-blue-500 hover:bg-blue-600 text-white px-6 py-2 rounded-lg transition" >
             Agenda tu primera clase
           </Link>
