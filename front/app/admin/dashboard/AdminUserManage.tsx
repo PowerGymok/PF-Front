@@ -14,13 +14,21 @@ const AdminUserManage = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [search, setSearch] = useState("");
 
+  const [page, setPage] = useState(1);
+  const limit = 10;
+  const [totalUsers, setTotalUsers] = useState(0);
+
+  const totalPages = Math.ceil(totalUsers / limit);
+
   useEffect(() => {
     const fetchUsers = async () => {
       if (!dataUser?.token) return;
 
       try {
-        const data = await GetAllUsers(dataUser.token);
-        setUsers(data);
+        const response = await GetAllUsers(dataUser.token, page, limit);
+
+        setUsers(response);
+        setTotalUsers(response.length);
       } catch (error: any) {
         if (error.status === 401) {
           router.replace("/");
@@ -35,14 +43,14 @@ const AdminUserManage = () => {
     };
 
     fetchUsers();
-  }, [dataUser, router]);
+  }, [dataUser, page, router]);
 
   const normalUsers = users.filter((u) => u.role === "user");
 
   const filteredUsers = normalUsers.filter(
     (u) =>
       u.name.toLowerCase().includes(search.toLowerCase()) ||
-      u.email.toLowerCase().includes(search.toLowerCase()),
+      u.email.toLowerCase().includes(search.toLowerCase())
   );
 
   if (isLoading) return <p>Cargando usuarios...</p>;
@@ -74,6 +82,23 @@ const AdminUserManage = () => {
           </div>
         ))
       )}
+
+     
+      <div className="flex gap-2 mt-6">
+        {Array.from({ length: totalPages }, (_, i) => (
+          <button
+            key={i}
+            onClick={() => setPage(i + 1)}
+            className={`px-4 py-2 rounded ${
+              page === i + 1
+                ? "bg-blue-600 text-white"
+                : "bg-gray-200 hover:bg-gray-300"
+            }`}
+          >
+            {i + 1}
+          </button>
+        ))}
+      </div>
     </div>
   );
 };

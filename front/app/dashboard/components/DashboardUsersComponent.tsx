@@ -1,14 +1,17 @@
 "use client";
 
 import { useAuth } from "@/app/contexts/AuthContext";
-import { useEffect } from "react";
+import { useEffect, useState} from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import CompleteProfileAlert from "@/app/dashboard/components/CompleteProfileAlert";
+import { PATHROUTES } from "@/utils/PathRoutes";
+import { CoachPublic } from "@/services/mockCoaches";
 
 const DashboardUsersPage = () => {
   const { isLoading, dataUser, logOut } = useAuth();
   const router = useRouter();
+  const [coaches, setCoaches] = useState<CoachPublic[]>([]);
 
   console.log("DATAUSER", dataUser);
 
@@ -23,7 +26,20 @@ const DashboardUsersPage = () => {
     router.push("/");
   };
 
+  //marcado provisional hasta que se pruebe con coaches 
+  // const handleChat = (coachId: string) => {
+  //     if (typeof window !== "undefined") {
+  //       router.push(`${PATHROUTES.USERS_CHAT}?coachId=${coachId}`);
+  //     } else {
+  //       console.error("No se puede redirigir en el servidor");
+  //     }
+  //   };
+
+  const hasActiveMembership = (dataUser?.user?.orders?.length ?? 0) > 0;
+
   const isProfileComplete = dataUser?.user?.isProfileComplete;
+
+  const hasBookedClasses = false
 
   return (
     <div className="min-h-screen bg-gray-100 p-8">
@@ -68,9 +84,19 @@ const DashboardUsersPage = () => {
           Agendar Nueva Clase
         </Link>
 
-        <button className="bg-gray-700 hover:bg-gray-800 text-white px-6 py-2 rounded-lg transition cursor-pointer">
-          Ver Historial
-        </button>
+        {!hasActiveMembership ? (
+          <Link href="/memberships" className="bg-yellow-500 hover:bg-yellow-600 text-white px-6 py-2 rounded-lg transition">
+            Adquiere una membresía
+          </Link>
+        ) : !hasBookedClasses ? (
+          <Link href="/booking" className="bg-blue-500 hover:bg-blue-600 text-white px-6 py-2 rounded-lg transition" >
+            Agenda tu primera clase
+          </Link>
+        ) : (
+          <button onClick={() => router.push(PATHROUTES.USERS_CHAT)} className="bg-green-500 hover:bg-green-600 text-white px-6 py-2 rounded-lg transition cursor-pointer" >
+            Chat con tu coach
+          </button>
+        )}
       </div>
 
       <div className="mt-10">
