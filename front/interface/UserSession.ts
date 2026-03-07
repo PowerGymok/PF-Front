@@ -9,7 +9,7 @@ export interface UserSession {
         email: string;
         phone?: string
         role: Role;
-        orders?: [];
+        orders?: [] ;
         isProfileComplete: boolean;
     } ;
 

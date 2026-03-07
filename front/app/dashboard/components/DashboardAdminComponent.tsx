@@ -6,12 +6,13 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { getAllCoaches, GetAllUsers } from "@/services/user.services";
 import { AllUsers } from "@/interface/AllUsers";
-import UsersManagePage from "@/app/admin/dashboard/users/page";
+import { CoachInterface } from "@/interface/Coach";
+
 
 const DashboardAdminPage = () => {
   const { isLoading, dataUser, logOut } = useAuth();
   const router = useRouter();
-  const [coaches, setCoaches] = useState<any[]>([]);
+  const [coaches, setCoaches] = useState<CoachInterface[]>([]);
   const [users, setUsers] = useState<AllUsers[]>([]);
 
   useEffect(() => {
@@ -19,6 +20,7 @@ const DashboardAdminPage = () => {
     if (dataUser && dataUser.user?.role !== "Admin")
       router.replace("/dashboard");
   }, [dataUser, isLoading, router]);
+
 
   useEffect(() => {
     const fetch = async () => {
@@ -28,8 +30,10 @@ const DashboardAdminPage = () => {
         const c = await getAllCoaches(dataUser.token, 100);
         setUsers(u);
         setCoaches(c);
-      } catch (e: any) {
-        console.error(e.message);
+      } catch (e: unknown) {
+        if (e instanceof Error) {
+          console.error(e.message);
+        }
       }
     };
     fetch();
@@ -106,6 +110,18 @@ const DashboardAdminPage = () => {
           </h3>
           <p className="text-gray-500 mt-1">
             Crear/editar planes y beneficios.
+          </p>
+        </Link>
+
+        <Link
+          href="/admin/dashboard/newClases"
+          className="bg-white p-6 rounded-xl shadow-md hover:shadow-lg transition"
+        >
+          <h3 className="text-lg font-semibold text-gray-800">
+            Crear Nueva Clase
+          </h3>
+          <p className="text-gray-500 mt-1">
+            Agregar nuevas clases al sistema.
           </p>
         </Link>
       </div>

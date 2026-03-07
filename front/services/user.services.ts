@@ -68,6 +68,7 @@ export const RegisterUser = async (userData: RegisterPayload) => {
     throw new Error("Error al registrar el usuario");
   }
 };
+
 export const GetAllUsers = async (
   token: string,
   limit?: number,
@@ -94,6 +95,7 @@ export const GetAllUsers = async (
     throw error;
   }
 };
+
 export const UpdateUserRole = async (
   userId: string,
   role: string,
