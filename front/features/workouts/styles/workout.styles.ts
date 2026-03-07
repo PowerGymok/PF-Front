@@ -1,14 +1,14 @@
 import { Intensity } from "../types/workout.types";
 
 export const intensityLabelMap: Record<Intensity, string> = {
-  ALTO: "Alta Intensidad",
-  MEDIO: "Intensidad Media",
-  BAJO: "Baja Intensidad",
+  alta: "Alta Intensidad",
+  media: "Intensidad Media",
+  baja: "Baja Intensidad",
 };
 
 export const getIntensityStyles = (intensity: Intensity) => {
   switch (intensity) {
-    case "ALTO":
+    case "alta":
       return {
         text: "text-rose-500",
         border: "border-rose-600",
@@ -21,7 +21,7 @@ export const getIntensityStyles = (intensity: Intensity) => {
           "border-rose-500 text-rose-500 hover:bg-rose-600 hover:text-white transition duration-300",
       };
 
-    case "MEDIO":
+    case "media":
       return {
         text: "text-yellow-400",
         border: "border-yellow-400",
@@ -34,7 +34,7 @@ export const getIntensityStyles = (intensity: Intensity) => {
           "border-yellow-400 text-yellow-400 hover:bg-yellow-400 hover:text-black transition duration-300",
       };
 
-    default:
+    default: // "baja"
       return {
         text: "text-green-400",
         border: "border-green-400",

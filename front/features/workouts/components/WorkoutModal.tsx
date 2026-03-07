@@ -82,26 +82,28 @@ export default function WorkoutModal({ workout, onClose }: WorkoutModalProps) {
           </div>
 
           {/* Benefits */}
-          <div>
-            <h4 className="text-lg font-semibold text-white mb-2">
-              ¿Qué vas a lograr?
-            </h4>
+          {workout.benefits.length > 0 && (
+            <div>
+              <h4 className="text-lg font-semibold text-white mb-2">
+                ¿Qué vas a lograr?
+              </h4>
 
-            <ul className="flex flex-col gap-2">
-              {workout.benefits.map((benefit, index) => (
-                <li key={index} className="flex items-center gap-2 text-sm">
-                  <span
-                    className={`w-2 h-2 rounded-full ${intensityStyles.bg}`}
-                  />
-                  {benefit}
-                </li>
-              ))}
-            </ul>
-          </div>
+              <ul className="flex flex-col gap-2">
+                {workout.benefits.map((benefit, index) => (
+                  <li key={index} className="flex items-center gap-2 text-sm">
+                    <span
+                      className={`w-2 h-2 rounded-full ${intensityStyles.bg}`}
+                    />
+                    {benefit}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
 
           {/* Requirements */}
           <div className="bg-zinc-900 border border-zinc-800 rounded-lg p-4 text-sm text-zinc-400">
-            {workout.requirements}
+            {workout.requirements || "Sin requisitos especiales"}
           </div>
 
           {/* CTA */}

@@ -43,9 +43,9 @@ export default function WorkoutsClient({ initialWorkouts }: Props) {
           className="p-4 rounded-xl bg-black border border-white/20 text-white"
         >
           <option value="">Todas las intensidades</option>
-          <option value="BAJO">Bajo</option>
-          <option value="MEDIO">Medio</option>
-          <option value="ALTO">Alto</option>
+          <option value="baja">Bajo</option>
+          <option value="media">Medio</option>
+          <option value="alta">Alto</option>
         </select>
 
         <input

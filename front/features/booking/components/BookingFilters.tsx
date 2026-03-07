@@ -25,9 +25,9 @@ export default function BookingsFilters({
         "
       >
         <option value="">Todas las intensidades</option>
-        <option value="BAJO">Bajo</option>
-        <option value="MEDIO">Medio</option>
-        <option value="ALTO">Alto</option>
+        <option value="baja">Bajo</option>
+        <option value="media">Medio</option>
+        <option value="alta">Alto</option>
       </select>
 
       <input
