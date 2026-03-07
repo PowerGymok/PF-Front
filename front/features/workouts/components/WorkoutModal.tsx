@@ -5,6 +5,7 @@ import { Workout } from "../types/workout.types";
 import { getIntensityStyles } from "../styles/workout.styles";
 import WorkoutMeta from "./WorkoutMeta";
 import { useRouter } from "next/navigation";
+import { useAuth } from "@/app/contexts/AuthContext";
 
 interface WorkoutModalProps {
   workout: Workout;
@@ -14,6 +15,7 @@ interface WorkoutModalProps {
 export default function WorkoutModal({ workout, onClose }: WorkoutModalProps) {
   const router = useRouter();
   const intensityStyles = getIntensityStyles(workout.intensity);
+  const { dataUser, isLoading } = useAuth();
 
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
@@ -28,6 +30,16 @@ export default function WorkoutModal({ workout, onClose }: WorkoutModalProps) {
       document.body.style.overflow = "";
     };
   }, [onClose]);
+
+  const handleBooking = () => {
+    if (dataUser) {
+      router.push("/booking");
+    } else {
+      router.push("/login");
+    }
+  };
+
+  if (isLoading) return null;
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center">
@@ -66,12 +78,10 @@ export default function WorkoutModal({ workout, onClose }: WorkoutModalProps) {
 
         {/* Body */}
         <div className="p-6 flex flex-col gap-6 text-zinc-300">
-          {/* Meta */}
           <div className="bg-zinc-900 rounded-xl p-4">
             <WorkoutMeta workout={workout} variant="modal" />
           </div>
 
-          {/* Description */}
           <div>
             <h4 className="text-lg font-semibold text-white mb-2">
               Sobre el entrenamiento
@@ -81,7 +91,6 @@ export default function WorkoutModal({ workout, onClose }: WorkoutModalProps) {
             </p>
           </div>
 
-          {/* Benefits */}
           {workout.benefits.length > 0 && (
             <div>
               <h4 className="text-lg font-semibold text-white mb-2">
@@ -101,17 +110,16 @@ export default function WorkoutModal({ workout, onClose }: WorkoutModalProps) {
             </div>
           )}
 
-          {/* Requirements */}
           <div className="bg-zinc-900 border border-zinc-800 rounded-lg p-4 text-sm text-zinc-400">
             {workout.requirements || "Sin requisitos especiales"}
           </div>
 
           {/* CTA */}
           <button
-            onClick={() => router.push("/login")}
-            className={`mt-2 py-3 text-sm font-semibold rounded-lg border transition-all duration-300 transform hover:-translate-y-1 hover:scale-[1.02] active:scale-95 ${intensityStyles.button}`}
+            onClick={handleBooking}
+            className={`cursor-pointer mt-2 py-3 text-sm font-semibold rounded-lg border transition-all duration-300 transform hover:-translate-y-1 hover:scale-[1.02] active:scale-95 ${intensityStyles.button}`}
           >
-            Agendar Lugar →
+            {dataUser ? "Agendar Lugar →" : "Inicia Sesión para Agendar →"}
           </button>
         </div>
       </div>
