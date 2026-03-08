@@ -10,65 +10,66 @@ import ButtonComponent from "./ButtonComponent";
 import GoogleLoginButton from "./GoogleLoginButton";
 import Link from "next/link";
 
-
-
-
 const LoginComponent = () => {
   const router = useRouter();
-  const {setDataUser} = useAuth();
+  const { setDataUser } = useAuth();
 
   const formik = useFormik({
     initialValues: LoginInitialValues,
     validationSchema: LoginValidation,
 
     onSubmit: async (values, { resetForm }) => {
-  try {
-    const res = await LoginUser(values);
+      try {
+        const res = await LoginUser(values);
 
-    if (!res?.accessToken) {
-      throw new Error("Credenciales incorrectas");
-    }
+        if (!res?.accessToken) {
+          throw new Error("Credenciales incorrectas");
+        }
 
-    const token = res.accessToken;
+        const token = res.accessToken;
 
-    localStorage.setItem("token", token)
-    
-    const user = await GetCurrentUser(token);
+        // ✅ guardar token para fetchWithAuth
+        localStorage.setItem("token", token);
 
-    setDataUser({
-      login: true,
-      token,
-      user: {
-        id: user.id,
-        name: user.name,
-        email: user.email,
-        role: user.role,
-        phone: user.phone,
-        orders: [],
-       isProfileComplete: user.isProfileComplete
-      },
-    });
+        const user = await GetCurrentUser(token);
 
-    resetForm();
-    router.push("/dashboard");
+        const session = {
+          login: true,
+          token,
+          user: {
+            id: user.id,
+            name: user.name,
+            email: user.email,
+            role: user.role,
+            phone: user.phone,
+            orders: [],
+            profileImg: user.profileImg,
+            isProfileComplete: user.isProfileComplete,
+          },
+        };
 
+        setDataUser(session);
+
+        localStorage.setItem("userSession", JSON.stringify(session));
+
+        resetForm();
+
+        router.push("/dashboard");
       } catch (error) {
-    alert("Inicio de sesión incorrecto");
+        console.error(error);
+        alert("Inicio de sesión incorrecto");
       }
     },
   });
 
-
-
   return (
-    <div className="max-w-md mx-auto mt-10 p-10 px-4 mt-4">
-
+    <div className="max-w-md mx-auto mt-10 p-10 px-4">
       <section>
         <GoogleLoginButton />
       </section>
 
-      <hr/>
-      
+      <hr className="my-4" />
+
       <form onSubmit={formik.handleSubmit}>
         <InputComponent
           type="email"
@@ -77,11 +78,12 @@ const LoginComponent = () => {
           onChange={formik.handleChange}
           onBlur={formik.handleBlur}
           name="email"
-        />{
-            formik.errors.email && formik.touched.email && (
-                <div className="text-red-500 text-sm">{formik.errors.email}</div>
-            )
-        }
+        />
+
+        {formik.errors.email && formik.touched.email && (
+          <div className="text-red-500 text-sm">{formik.errors.email}</div>
+        )}
+
         <InputComponent
           type="password"
           placeholder="Contraseña"
@@ -90,25 +92,27 @@ const LoginComponent = () => {
           onBlur={formik.handleBlur}
           name="password"
         />
-        {
-            formik.errors.password && formik.touched.password && (
-                <div className="text-red-500 text-sm">{formik.errors.password}</div>
-            )
-        }
-        <div className="flex justify-center max-w-md mx-auto mt-10 ">
+
+        {formik.errors.password && formik.touched.password && (
+          <div className="text-red-500 text-sm">{formik.errors.password}</div>
+        )}
+
+        <div className="flex justify-center max-w-md mx-auto mt-10">
           <ButtonComponent type="submit" label="Iniciar Sesión" />
         </div>
 
         <div>
           <p className="text-gray-600 flex px-4 py-4 justify-center gap-2">
-            Dont have an account ? <Link href={"register"} className="text-white relative transition-all duration-300 hover:after:w-full after:content-[''] after:absolute after:left-0 after:-bottom-1 after:h-[1px] after:w-0 after:bg-white after:transition-all after:duration-300 hover:text-gray-300">Sign up</Link>
+            Todavía no tienes una cuenta ?
+            <Link
+              href={"register"}
+              className="text-white relative transition-all duration-300 hover:after:w-full after:content-[''] after:absolute after:left-0 after:-bottom-1 after:h-[1px] after:w-0 after:bg-white after:transition-all after:duration-300 hover:text-gray-300"
+            >
+              Regístrate
+            </Link>
           </p>
         </div>
-        
-
-        
       </form>
-      
     </div>
   );
 };
