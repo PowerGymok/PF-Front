@@ -15,6 +15,17 @@ function getToken(): string | null {
   }
 }
 
+function getUserIdFromSession(): string | null {
+  try {
+    const session = localStorage.getItem("userSession");
+    if (!session) return null;
+    const parsed = JSON.parse(session);
+    return parsed?.user?.id ?? null;
+  } catch {
+    return null;
+  }
+}
+
 function authHeaders(): HeadersInit {
   const token = getToken();
   return {
@@ -23,8 +34,6 @@ function authHeaders(): HeadersInit {
   };
 }
 
-// bookings viene desde fuera (BookingClient lo fetcha)
-// el hook solo se encarga de filtrar y de los handlers
 export function useBookings(bookings: Booking[]) {
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
   const [search, setSearch] = useState("");
@@ -40,46 +49,36 @@ export function useBookings(bookings: Booking[]) {
     userTokens: number,
     membershipActive: boolean,
   ): Promise<{ success: boolean; message: string }> => {
-    if (!membershipActive) {
-      return {
-        success: false,
-        message: "Necesitas una membresía activa para reservar una clase.",
-      };
-    }
-    if (userTokens < booking.tokens_required) {
-      return {
-        success: false,
-        message: `No tienes suficientes tokens. Necesitas ${booking.tokens_required} y tienes ${userTokens}.`,
-      };
-    }
-    if (booking.spots_available === 0) {
-      return {
-        success: false,
-        message: "La clase ya no tiene cupos disponibles.",
-      };
-    }
+    // Validaciones preventivas en el cliente
+    if (!membershipActive)
+      return { success: false, message: "Membresía inactiva." };
+    if (userTokens < booking.tokens_required)
+      return { success: false, message: "Tokens insuficientes." };
+    if (booking.spaces_available === 0)
+      return { success: false, message: "Sin cupos disponibles." };
 
     try {
-      const res = await fetch(
+      // ÚNICA PETICIÓN: El backend ahora es atómico (reserva + pago + cupos)
+      const reserveRes = await fetch(
         `${API_URL}/reservation/reserve?id_user=${userId}&id_class_schedule=${booking.id_class_schedule}`,
         { method: "POST", headers: authHeaders() },
       );
-      if (!res.ok) {
-        const body = await res.json().catch(() => ({}));
-        return {
-          success: false,
-          message: body?.message ?? "Error al reservar la clase.",
-        };
+
+      const body = await reserveRes.json().catch(() => ({}));
+
+      if (!reserveRes.ok) {
+        const msg = Array.isArray(body?.message)
+          ? body.message.join(", ")
+          : (body?.message ?? "Error al reservar.");
+        return { success: false, message: msg };
       }
+
       return {
         success: true,
-        message: "¡Clase reservada con éxito! Se descontaron los tokens.",
+        message: "¡Clase reservada con éxito! Se han descontado tus tokens.",
       };
     } catch {
-      return {
-        success: false,
-        message: "Error de conexión. Intenta de nuevo.",
-      };
+      return { success: false, message: "Error de conexión con el servidor." };
     }
   };
 
@@ -93,10 +92,7 @@ export function useBookings(bookings: Booking[]) {
     try {
       const res = await fetch(
         `${API_URL}/class_schedule/cancel/${idClassSchedule}`,
-        {
-          method: "PUT",
-          headers: authHeaders(),
-        },
+        { method: "PUT", headers: authHeaders() },
       );
       if (!res.ok) {
         const body = await res.json().catch(() => ({}));
@@ -115,7 +111,7 @@ export function useBookings(bookings: Booking[]) {
   };
 
   /* ===============================
-     FILTRADO — usa bookings directo, sin estado interno
+     FILTRADO
   =============================== */
 
   const filteredBookings = useMemo(() => {

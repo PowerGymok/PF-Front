@@ -8,12 +8,31 @@ const API_URL = process.env.NEXT_PUBLIC_API_URL;
    TIPOS
 ───────────────────────────────────────── */
 
+export type Intensity = "baja" | "media" | "alta";
+
+// Normaliza valores legacy del backend ("BAJO/MEDIO/ALTO")
+function normalizeIntensity(raw: string): Intensity {
+  const map: Record<string, Intensity> = {
+    BAJO: "baja",
+    bajo: "baja",
+    baja: "baja",
+    MEDIO: "media",
+    medio: "media",
+    media: "media",
+    ALTO: "alta",
+    alto: "alta",
+    alta: "alta",
+  };
+  return map[raw] ?? "baja";
+}
+
 export interface CatalogClass {
   id: string;
   name: string;
   duration: string;
   capacity: number;
   description?: string;
+  intensity: Intensity;
 }
 
 export interface Coach {
@@ -75,8 +94,17 @@ export function useScheduleClass(
 
       const data = await res.json();
 
-      const active = Array.isArray(data)
-        ? data.filter((c: any) => c.isActive !== false)
+      const active: CatalogClass[] = Array.isArray(data)
+        ? data
+            .filter((c: any) => c.isActive !== false)
+            .map((c: any) => ({
+              id: c.id,
+              name: c.name,
+              duration: c.duration,
+              capacity: c.capacity,
+              description: c.description,
+              intensity: normalizeIntensity(c.intensity ?? "baja"),
+            }))
         : [];
 
       setCatalog(active);

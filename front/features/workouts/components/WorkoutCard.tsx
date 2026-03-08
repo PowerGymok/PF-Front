@@ -60,7 +60,7 @@ export default function WorkoutCard({ workout }: WorkoutCardProps) {
 
             <div className="flex items-center gap-2">
               <Intensity_Icon className={`w-4 ${intensityStyles.textHover}`} />
-              <span>{workout.intensity}</span>
+              <span>{intensityLabelMap[workout.intensity]}</span>
             </div>
           </div>
 

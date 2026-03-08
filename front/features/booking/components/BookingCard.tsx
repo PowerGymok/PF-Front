@@ -11,19 +11,23 @@ import { Calendar_Icon } from "@/components/icons/Calendar_Icon";
 interface Props {
   booking: Booking;
   variant?: "user" | "coach" | "admin";
+  alreadyBooked?: boolean;
   onReserve?: (
     booking: Booking,
   ) => Promise<{ success: boolean; message: string }>;
   onCancelSchedule?: (
     idClassSchedule: string,
   ) => Promise<{ success: boolean; message: string }>;
+  onEditClass?: (booking: Booking) => void; // ✅ Admin — abrir modal de edición
 }
 
 export function BookingCard({
   booking,
   variant,
+  alreadyBooked = false,
   onReserve,
   onCancelSchedule,
+  onEditClass,
 }: Props) {
   const [mounted, setMounted] = useState(false);
   useEffect(() => {
@@ -42,13 +46,29 @@ export function BookingCard({
   };
 
   /* ── Ocupación ── */
+  // const percent =
+  //   booking.capacity === 0
+  //     ? 0
+  //     : Math.round(
+  //         ((booking.capacity - booking.spots_available) / booking.capacity) *
+  //           100,
+  //       );
+
+  const available = booking.spaces_available ?? 0;
+  const occupiedSpots = booking.capacity - available;
+
+  // Porcentaje de ocupación real
   const percent =
-    booking.capacity === 0
-      ? 0
-      : Math.round(
-          ((booking.capacity - booking.spots_available) / booking.capacity) *
-            100,
-        );
+    booking.capacity > 0
+      ? Math.min(100, Math.max(0, (occupiedSpots / booking.capacity) * 100))
+      : 0;
+
+  const spotsColor =
+    percent < 50
+      ? { text: "text-green-400", bg: "bg-green-400" }
+      : percent < 80
+        ? { text: "text-yellow-400", bg: "bg-yellow-400" }
+        : { text: "text-rose-500", bg: "bg-rose-600" };
 
   /* ── Estilos por intensidad — alineados al backend ── */
   const intensityStyles =
@@ -73,21 +93,6 @@ export function BookingCard({
       : booking.intensity === "media"
         ? "Media"
         : "Baja";
-
-  /* ── Color de barra ── */
-  const progressColor =
-    percent < 40
-      ? "bg-green-400"
-      : percent < 80
-        ? "bg-yellow-400"
-        : "bg-rose-600";
-
-  const progressTextColor =
-    percent < 40
-      ? "text-green-400"
-      : percent < 80
-        ? "text-yellow-400"
-        : "text-rose-600";
 
   /* ── Handlers ── */
   const handleReserveClick = async () => {
@@ -119,12 +124,25 @@ export function BookingCard({
         return (
           <button
             onClick={handleReserveClick}
-            disabled={booking.spots_available === 0 || loading}
+            disabled={alreadyBooked || available === 0 || loading}
             className="w-full py-4 rounded-full border border-white font-semibold tracking-wide transition-all duration-300 hover:bg-white hover:text-black disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-2"
           >
             {loading ? (
               <span className="animate-pulse">Reservando…</span>
-            ) : booking.spots_available === 0 ? (
+            ) : alreadyBooked ? (
+              <span className="flex items-center gap-2">
+                <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+                  <path
+                    d="M2.5 7l3.5 3.5 5.5-6"
+                    stroke="currentColor"
+                    strokeWidth="1.8"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                </svg>
+                YA RESERVADO
+              </span>
+            ) : available === 0 ? (
               "AGOTADO"
             ) : (
               <>
@@ -161,24 +179,34 @@ export function BookingCard({
         );
 
       case "admin":
-        // EDITAR eliminado — no hay endpoint para editar class_schedule
         return (
-          <button
-            onClick={handleCancelClick}
-            disabled={loading}
-            className={`w-full py-3 rounded-full border transition font-semibold tracking-wide
-              ${
-                confirmCancel
-                  ? "border-rose-400 bg-rose-400 text-black animate-pulse"
-                  : "border-red-500 text-red-500 hover:bg-red-500 hover:text-black"
-              } disabled:opacity-40 disabled:cursor-not-allowed`}
-          >
-            {loading
-              ? "Eliminando…"
-              : confirmCancel
-                ? "¿CONFIRMAR ELIMINACIÓN?"
-                : "ELIMINAR"}
-          </button>
+          <div className="flex flex-col gap-2">
+            {/* Botón editar */}
+            <button
+              onClick={() => onEditClass?.(booking)}
+              disabled={loading}
+              className="w-full py-3 rounded-full border border-white/30 text-white/70 font-semibold tracking-wide hover:border-white hover:text-white transition-all disabled:opacity-40 disabled:cursor-not-allowed"
+            >
+              EDITAR CLASE
+            </button>
+            {/* Botón eliminar con doble confirmación */}
+            <button
+              onClick={handleCancelClick}
+              disabled={loading}
+              className={`w-full py-3 rounded-full border transition font-semibold tracking-wide
+                ${
+                  confirmCancel
+                    ? "border-rose-400 bg-rose-400 text-black animate-pulse"
+                    : "border-red-500 text-red-500 hover:bg-red-500 hover:text-black"
+                } disabled:opacity-40 disabled:cursor-not-allowed`}
+            >
+              {loading
+                ? "Eliminando…"
+                : confirmCancel
+                  ? "¿CONFIRMAR ELIMINACIÓN?"
+                  : "ELIMINAR"}
+            </button>
+          </div>
         );
 
       default:
@@ -233,18 +261,20 @@ export function BookingCard({
 
             <div className="flex items-center gap-2 justify-end">
               <Spots_Icon
-                className={`w-5 h-5 transition-colors duration-300 ${progressTextColor}`}
+                className={`w-5 h-5 transition-colors duration-300 ${spotsColor.text}`}
               />
-              <span className={progressTextColor}>
-                {booking.capacity - booking.spots_available}/{booking.capacity}{" "}
-                ocupados
+              <span className={spotsColor.text}>
+                {available === 0
+                  ? "Sin lugares"
+                  : `${occupiedSpots}/${booking.capacity} ocupados`}
               </span>
             </div>
           </div>
 
+          {/* Barra de estado según cupos absolutos */}
           <div className="w-full h-2 bg-white/20 rounded-full overflow-hidden">
             <div
-              className={`h-2 ${progressColor} transition-all duration-500`}
+              className={`h-2 ${spotsColor.bg} transition-all duration-500`}
               style={{ width: `${percent}%` }}
             />
           </div>
