@@ -7,7 +7,7 @@ import Link from "next/link";
 import CompleteProfileAlert from "@/app/dashboard/components/CompleteProfileAlert";
 import { PATHROUTES } from "@/utils/PathRoutes";
 import { CoachPublic } from "@/services/mockCoaches";
-
+import ClassesPage from "@/app/users/dashboard/classes/page";
 const DashboardUsersPage = () => {
   const { isLoading, dataUser, logOut } = useAuth();
   const router = useRouter();
@@ -53,12 +53,12 @@ const DashboardUsersPage = () => {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
         <div className="bg-white p-6 rounded-xl shadow-md hover:shadow-lg transition">
           <h2 className="text-sm text-gray-500">Clases Agendadas</h2>
-          <p className="text-3xl font-bold text-blue-600 mt-2">4</p>
+          <p className="text-3xl font-bold text-blue-600 mt-2"></p>
         </div>
 
         <div className="bg-white p-6 rounded-xl shadow-md hover:shadow-lg transition">
           <h2 className="text-sm text-gray-500">Clases Completadas</h2>
-          <p className="text-3xl font-bold text-green-600 mt-2">12</p>
+          <p className="text-3xl font-bold text-green-600 mt-2"><Link href="/users/dashboard/classes">Ver clases</Link></p>
         </div>
 
         <div className="bg-white p-6 rounded-xl shadow-md hover:shadow-lg transition">

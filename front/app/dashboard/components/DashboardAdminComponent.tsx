@@ -7,6 +7,8 @@ import Link from "next/link";
 import { getAllCoaches, GetAllUsers } from "@/services/user.services";
 import { AllUsers } from "@/interface/AllUsers";
 import { CoachInterface } from "@/interface/Coach";
+import { getClassHistory } from "../../../services/clases.services";
+import { AdminClass } from "../../../interface/AdminClassInterface";
 
 
 const DashboardAdminPage = () => {
@@ -14,6 +16,7 @@ const DashboardAdminPage = () => {
   const router = useRouter();
   const [coaches, setCoaches] = useState<CoachInterface[]>([]);
   const [users, setUsers] = useState<AllUsers[]>([]);
+  const [classes, setClasses] = useState<AdminClass[]>([]);
 
   useEffect(() => {
     if (!dataUser && !isLoading) router.replace("/");
@@ -37,6 +40,19 @@ const DashboardAdminPage = () => {
       }
     };
     fetch();
+  }, [dataUser]);
+
+  useEffect(() => {
+    const fetchClasses = async () => {
+      if (!dataUser?.token) return;
+      try {
+        const data = await getClassHistory(dataUser.token);
+        setClasses(data);
+      } catch (error) {
+        console.error("Error cargando clases", error);
+      }
+    };
+    fetchClasses();
   }, [dataUser]);
 
   const handleLogout = () => {
@@ -73,7 +89,10 @@ const DashboardAdminPage = () => {
         <div className="bg-white p-6 rounded-xl shadow-md">
           <h2 className="text-sm text-gray-500">Clases este mes</h2>
           <p className="text-3xl font-bold text-purple-600 mt-2">
-            Ejemplo de 36
+            {classes.length}
+          </p>
+          <p className="text-gray-500 mt-1">
+            <Link href="/admin/dashboard/clases">Ver clases</Link>
           </p>
         </div>
       </div>
