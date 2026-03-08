@@ -45,11 +45,27 @@ const FALLBACK_IMAGES: Record<Intensity, string> = {
   baja: "https://images.unsplash.com/photo-1518611012118-696072aa579a?w=800&q=80",
 };
 
+// Normaliza valores legacy del backend ("BAJO/MEDIO/ALTO") al formato actual
+function normalizeIntensity(raw: string): Intensity {
+  const map: Record<string, Intensity> = {
+    BAJO: "baja",
+    bajo: "baja",
+    baja: "baja",
+    MEDIO: "media",
+    medio: "media",
+    media: "media",
+    ALTO: "alta",
+    alto: "alta",
+    alta: "alta",
+  };
+  return map[raw] ?? "baja";
+}
+
 export function mapWorkout(item: WorkoutBackend): Workout {
   return {
     id: item.id,
     name: item.name,
-    intensity: item.intensity,
+    intensity: normalizeIntensity(item.intensity),
     duration: parseInt(item.duration, 10) || 0,
     spots: item.capacity,
     image: item.imgUrl ?? FALLBACK_IMAGES[item.intensity],

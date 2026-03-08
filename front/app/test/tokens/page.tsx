@@ -94,11 +94,11 @@ export default function TokensPage() {
               </p>
               <div className="flex items-end gap-2">
                 <span className="text-4xl font-bold text-amber-400">
-                  {confirmedBalance}
+                  {tokenStatus?.tokenBalance ?? confirmedBalance}
                 </span>
                 <span className="text-white/30 text-sm mb-1">tokens</span>
               </div>
-              <p className="text-xs text-white/25">Transacciones confirmadas</p>
+              <p className="text-xs text-white/25">Balance actual</p>
             </div>
 
             {/* Membresia */}
@@ -218,8 +218,6 @@ export default function TokensPage() {
           El balance se actualiza automaticamente al confirmar cada transaccion.
         </p>
       </div>
-
-      <SpendTokensTest />
     </main>
   );
 }

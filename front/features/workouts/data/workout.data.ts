@@ -4,7 +4,7 @@ export const workoutsMock: Workout[] = [
   {
     id: 1,
     name: "CrossFit Avanzado",
-    intensity: "ALTO",
+    intensity: "alta",
     duration: 60,
     spots: 20,
     image:
@@ -26,7 +26,7 @@ export const workoutsMock: Workout[] = [
   {
     id: 2,
     name: "HIIT Express",
-    intensity: "ALTO",
+    intensity: "alta",
     duration: 45,
     spots: 18,
     image:
@@ -45,7 +45,7 @@ export const workoutsMock: Workout[] = [
   {
     id: 3,
     name: "Spartan Conditioning",
-    intensity: "ALTO",
+    intensity: "alta",
     duration: 55,
     spots: 16,
     image:
@@ -64,7 +64,7 @@ export const workoutsMock: Workout[] = [
   {
     id: 4,
     name: "Yoga Flow",
-    intensity: "MEDIO",
+    intensity: "media",
     duration: 50,
     spots: 20,
     image:
@@ -80,7 +80,7 @@ export const workoutsMock: Workout[] = [
   {
     id: 5,
     name: "Functional Core",
-    intensity: "MEDIO",
+    intensity: "media",
     duration: 40,
     spots: 15,
     image:
@@ -99,7 +99,7 @@ export const workoutsMock: Workout[] = [
   {
     id: 6,
     name: "Boxing Conditioning",
-    intensity: "ALTO",
+    intensity: "alta",
     duration: 50,
     spots: 14,
     image:
@@ -118,7 +118,7 @@ export const workoutsMock: Workout[] = [
   {
     id: 7,
     name: "Powerlifting Básico",
-    intensity: "BAJO",
+    intensity: "baja",
     duration: 70,
     spots: 12,
     image:
@@ -133,7 +133,7 @@ export const workoutsMock: Workout[] = [
   {
     id: 8,
     name: "Mobility Reset",
-    intensity: "BAJO",
+    intensity: "baja",
     duration: 35,
     spots: 20,
     image:
@@ -152,7 +152,7 @@ export const workoutsMock: Workout[] = [
   {
     id: 9,
     name: "TRX Strength",
-    intensity: "MEDIO",
+    intensity: "media",
     duration: 45,
     spots: 16,
     image:
@@ -171,7 +171,7 @@ export const workoutsMock: Workout[] = [
   {
     id: 10,
     name: "Cardio Dance",
-    intensity: "MEDIO",
+    intensity: "media",
     duration: 50,
     spots: 25,
     image:
@@ -190,7 +190,7 @@ export const workoutsMock: Workout[] = [
   {
     id: 11,
     name: "Strength & Conditioning",
-    intensity: "ALTO",
+    intensity: "alta",
     duration: 65,
     spots: 15,
     image:
@@ -205,7 +205,7 @@ export const workoutsMock: Workout[] = [
   {
     id: 12,
     name: "Stretch & Relax",
-    intensity: "BAJO",
+    intensity: "baja",
     duration: 40,
     spots: 20,
     image:

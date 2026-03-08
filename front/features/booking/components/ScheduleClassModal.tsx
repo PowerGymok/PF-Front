@@ -61,6 +61,27 @@ export default function ScheduleClassModal({
 
   if (!isOpen) return null;
 
+  const intensityColors = {
+    alta: {
+      text: "text-rose-400",
+      bg: "bg-rose-500/10",
+      border: "border-rose-500/20",
+      label: "Alta",
+    },
+    media: {
+      text: "text-yellow-400",
+      bg: "bg-yellow-500/10",
+      border: "border-yellow-500/20",
+      label: "Media",
+    },
+    baja: {
+      text: "text-green-400",
+      bg: "bg-green-500/10",
+      border: "border-green-500/20",
+      label: "Baja",
+    },
+  };
+
   const today = new Date().toISOString().split("T")[0];
 
   return (
@@ -175,10 +196,21 @@ export default function ScheduleClassModal({
                     {selectedClass.name}
                   </p>
 
-                  <div className="flex items-center gap-3 text-white/35 text-xs">
+                  <div className="flex items-center gap-3 text-white/35 text-xs flex-wrap">
                     <span>⏱ {selectedClass.duration} min</span>
                     <span>·</span>
                     <span>👥 {selectedClass.capacity} cupos</span>
+                    <span>·</span>
+                    {(() => {
+                      const ic = intensityColors[selectedClass.intensity];
+                      return (
+                        <span
+                          className={`px-2 py-0.5 rounded-full border text-[11px] font-semibold ${ic.text} ${ic.bg} ${ic.border}`}
+                        >
+                          {ic.label} intensidad
+                        </span>
+                      );
+                    })()}
 
                     {selectedClass.description && (
                       <>
