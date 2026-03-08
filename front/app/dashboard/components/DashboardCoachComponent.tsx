@@ -11,7 +11,8 @@ const DashboardCoachPage = () => {
   const router = useRouter();
 
   useEffect(() => {
-    if (!dataUser && !isLoading) {
+    if (isLoading) return;
+    if (!dataUser) {
       router.push("/");
     }
   }, [isLoading, dataUser, router]);
@@ -20,6 +21,16 @@ const DashboardCoachPage = () => {
     logOut();
     router.push("/");
   };
+
+  if (isLoading) {
+    return (
+      <div className="flex justify-center items-center min-h-screen">
+        <p className="text-gray-600 text-lg">Cargando...</p>
+      </div>
+    );
+  }
+
+  if (!dataUser) return null;
 
   const isProfileComplete = dataUser?.user?.isProfileComplete;
 
@@ -31,13 +42,22 @@ const DashboardCoachPage = () => {
         </div>
       )}
 
-      <div className="mb-10">
-        <h1 className="text-3xl font-bold text-gray-800">
-          Dashboard Coach {dataUser?.user?.email.split("@")[0]}
-        </h1>
-        <h2 className="text-gray-700">
-          Administra tus clases y sesiones activas
-        </h2>
+      {/* HEADER DASHBOARD */}
+      <div className="mb-10 flex justify-between items-start">
+
+        {/* TEXTO IZQUIERDA */}
+        <div>
+          <h1 className="text-3xl font-bold text-gray-800">
+            Dashboard Coach {dataUser?.user?.email.split("@")[0]}
+          </h1>
+          <h2 className="text-gray-700">
+            Administra tus clases y sesiones activas
+          </h2>
+        </div>
+
+        {/* AVATAR DERECHA */}
+        {dataUser && <AvatarUploader token={dataUser.token} />}
+
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
