@@ -1,4 +1,6 @@
 import { CreateClassPayload } from "../interface/CreateClass";
+import { AdminClass } from "@/interface/AdminClassInterface";
+
 
 export const createClass = async (
   token: string,
@@ -48,3 +50,50 @@ export const getUserClasses = async (token: string) => {
     throw error;
   }
 }
+export const cancelClass = async (id: string, token: string) => {
+  try {
+    const res = await fetch(
+      `${process.env.NEXT_PUBLIC_API_URL}/class_schedule/cancel/${id}`,
+      {
+        method: "PUT",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+
+    if (!res.ok) {
+      throw new Error("Error cancelando clase");
+    }
+
+    return await res.json();
+  } catch (error) {
+    console.error("Error cancelando clase", error);
+    throw error;
+  }
+};
+
+export const getClassHistory = async (token: string): Promise<AdminClass[]> => {
+  try {
+    const res = await fetch(
+      `${process.env.NEXT_PUBLIC_API_URL}/class_schedule/history`,
+      {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+
+    if (!res.ok) {
+      throw new Error("Error obteniendo el historial de clases");
+    }
+
+    const data = await res.json();
+
+    return Array.isArray(data) ? data : [];
+  } catch (error) {
+    console.error("Error obteniendo el historial de clases", error);
+    return [];
+  }
+};
