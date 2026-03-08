@@ -12,35 +12,78 @@ const AuthContext = createContext<AuthContextProps>({
   isLoading: true,
   isProfileComplete: true,
   setIsProfileComplete: () => {},
+  updateProfileImg: () => {},
 });
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   children,
 }) => {
   const [dataUser, setDataUser] = useState<UserSession | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [isProfileComplete, setIsProfileComplete] = useState(true);
+  const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [isProfileComplete, setIsProfileComplete] = useState<boolean>(true);
 
   useEffect(() => {
-    const stored = localStorage.getItem("userSession");
+    const loadUser = async () => {
+      try {
+        const stored = localStorage.getItem("userSession");
+        if (!stored) {
+          setIsLoading(false);
+          return;
+        }
 
-    if (stored) {
-      const parsed = JSON.parse(stored);
-      setDataUser(parsed);
-    }
+        const parsedData: UserSession = JSON.parse(stored);
 
-    setIsLoading(false);
+        const res = await fetch("http://localhost:3030/auth/me", {
+          headers: {
+            Authorization: `Bearer ${parsedData.token}`,
+          },
+        });
+
+        if (!res.ok) {
+          setDataUser(parsedData);
+          return;
+        }
+
+        const user = await res.json();
+        const updatedSession: UserSession = {
+          ...parsedData,
+          user: { ...parsedData.user, ...user },
+        };
+
+        setDataUser(updatedSession);
+        localStorage.setItem("userSession", JSON.stringify(updatedSession));
+      } catch (error) {
+        const stored = localStorage.getItem("userSession");
+        if (stored) setDataUser(JSON.parse(stored));
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    loadUser();
   }, []);
 
   useEffect(() => {
-    if (dataUser) {
+    if (dataUser && !isLoading) {
       localStorage.setItem("userSession", JSON.stringify(dataUser));
     }
-  }, [dataUser]);
+  }, [dataUser, isLoading]);
 
   const logOut = () => {
     setDataUser(null);
     localStorage.removeItem("userSession");
+  };
+
+  const updateProfileImg = (img: string) => {
+    setDataUser((prev) => {
+      if (!prev) return prev;
+      const updatedUser = {
+        ...prev,
+        user: { ...prev.user, profileImg: img },
+      };
+      localStorage.setItem("userSession", JSON.stringify(updatedUser));
+      return updatedUser;
+    });
   };
 
   const userInitial = dataUser?.user?.email
@@ -57,6 +100,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
         isLoading,
         isProfileComplete,
         setIsProfileComplete,
+        updateProfileImg,
       }}
     >
       {children}

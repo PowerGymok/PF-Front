@@ -4,6 +4,7 @@ import { useAuth } from "@/app/contexts/AuthContext";
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import AvatarUploader from "@/components/AvatarUploader";
 
 const DashboardCoachPage = () => {
   const { isLoading, dataUser, logOut } = useAuth();

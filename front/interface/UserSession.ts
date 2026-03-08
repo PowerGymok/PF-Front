@@ -9,8 +9,13 @@ export interface UserSession {
         email: string;
         phone?: string
         role: Role;
-        orders?: [] ;
+
+        // orders?: [] ;
+
+        orders?: unknown[];
+
         isProfileComplete: boolean;
+        profileImg?: string;
     } ;
 
 }
