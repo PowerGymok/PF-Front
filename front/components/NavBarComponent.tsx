@@ -7,6 +7,7 @@ import { useAuth } from "@/app/contexts/AuthContext";
 import { GymLogoComponent } from "./GymLogoComponent";
 import clsx from "clsx";
 import { usePathname } from "next/navigation";
+import Image from "next/image";
 
 import { navAdmin } from "../utils/Navigation/navAdmin";
 import { navCoach } from "../utils/Navigation/navCoach";
@@ -29,6 +30,8 @@ const NavBarComponent = () => {
   } else if (role === "user") {
     navItems = navUser;
   }
+
+  const profileImg = dataUser?.user?.profileImg;
 
   return (
     <header className="w-full bg-black px-4 md:px-10">
@@ -65,11 +68,20 @@ const NavBarComponent = () => {
         {/* Login / Dashboard */}
         <div className="hidden md:flex text-white gap-4">
           {dataUser ? (
-            <Link
-              href={PATHROUTES.DASHBOARD}
-              className="w-8 h-8 rounded-full bg-gray-500 flex items-center justify-center font-bold"
-            >
-              {userInitial}
+            <Link href={PATHROUTES.DASHBOARD}>
+              {profileImg ? (
+                <Image
+                  src={profileImg}
+                  alt="Foto de perfil"
+                  width={32}
+                  height={32}
+                  className="w-8 h-8 rounded-full object-cover"
+                />
+              ) : (
+                <div className="w-8 h-8 rounded-full bg-gray-500 flex items-center justify-center font-bold">
+                  {userInitial}
+                </div>
+              )}
             </Link>
           ) : (
             <Link
@@ -104,7 +116,17 @@ const NavBarComponent = () => {
                   onClick={() => setIsOpen(false)}
                   className="block mb-2"
                 >
-                  Perfil ({userInitial})
+                  {profileImg ? (
+                    <Image
+                      src={profileImg}
+                      alt="Foto de perfil"
+                      width={32}
+                      height={32}
+                      className="w-8 h-8 rounded-full object-cover inline-block mr-2"
+                    />
+                  ) : (
+                    `Perfil (${userInitial})`
+                  )}
                 </Link>
                 <button onClick={logOut}>Logout</button>
               </>
