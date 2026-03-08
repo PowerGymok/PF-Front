@@ -9,11 +9,11 @@ export interface UserSession {
         email: string;
         phone?: string
         role: Role;
-<<<<<<< Updated upstream
-        orders?: [] ;
-=======
+
+        // orders?: [] ;
+
         orders?: unknown[];
->>>>>>> Stashed changes
+
         isProfileComplete: boolean;
         profileImg?: string;
     } ;
