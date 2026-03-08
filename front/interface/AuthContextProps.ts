@@ -8,4 +8,9 @@ export interface AuthContextProps {
   isLoading: boolean;
   isProfileComplete: boolean;
   setIsProfileComplete: (value: boolean) => void;
+<<<<<<< Updated upstream
 }
+=======
+  updateProfileImg: (img: string) => void;
+}
+>>>>>>> Stashed changes
