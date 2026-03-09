@@ -6,7 +6,6 @@ import { CompleteProfileInterface } from "@/interface/CompleteProfileInterface";
 import { mockCoaches } from "./mockCoaches";
 import { get } from "http";
 
-
 export const LoginUser = async (userData: LoginSchema) => {
   try {
     const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/login`, {
@@ -28,9 +27,6 @@ export const LoginUser = async (userData: LoginSchema) => {
 };
 
 export const GetCurrentUser = async (token: string) => {
-
-  const user = await GetCurrentUser();
-
   try {
     const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/me`, {
       method: "GET",
@@ -49,8 +45,6 @@ export const GetCurrentUser = async (token: string) => {
     throw error;
   }
 };
-
-)
 
 export const RegisterUser = async (userData: RegisterPayload) => {
   try {
