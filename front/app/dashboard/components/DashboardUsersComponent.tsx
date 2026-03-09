@@ -6,34 +6,70 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import CompleteProfileAlert from "@/app/dashboard/components/CompleteProfileAlert";
 import { PATHROUTES } from "@/utils/PathRoutes";
-import { CoachPublic } from "@/services/mockCoaches";
 import AvatarUploader from "@/components/AvatarUploader";
+import { getClassHistory } from "../../../services/clases.services";
+import { GetCurrentUser } from "../../../services/user.services";
+import { getAllReservations } from "@/services/clases.services";
 
 const DashboardUsersPage = () => {
   const { isLoading, dataUser, logOut } = useAuth();
   const router = useRouter();
-  const [coaches, setCoaches] = useState<CoachPublic[]>([]);
+
+  const [futureClasses, setFutureClasses] = useState(0);
+  const [completedClasses, setCompletedClasses] = useState(0);
+  const [tokens, setTokens] = useState(0);
 
   useEffect(() => {
     if (isLoading) return;
+
     if (!dataUser) {
       router.push("/");
+      return;
     }
+
+    const fetchDashboardData = async () => {
+      try {
+        if (!dataUser?.token || !dataUser?.user?.id) return;
+
+        const user = await GetCurrentUser(dataUser.token);
+
+        setTokens(user?.tokenBalance ?? 0);
+
+        const reservations = await getAllReservations(
+          dataUser.token,
+          dataUser.user.id,
+        );
+
+        const today = new Date();
+
+        const futureReservations = reservations.filter((r: any) => {
+          const classDate = r.class_schedule?.date;
+
+          if (!classDate) return false;
+
+          return new Date(classDate) >= today && r.status !== "Cancelled";
+        });
+
+        setFutureClasses(futureReservations.length);
+
+        // 3️⃣ Obtener historial de clases completadas
+        const history = await getClassHistory(dataUser.token);
+
+        const completed = history.filter((c: any) => c.status === "Completed");
+
+        setCompletedClasses(completed.length);
+      } catch (error) {
+        console.error("Error cargando dashboard", error);
+      }
+    };
+
+    fetchDashboardData();
   }, [isLoading, dataUser, router]);
 
   const handleLogout = () => {
     logOut();
     router.push("/");
   };
-
-  //marcado provisional hasta que se pruebe con coaches
-  // const handleChat = (coachId: string) => {
-  //     if (typeof window !== "undefined") {
-  //       router.push(`${PATHROUTES.USERS_CHAT}?coachId=${coachId}`);
-  //     } else {
-  //       console.error("No se puede redirigir en el servidor");
-  //     }
-  //   };
 
   if (isLoading) {
     return (
@@ -47,61 +83,147 @@ const DashboardUsersPage = () => {
 
   const isProfileComplete = dataUser?.user?.isProfileComplete;
 
-  const hasBookedClasses = false;
+  const hasBookedClasses = futureClasses > 0;
 
   return (
     <div className="min-h-screen bg-gray-100 p-8">
       {!isProfileComplete && <CompleteProfileAlert />}
 
-      {/* HEADER DASHBOARD */}
       <div className="mb-10 flex justify-between items-start">
-        {/* TEXTO IZQUIERDA */}
         <div>
           <h1 className="text-3xl font-bold text-gray-800">
             Dashboard de {dataUser?.user?.email.split("@")[0]}
           </h1>
 
-          <h2 className="text-gray-700">Este es dashboard de Usuarios</h2>
+          <h2 className="text-gray-700">Este es tu centro de entrenamiento</h2>
         </div>
 
-        {/* AVATAR DERECHA */}
         {dataUser && <AvatarUploader token={dataUser.token} />}
       </div>
 
-      {/* CARDS */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
         <div className="bg-white p-6 rounded-xl shadow-md hover:shadow-lg transition">
           <h2 className="text-sm text-gray-500">Clases Agendadas</h2>
+
           <p className="text-3xl font-bold text-blue-600 mt-2">
-            <Link href="/users/dashboard/reservation">Ver clases</Link>
+            {futureClasses}
           </p>
+
+          <Link
+            href="/users/dashboard/reservation"
+            className="text-blue-500 text-sm"
+          >
+            Ver clases
+          </Link>
         </div>
 
         <div className="bg-white p-6 rounded-xl shadow-md hover:shadow-lg transition">
           <h2 className="text-sm text-gray-500">Clases Completadas</h2>
+
           <p className="text-3xl font-bold text-green-600 mt-2">
-            <Link href="/users/dashboard/classes">Ver clases</Link>
+            {completedClasses}
           </p>
+
+          <Link
+            href="/users/dashboard/classes"
+            className="text-green-500 text-sm"
+          >
+            Ver historial
+          </Link>
         </div>
 
         <div className="bg-white p-6 rounded-xl shadow-md hover:shadow-lg transition">
-          <h2 className="text-sm text-gray-500">Tokens Acitvos</h2>
-          <p className="text-3xl font-bold text-purple-600 mt-2">15</p>
-
           <h2 className="text-sm text-gray-500">Tokens Activos</h2>
-          <p className="text-3xl font-bold text-purple-600 mt-2">10</p>
+
+          <p className="text-3xl font-bold text-purple-600 mt-2">{tokens}</p>
         </div>
       </div>
 
-      {/* RESUMEN */}
-      <div className="bg-white p-6 rounded-xl shadow-md">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-10">
+        <div className="bg-white rounded-xl p-6 shadow-md">
+          <h2 className="text-lg font-semibold text-gray-800 mb-4">
+            Progreso de entrenamiento
+          </h2>
+
+          <div className="space-y-3 text-sm text-gray-600">
+            <div className="flex justify-between">
+              <span>Clases completadas</span>
+              <span className="font-semibold text-green-600">
+                {completedClasses}
+              </span>
+            </div>
+
+            <div className="flex justify-between">
+              <span>Clases pendientes</span>
+              <span className="font-semibold text-blue-600">
+                {futureClasses}
+              </span>
+            </div>
+
+            <div className="flex justify-between">
+              <span>Tokens disponibles</span>
+              <span className="font-semibold text-purple-600">{tokens}</span>
+            </div>
+          </div>
+
+          <div className="mt-5">
+            <div className="h-3 bg-gray-200 rounded-full overflow-hidden">
+              <div
+                className="h-full bg-green-500 transition-all duration-500"
+                style={{
+                  width: `${Math.min(
+                    (completedClasses /
+                      (completedClasses + futureClasses || 1)) *
+                      100,
+                    100,
+                  )}%`,
+                }}
+              />
+            </div>
+
+            <p className="text-xs text-gray-500 mt-2">Progreso de tus clases</p>
+          </div>
+
+          <p className="text-sm text-gray-500 mt-4">
+            {completedClasses === 0
+              ? "Empieza tu primera clase hoy "
+              : "¡Excelente progreso! Sigue entrenando de parte de powerGym"}
+          </p>
+        </div>
+
+        <div className="bg-white rounded-xl p-6 shadow-md">
+          <h2 className="text-lg font-semibold text-gray-800 mb-4">
+            Próximas clases
+          </h2>
+
+          {futureClasses > 0 ? (
+            <p className="text-gray-600">
+              Tienes <span className="font-semibold">{futureClasses}</span>{" "}
+              clases programadas.
+            </p>
+          ) : (
+            <p className="text-gray-500">No tienes clases programadas aún.</p>
+          )}
+
+          <Link
+            href="/booking"
+            className="inline-block mt-4 text-blue-500 text-sm font-medium hover:underline"
+          >
+            Agendar nueva clase
+          </Link>
+        </div>
+      </div>
+
+      <div className="bg-white p-6 rounded-xl shadow-md mb-10">
         <h2 className="text-lg font-semibold mb-4 text-gray-700">
           Resumen Personal
         </h2>
-        <p className="text-gray-500">Este mes has asistido a 15 clases</p>
+
+        <p className="text-gray-500">
+          Este mes has completado {completedClasses} clases
+        </p>
       </div>
 
-      {/* BOTONES */}
       <div className="mt-10 flex gap-4 flex-wrap">
         <Link
           href={"/workouts"}
@@ -127,7 +249,6 @@ const DashboardUsersPage = () => {
         )}
       </div>
 
-      {/* LOGOUT */}
       <div className="mt-10">
         <button
           onClick={handleLogout}
