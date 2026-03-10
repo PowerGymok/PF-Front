@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useScheduleClass } from "../hooks/useScheduleClass";
 
 interface ScheduleClassModalProps {
@@ -18,6 +18,7 @@ export default function ScheduleClassModal({
   authToken,
   userRole,
 }: ScheduleClassModalProps) {
+  const [dropdownOpen, setDropdownOpen] = useState(false);
   const {
     form,
     updateField,
@@ -165,27 +166,78 @@ export default function ScheduleClassModal({
                     </button>
                   </div>
                 ) : (
-                  <select
-                    value={form.id_class}
-                    onChange={(e) => updateField("id_class", e.target.value)}
-                    className={`${inputCls} ${
-                      !form.id_class ? "text-white/25" : "text-white"
-                    }`}
-                  >
-                    <option value="" disabled>
-                      Selecciona una clase...
-                    </option>
+                  <div className="relative">
+                    <button
+                      type="button"
+                      onClick={() => setDropdownOpen((v) => !v)}
+                      className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl bg-[#1a1a1a] border border-white/10 text-sm hover:border-white/20 transition-colors ${!form.id_class ? "text-white/25" : "text-white"}`}
+                    >
+                      <span className="truncate">
+                        {form.id_class
+                          ? catalog.find((c) => c.id === form.id_class)?.name +
+                            " — " +
+                            catalog.find((c) => c.id === form.id_class)
+                              ?.duration +
+                            " min"
+                          : "Selecciona una clase..."}
+                      </span>
+                      <svg
+                        width="12"
+                        height="12"
+                        viewBox="0 0 12 12"
+                        fill="none"
+                        className={`flex-shrink-0 ml-2 text-white/30 transition-transform duration-200 ${dropdownOpen ? "rotate-180" : ""}`}
+                      >
+                        <path
+                          d="M2 4l4 4 4-4"
+                          stroke="currentColor"
+                          strokeWidth="1.5"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        />
+                      </svg>
+                    </button>
 
-                    {catalog.length === 0 ? (
-                      <option disabled>No hay clases disponibles</option>
-                    ) : (
-                      catalog.map((c) => (
-                        <option key={c.id} value={c.id}>
-                          {c.name} — {c.duration} min
-                        </option>
-                      ))
+                    {dropdownOpen && (
+                      <>
+                        <div
+                          className="fixed inset-0 z-[9]"
+                          onClick={() => setDropdownOpen(false)}
+                        />
+                        <div className="absolute z-10 mt-1.5 w-full bg-[#1a1a1a] border border-white/10 rounded-xl shadow-2xl overflow-hidden">
+                          <div className="max-h-52 overflow-y-auto">
+                            {catalog.length === 0 ? (
+                              <p className="px-3.5 py-2.5 text-sm text-white/30">
+                                No hay clases disponibles
+                              </p>
+                            ) : (
+                              catalog.map((c) => (
+                                <button
+                                  key={c.id}
+                                  type="button"
+                                  onClick={() => {
+                                    updateField("id_class", c.id);
+                                    setDropdownOpen(false);
+                                  }}
+                                  className={`w-full text-left px-3.5 py-2.5 text-sm transition-colors flex items-center justify-between gap-2
+                                    ${
+                                      form.id_class === c.id
+                                        ? "bg-white/10 text-white"
+                                        : "text-white/60 hover:bg-white/6 hover:text-white"
+                                    }`}
+                                >
+                                  <span className="truncate">{c.name}</span>
+                                  <span className="text-white/30 text-xs flex-shrink-0">
+                                    {c.duration} min
+                                  </span>
+                                </button>
+                              ))
+                            )}
+                          </div>
+                        </div>
+                      </>
                     )}
-                  </select>
+                  </div>
                 )}
               </Field>
 

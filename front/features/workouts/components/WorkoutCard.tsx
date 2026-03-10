@@ -13,9 +13,15 @@ import { Spots_Icon } from "@/components/icons/Spots_Icon";
 
 interface WorkoutCardProps {
   workout: Workout;
+  onDeleted?: (id: string) => void;
+  onEditRequest?: (workout: Workout) => void;
 }
 
-export default function WorkoutCard({ workout }: WorkoutCardProps) {
+export default function WorkoutCard({
+  workout,
+  onDeleted,
+  onEditRequest,
+}: WorkoutCardProps) {
   const [open, setOpen] = useState(false);
 
   const intensityStyles = getIntensityStyles(workout.intensity);
@@ -87,7 +93,12 @@ export default function WorkoutCard({ workout }: WorkoutCardProps) {
       </article>
 
       {open && (
-        <WorkoutModal workout={workout} onClose={() => setOpen(false)} />
+        <WorkoutModal
+          workout={workout}
+          onClose={() => setOpen(false)}
+          onDeleted={onDeleted}
+          onEditRequest={onEditRequest}
+        />
       )}
     </>
   );
