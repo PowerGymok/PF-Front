@@ -29,7 +29,7 @@ export const LoginUser = async (userData: LoginSchema) => {
 
 export const GetCurrentUser = async (token: string) => {
 
-  const user = await GetCurrentUser();
+ 
 
   try {
     const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/me`, {
@@ -50,7 +50,7 @@ export const GetCurrentUser = async (token: string) => {
   }
 };
 
-)
+
 
 export const RegisterUser = async (userData: RegisterPayload) => {
   try {
