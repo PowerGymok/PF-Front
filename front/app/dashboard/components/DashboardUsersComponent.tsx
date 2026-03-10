@@ -52,7 +52,7 @@ const DashboardUsersPage = () => {
 
         setFutureClasses(futureReservations.length);
 
-        // 3️⃣ Obtener historial de clases completadas
+     
         const history = await getClassHistory(dataUser.token);
 
         const completed = history.filter((c: any) => c.status === "Completed");
@@ -111,7 +111,7 @@ const DashboardUsersPage = () => {
 
           <Link
             href="/users/dashboard/reservation"
-            className="text-blue-500 text-sm"
+            className="text-blue-500 text-sm text-gray-500"
           >
             Ver clases
           </Link>
@@ -126,7 +126,7 @@ const DashboardUsersPage = () => {
 
           <Link
             href="/users/dashboard/classes"
-            className="text-green-500 text-sm"
+            className="text-green-500 text-sm text-gray-500"
           >
             Ver historial
           </Link>
@@ -136,6 +136,9 @@ const DashboardUsersPage = () => {
           <h2 className="text-sm text-gray-500">Tokens Activos</h2>
 
           <p className="text-3xl font-bold text-purple-600 mt-2">{tokens}</p>
+          <Link href="/users/dashboard/tokens" className="text-gray-500 text-sm hover:underline">
+              Ver detalle de tokens
+            </Link>
         </div>
       </div>
 
