@@ -4,7 +4,6 @@ import { RegisterSchema, RegisterPayload } from "@/validators/registerSchema";
 import { AllUsers } from "@/interface/AllUsers";
 import { CompleteProfileInterface } from "@/interface/CompleteProfileInterface";
 import { mockCoaches } from "./mockCoaches";
-import { get } from "http";
 
 export const LoginUser = async (userData: LoginSchema) => {
   try {

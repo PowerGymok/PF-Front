@@ -52,7 +52,6 @@ const DashboardUsersPage = () => {
 
         setFutureClasses(futureReservations.length);
 
-     
         const history = await getClassHistory(dataUser.token);
 
         const completed = history.filter((c: any) => c.status === "Completed");
@@ -71,13 +70,12 @@ const DashboardUsersPage = () => {
     router.push("/");
   };
 
-  if (isLoading) {
+  if (isLoading)
     return (
-      <div className="flex justify-center items-center min-h-screen">
-        <p className="text-gray-600 text-lg">Cargando...</p>
+      <div className="min-h-screen bg-black flex items-center justify-center text-gray-400">
+        Cargando...
       </div>
     );
-  }
 
   if (!dataUser) return null;
 
@@ -86,93 +84,95 @@ const DashboardUsersPage = () => {
   const hasBookedClasses = futureClasses > 0;
 
   return (
-    <div className="min-h-screen bg-gray-100 p-8">
+    <div className="min-h-screen bg-black text-white px-6 md:px-20 py-20 max-w-7xl mx-auto">
       {!isProfileComplete && <CompleteProfileAlert />}
 
-      <div className="mb-10 flex justify-between items-start">
+      <div className="mb-16 flex justify-between items-start">
         <div>
-          <h1 className="text-3xl font-bold text-gray-800">
-            Dashboard de {dataUser?.user?.email.split("@")[0]}
+          <h1 className="text-4xl md:text-5xl font-light tracking-wide">
+            Dashboard
           </h1>
 
-          <h2 className="text-gray-700">Este es tu centro de entrenamiento</h2>
+          <p className="text-gray-500 mt-3">
+            Bienvenido, {dataUser?.user?.email}
+          </p>
         </div>
 
         {dataUser && <AvatarUploader token={dataUser.token} />}
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
-        <div className="bg-white p-6 rounded-xl shadow-md hover:shadow-lg transition">
-          <h2 className="text-sm text-gray-500">Clases Agendadas</h2>
+      {/* STATS */}
 
-          <p className="text-3xl font-bold text-blue-600 mt-2">
-            {futureClasses}
-          </p>
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-10 mb-20">
+        <div className="bg-neutral-900 border border-neutral-800 p-8 rounded-xl">
+          <h2 className="text-sm text-gray-500 mb-2">Clases Agendadas</h2>
+
+          <p className="text-3xl font-light">{futureClasses}</p>
 
           <Link
             href="/users/dashboard/reservation"
-            className="text-blue-500 text-sm text-gray-500"
+            className="text-sm text-gray-400 mt-4 inline-block relative transition-all duration-300 hover:after:w-full after:content-[''] after:absolute after:left-0 after:-bottom-1 after:h-[1px] after:w-0 after:bg-white after:transition-all after:duration-300 hover:text-gray-300"
           >
             Ver clases
           </Link>
         </div>
 
-        <div className="bg-white p-6 rounded-xl shadow-md hover:shadow-lg transition">
-          <h2 className="text-sm text-gray-500">Clases Completadas</h2>
+        <div className="bg-neutral-900 border border-neutral-800 p-8 rounded-xl">
+          <h2 className="text-sm text-gray-500 mb-2">Clases Completadas</h2>
 
-          <p className="text-3xl font-bold text-green-600 mt-2">
-            {completedClasses}
-          </p>
+          <p className="text-3xl font-light">{completedClasses}</p>
 
           <Link
             href="/users/dashboard/classes"
-            className="text-green-500 text-sm text-gray-500"
+            className="text-sm text-gray-400 mt-4 inline-block relative transition-all duration-300 hover:after:w-full after:content-[''] after:absolute after:left-0 after:-bottom-1 after:h-[1px] after:w-0 after:bg-white after:transition-all after:duration-300 hover:text-gray-300"
           >
             Ver historial
           </Link>
         </div>
 
-        <div className="bg-white p-6 rounded-xl shadow-md hover:shadow-lg transition">
-          <h2 className="text-sm text-gray-500">Tokens Activos</h2>
+        <div className="bg-neutral-900 border border-neutral-800 p-8 rounded-xl">
+          <h2 className="text-sm text-gray-500 mb-2">Tokens Activos</h2>
 
-          <p className="text-3xl font-bold text-purple-600 mt-2">{tokens}</p>
-          <Link href="/users/dashboard/tokens" className="text-gray-500 text-sm hover:underline">
-              Ver detalle de tokens
-            </Link>
+          <p className="text-3xl font-light">{tokens}</p>
+
+          <Link
+            href="/users/dashboard/tokens"
+            className="text-sm text-gray-400 mt-4 inline-block relative transition-all duration-300 hover:after:w-full after:content-[''] after:absolute after:left-0 after:-bottom-1 after:h-[1px] after:w-0 after:bg-white after:transition-all after:duration-300 hover:text-gray-300"
+          >
+            Ver detalle de tokens
+          </Link>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-10">
-        <div className="bg-white rounded-xl p-6 shadow-md">
-          <h2 className="text-lg font-semibold text-gray-800 mb-4">
+      {/* PROGRESO */}
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-10 mb-20">
+        <div className="bg-neutral-900 border border-neutral-800 p-8 rounded-xl">
+          <h2 className="text-lg font-light tracking-wide mb-6">
             Progreso de entrenamiento
           </h2>
 
-          <div className="space-y-3 text-sm text-gray-600">
+          <div className="space-y-3 text-sm text-gray-400">
             <div className="flex justify-between">
               <span>Clases completadas</span>
-              <span className="font-semibold text-green-600">
-                {completedClasses}
-              </span>
+              <span>{completedClasses}</span>
             </div>
 
             <div className="flex justify-between">
               <span>Clases pendientes</span>
-              <span className="font-semibold text-blue-600">
-                {futureClasses}
-              </span>
+              <span>{futureClasses}</span>
             </div>
 
             <div className="flex justify-between">
               <span>Tokens disponibles</span>
-              <span className="font-semibold text-purple-600">{tokens}</span>
+              <span>{tokens}</span>
             </div>
           </div>
 
-          <div className="mt-5">
-            <div className="h-3 bg-gray-200 rounded-full overflow-hidden">
+          <div className="mt-6">
+            <div className="h-2 bg-neutral-800 rounded-full overflow-hidden">
               <div
-                className="h-full bg-green-500 transition-all duration-500"
+                className="h-full bg-white transition-all duration-500"
                 style={{
                   width: `${Math.min(
                     (completedClasses /
@@ -187,22 +187,22 @@ const DashboardUsersPage = () => {
             <p className="text-xs text-gray-500 mt-2">Progreso de tus clases</p>
           </div>
 
-          <p className="text-sm text-gray-500 mt-4">
+          <p className="text-sm text-gray-500 mt-6">
             {completedClasses === 0
-              ? "Empieza tu primera clase hoy "
-              : "¡Excelente progreso! Sigue entrenando de parte de powerGym"}
+              ? "Empieza tu primera clase hoy"
+              : "Excelente progreso. Sigue entrenando."}
           </p>
         </div>
 
-        <div className="bg-white rounded-xl p-6 shadow-md">
-          <h2 className="text-lg font-semibold text-gray-800 mb-4">
+        <div className="bg-neutral-900 border border-neutral-800 p-8 rounded-xl">
+          <h2 className="text-lg font-light tracking-wide mb-4">
             Próximas clases
           </h2>
 
           {futureClasses > 0 ? (
-            <p className="text-gray-600">
-              Tienes <span className="font-semibold">{futureClasses}</span>{" "}
-              clases programadas.
+            <p className="text-gray-400">
+              Tienes <span className="text-white">{futureClasses}</span> clases
+              programadas.
             </p>
           ) : (
             <p className="text-gray-500">No tienes clases programadas aún.</p>
@@ -210,27 +210,19 @@ const DashboardUsersPage = () => {
 
           <Link
             href="/booking"
-            className="inline-block mt-4 text-blue-500 text-sm font-medium hover:underline"
+            className="text-sm text-gray-400 mt-4 inline-block relative transition-all duration-300 hover:after:w-full after:content-[''] after:absolute after:left-0 after:-bottom-1 after:h-[1px] after:w-0 after:bg-white after:transition-all after:duration-300 hover:text-gray-300"
           >
             Agendar nueva clase
           </Link>
         </div>
       </div>
 
-      <div className="bg-white p-6 rounded-xl shadow-md mb-10">
-        <h2 className="text-lg font-semibold mb-4 text-gray-700">
-          Resumen Personal
-        </h2>
+      {/* CTA */}
 
-        <p className="text-gray-500">
-          Este mes has completado {completedClasses} clases
-        </p>
-      </div>
-
-      <div className="mt-10 flex gap-4 flex-wrap">
+      <div className="flex gap-6 flex-wrap">
         <Link
           href={"/workouts"}
-          className="bg-blue-500 hover:bg-blue-600 text-white px-6 py-2 rounded-lg transition"
+          className="text-white relative transition-all duration-300 hover:after:w-full after:content-[''] after:absolute after:left-0 after:-bottom-1 after:h-[1px] after:w-0 after:bg-white after:transition-all after:duration-300 hover:text-gray-300"
         >
           Agendar Nueva Clase
         </Link>
@@ -238,24 +230,24 @@ const DashboardUsersPage = () => {
         {!hasBookedClasses ? (
           <Link
             href="/booking"
-            className="bg-blue-500 hover:bg-blue-600 text-white px-6 py-2 rounded-lg transition"
+            className="text-white relative transition-all duration-300 hover:after:w-full after:content-[''] after:absolute after:left-0 after:-bottom-1 after:h-[1px] after:w-0 after:bg-white after:transition-all after:duration-300 hover:text-gray-300"
           >
             Agenda tu primera clase
           </Link>
         ) : (
           <button
             onClick={() => router.push(PATHROUTES.USERS_CHAT)}
-            className="bg-green-500 hover:bg-green-600 text-white px-6 py-2 rounded-lg transition cursor-pointer"
+            className="cursor-pointer text-white relative transition-all duration-300 hover:after:w-full after:content-[''] after:absolute after:left-0 after:-bottom-1 after:h-[1px] after:w-0 after:bg-white after:transition-all after:duration-300 hover:text-gray-300"
           >
             Chat con tu coach
           </button>
         )}
       </div>
 
-      <div className="mt-10">
+      <div className="mt-24">
         <button
           onClick={handleLogout}
-          className="bg-red-500 hover:bg-red-600 text-white px-6 py-2 rounded-lg transition cursor-pointer"
+          className="cursor-pointer text-white relative transition-all duration-300 hover:after:w-full after:content-[''] after:absolute after:left-0 after:-bottom-1 after:h-[1px] after:w-0 after:bg-white after:transition-all after:duration-300 hover:text-gray-300"
         >
           Cerrar sesión
         </button>

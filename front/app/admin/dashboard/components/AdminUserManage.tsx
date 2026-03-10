@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { GetAllUsers } from "@/services/user.services";
 import { AllUsers } from "@/interface/AllUsers";
+import { UpdateUserRole } from "@/services/user.services";
 
 const AdminUserManage = () => {
   const { dataUser } = useAuth();
@@ -47,7 +48,7 @@ const AdminUserManage = () => {
   const filteredUsers = normalUsers.filter(
     (u) =>
       u.name.toLowerCase().includes(search.toLowerCase()) ||
-      u.email.toLowerCase().includes(search.toLowerCase())
+      u.email.toLowerCase().includes(search.toLowerCase()),
   );
 
   const totalPages = Math.ceil(filteredUsers.length / limit);
@@ -61,13 +62,16 @@ const AdminUserManage = () => {
     try {
       setActionLoadingId(userId);
 
+      await UpdateUserRole(userId, "Coach", dataUser.token);
+      alert("Usuario ascendido a Coach exitosamente.");
+
+      router.push("/dashboard");
+
       setUsers((prev) =>
-        prev.map((u) =>
-          u.id === userId ? { ...u, role: "Coach" } : u
-        )
+        prev.map((u) => (u.id === userId ? { ...u, role: "Coach" } : u)),
       );
     } catch (error) {
-      console.error("Error promoviendo usuario");
+      console.error(error);
     } finally {
       setActionLoadingId(null);
     }
@@ -82,7 +86,6 @@ const AdminUserManage = () => {
 
   return (
     <div className="bg-black text-white min-h-screen px-6 md:px-20 py-16">
-
       <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-6 mb-10">
         <h1 className="text-3xl md:text-4xl font-light tracking-wide">
           Gestión de Usuarios
@@ -91,7 +94,8 @@ const AdminUserManage = () => {
         <button
           onClick={() => router.push("/dashboard")}
           className="text-white relative transition-all duration-300 hover:after:w-full after:content-[''] after:absolute after:left-0 after:-bottom-1 after:h-[1px] after:w-0 after:bg-white 
-          after:transition-all after:duration-300 hover:text-gray-300 cursor-pointer" >
+          after:transition-all after:duration-300 hover:text-gray-300 cursor-pointer"
+        >
           Volver al dashboard
         </button>
       </div>
@@ -112,7 +116,6 @@ const AdminUserManage = () => {
       </p>
 
       <div className="space-y-6">
-
         {paginatedUsers.length === 0 ? (
           <p className="text-gray-500">No se encontraron usuarios.</p>
         ) : (
@@ -128,9 +131,7 @@ const AdminUserManage = () => {
                   <p className="text-lg font-light tracking-wide">
                     {user.name}
                   </p>
-                  <p className="text-sm text-gray-500">
-                    {user.email}
-                  </p>
+                  <p className="text-sm text-gray-500">{user.email}</p>
                 </div>
 
                 {user.role === "user" && (
@@ -138,7 +139,8 @@ const AdminUserManage = () => {
                     disabled={isBusy}
                     onClick={() => handlePromoteToCoach(user.id)}
                     className="text-white relative transition-all duration-300 hover:after:w-full after:content-[''] after:absolute after:left-0 after:-bottom-1 after:h-[1px] after:w-0 after:bg-white 
-                    after:transition-all after:duration-300 hover:text-gray-300 cursor-pointer" >
+                    after:transition-all after:duration-300 hover:text-gray-300 cursor-pointer"
+                  >
                     {isBusy ? "Procesando..." : "Ascender a Coach"}
                   </button>
                 )}
@@ -146,12 +148,10 @@ const AdminUserManage = () => {
             );
           })
         )}
-
       </div>
 
       {totalPages > 1 && (
         <div className="flex justify-center gap-4 mt-10 flex-wrap">
-
           <button
             disabled={page === 1}
             onClick={() => setPage(page - 1)}
@@ -181,7 +181,6 @@ const AdminUserManage = () => {
           >
             →
           </button>
-
         </div>
       )}
     </div>

@@ -60,7 +60,7 @@ export default function ClassesReservationComponent() {
 
   return (
     <div className="space-y-4">
-      <h1 className="text-2xl font-bold text-gray-800 mb-6 text-white">
+      <h1 className="text-2xl font-bold text-gray-800 mb-6 text-white   ">
         Mis clases reservadas
       </h1>
 

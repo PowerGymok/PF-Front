@@ -31,6 +31,7 @@ const DashboardAdminPage = () => {
       try {
         const u = await GetAllUsers(dataUser.token, 100);
         const c = await getAllCoaches(dataUser.token, 100);
+        console.log("Coaches:", c);
 
         setUsers(u);
         setCoaches(c);
@@ -71,8 +72,6 @@ const DashboardAdminPage = () => {
 
   return (
     <div className="min-h-screen bg-black text-white px-6 md:px-20 py-20 max-w-7xl mx-auto">
-
-     
       <div className="mb-16">
         <h1 className="text-4xl md:text-5xl font-light tracking-wide">
           Dashboard Admin
@@ -83,31 +82,23 @@ const DashboardAdminPage = () => {
         </p>
       </div>
 
-      
       <div className="grid grid-cols-1 md:grid-cols-3 gap-10 mb-20">
-
         <div className="bg-neutral-900 border border-neutral-800 p-8 rounded-xl">
           <h2 className="text-sm text-gray-500 mb-2">Coaches Activos</h2>
 
-          <p className="text-3xl font-light">
-            {coaches.length}
-          </p>
+          <p className="text-3xl font-light">{coaches.length}</p>
         </div>
 
         <div className="bg-neutral-900 border border-neutral-800 p-8 rounded-xl">
           <h2 className="text-sm text-gray-500 mb-2">Usuarios Registrados</h2>
 
-          <p className="text-3xl font-light">
-            {users.length}
-          </p>
+          <p className="text-3xl font-light">{users.length}</p>
         </div>
 
         <div className="bg-neutral-900 border border-neutral-800 p-8 rounded-xl">
           <h2 className="text-sm text-gray-500 mb-2">Clases este mes</h2>
 
-          <p className="text-3xl font-light">
-            {classes.length}
-          </p>
+          <p className="text-3xl font-light">{classes.length}</p>
 
           <Link
             href="/admin/dashboard/clases"
@@ -116,11 +107,9 @@ const DashboardAdminPage = () => {
             Ver clases
           </Link>
         </div>
-
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10 mt-10">
-
         <Link
           href="/admin/dashboard/users"
           className="bg-neutral-900 border border-neutral-800 p-8 rounded-xl hover:border-neutral-600 transition"
@@ -161,7 +150,7 @@ const DashboardAdminPage = () => {
         </Link>
 
         <Link
-          href="/admin/dashboard/booking"
+          href="/booking"
           className="bg-neutral-900 border border-neutral-800 p-8 rounded-xl hover:border-neutral-600 transition"
         >
           <h3 className="text-lg font-light tracking-wide mb-2">
@@ -172,20 +161,16 @@ const DashboardAdminPage = () => {
             Agregar nuevas clases al sistema.
           </p>
         </Link>
-
       </div>
 
       <div className="mt-24">
-
         <button
           onClick={handleLogout}
           className="cursor-pointer text-white relative transition-all duration-300 hover:after:w-full after:content-[''] after:absolute after:left-0 after:-bottom-1 after:h-[1px] after:w-0 after:bg-white after:transition-all after:duration-300 hover:text-gray-300"
         >
           Cerrar sesión
         </button>
-
       </div>
-
     </div>
   );
 };
