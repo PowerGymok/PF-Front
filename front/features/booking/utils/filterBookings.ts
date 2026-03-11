@@ -7,6 +7,14 @@ interface FilterParams {
   intensityFilter: string;
 }
 
+// Helper: obtiene la fecha local en formato YYYY-MM-DD sin depender de UTC
+function getLocalDateString(date: Date): string {
+  const y = date.getFullYear();
+  const m = String(date.getMonth() + 1).padStart(2, "0");
+  const d = String(date.getDate()).padStart(2, "0");
+  return `${y}-${m}-${d}`;
+}
+
 export function filterBookings({
   bookings,
   selectedDate,
@@ -14,7 +22,9 @@ export function filterBookings({
   intensityFilter,
 }: FilterParams): Booking[] {
   const searchValue = search.toLowerCase().trim();
-  const today = new Date().toISOString().split("T")[0];
+
+  // ✅ Fix #1: usar fecha local (no UTC) para evitar desfase de zona horaria
+  const today = getLocalDateString(new Date());
 
   return bookings
     .filter((w) => w.date >= today)
@@ -31,7 +41,7 @@ export function filterBookings({
       const matchesSearch =
         searchValue === "" || searchableString.includes(searchValue);
 
-      // intensityFilter ahora es "baja" | "media" | "alta" | ""
+      // intensityFilter es "baja" | "media" | "alta" | ""
       const matchesIntensity =
         intensityFilter === "" || w.intensity === intensityFilter;
 
