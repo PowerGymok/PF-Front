@@ -38,6 +38,12 @@ function mapToBooking(item: any): Booking {
   // classes_history devuelve:
   //   item.class.capacity     → capacidad total original de la clase
   //   item.spaces_available   → calculado en backend: capacity - reservas confirmadas
+  console.log(
+    "[mapToBooking] intensity raw:",
+    item.class?.intensity,
+    "| class completo:",
+    item.class,
+  );
   const capacity = parseInt(item.class?.capacity ?? "0", 10);
   const spaces_available =
     item.spaces_available != null
