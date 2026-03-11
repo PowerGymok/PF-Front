@@ -12,6 +12,10 @@ export default function CoachChatPage() {
   const { setActiveConversation } = useChat();
 
   useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
+
+  useEffect(() => {
 
     const initCoachChat = async () => {
 
@@ -41,7 +45,7 @@ export default function CoachChatPage() {
   }, [dataUser, isLoading, setActiveConversation]);
 
   return (
-    <div className="h-screen flex bg-gray-100">
+    <div className="h-screen flex items-center justify-center bg-black">
       <ChatWindow />
     </div>
   );
