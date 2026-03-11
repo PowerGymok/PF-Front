@@ -1,44 +1,31 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useState } from "react";
+import { useAuth } from "@/app/contexts/AuthContext";
 
 interface Props {
   token: string;
-  image?: string;
 }
 
-export default function AvatarUploader({ token, image }: Props) {
-  const [preview, setPreview] = useState<string | undefined>(image);
-  const fileInputRef = useRef<HTMLInputElement | null>(null);
+export default function AvatarUploader({ token }: Props) {
 
-  const handleFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
+  const { dataUser, updateProfileImg } = useAuth();
+  const [loading, setLoading] = useState(false);
 
-    // VALIDACIÓN FORMATO
-    const allowedTypes = ["image/jpeg", "image/png", "image/webp"];
+  const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
 
-    if (!allowedTypes.includes(file.type)) {
-      alert("Solo se permiten imágenes JPG, PNG o WEBP");
-      return;
-    }
+    if (!e.target.files?.length) return;
 
-    // VALIDACIÓN TAMAÑO
-    const maxSize = 1024 * 1024;
-
-    if (file.size > maxSize) {
-      alert("La imagen debe ser menor a 1MB");
-      return;
-    }
-
-    // preview inmediato
-    setPreview(URL.createObjectURL(file));
+    const file = e.target.files[0];
 
     const formData = new FormData();
     formData.append("file", file);
 
     try {
-      const res = await fetch("http://localhost:3000/files/avatar", {
+
+      setLoading(true);
+
+      const res = await fetch("http://localhost:3030/files/avatar", {
         method: "POST",
         headers: {
           Authorization: `Bearer ${token}`,
@@ -48,36 +35,45 @@ export default function AvatarUploader({ token, image }: Props) {
 
       const data = await res.json();
 
-      setPreview(data.profileImg);
+      console.log("UPLOAD RESPONSE", data);
+
+      if (data.profileImg) {
+        updateProfileImg(data.profileImg);
+      }
+
     } catch (error) {
-      console.error("Error subiendo imagen", error);
+
+      console.error("Upload error", error);
+
+    } finally {
+
+      setLoading(false);
+
     }
   };
 
   return (
-    <div style={{ textAlign: "center" }}>
+    <div className="flex flex-col items-center">
+
       <img
-        src={preview || "/default-avatar.png"}
+        src={`${dataUser?.user?.profileImg}?t=${Date.now()}`}
         alt="avatar"
-        width={120}
-        height={120}
-        style={{
-          borderRadius: "50%",
-          cursor: "pointer",
-          objectFit: "cover",
-        }}
-        onClick={() => fileInputRef.current?.click()}
+        className="w-24 h-24 rounded-full object-cover border-2 border-gray-300"
       />
 
-      <p style={{ fontSize: "14px" }}>Click en la imagen para cambiar</p>
+      <label className="mt-2 cursor-pointer text-sm text-blue-600 hover:underline">
 
-      <input
-        type="file"
-        accept="image/jpeg, image/png, image/webp"
-        ref={fileInputRef}
-        style={{ display: "none" }}
-        onChange={handleFile}
-      />
+        {loading ? "Subiendo..." : "Cambiar foto"}
+
+        <input
+          type="file"
+          accept="image/*"
+          onChange={handleUpload}
+          className="hidden"
+        />
+
+      </label>
+
     </div>
   );
 }

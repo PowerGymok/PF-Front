@@ -15,13 +15,18 @@ const AdminUserManage = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [search, setSearch] = useState("");
 
+  const [page, setPage] = useState(1);
+  const limit = 10;
+
+  const [actionLoadingId, setActionLoadingId] = useState<string | null>(null);
+
   useEffect(() => {
     const fetchUsers = async () => {
       if (!dataUser?.token) return;
 
       try {
-        const data = await GetAllUsers(dataUser.token);
-        setUsers(data);
+        const response = await GetAllUsers(dataUser.token, 1000);
+        setUsers(response);
       } catch (error: any) {
         if (error.status === 401) {
           router.replace("/");
@@ -34,24 +39,11 @@ const AdminUserManage = () => {
         setIsLoading(false);
       }
     };
+
     fetchUsers();
   }, [dataUser, router]);
 
-  const handleChange = async (userId: string) => {
-    if (!dataUser?.token) return;
-
-    try {
-      await UpdateUserRole(userId, "Coach", dataUser.token);
-
-      const data = await GetAllUsers(dataUser.token);
-      setUsers(data);
-      router.push("/dashboard");
-    } catch (error: any) {
-      console.error(error.message);
-    }
-  };
-
-  const normalUsers = users.filter((u) => u.role === "user");
+  const normalUsers = users.filter((u) => u.role !== "Admin");
 
   const filteredUsers = normalUsers.filter(
     (u) =>
@@ -59,48 +51,137 @@ const AdminUserManage = () => {
       u.email.toLowerCase().includes(search.toLowerCase()),
   );
 
-  if (isLoading) return <p>Cargando usuarios</p>; // aqui podremos colocar un spinner si lo deseamos
+  const totalPages = Math.ceil(filteredUsers.length / limit);
+
+  const startIndex = (page - 1) * limit;
+  const paginatedUsers = filteredUsers.slice(startIndex, startIndex + limit);
+
+  const handlePromoteToCoach = async (userId: string) => {
+    if (!dataUser?.token) return;
+
+    try {
+      setActionLoadingId(userId);
+
+      await UpdateUserRole(userId, "Coach", dataUser.token);
+      alert("Usuario ascendido a Coach exitosamente.");
+
+      router.push("/dashboard");
+
+      setUsers((prev) =>
+        prev.map((u) => (u.id === userId ? { ...u, role: "Coach" } : u)),
+      );
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setActionLoadingId(null);
+    }
+  };
+
+  if (isLoading)
+    return (
+      <div className="bg-black text-white min-h-screen flex items-center justify-center">
+        <p className="text-gray-400">Cargando usuarios...</p>
+      </div>
+    );
 
   return (
-    <div className="mt-10 bg-white p-6 rounded-xl shadow-md">
-      <h1 className="text-2xl font-bold mb-4 text-gray-700">
-        Gestión de Usuarios
-      </h1>
-      <button
-        onClick={() => router.push("/admin/dashboard")}
-        className="px-4 py-2 mt-4 mb-4 flex rounded-lg border text-gray-700 hover:bg-gray-50 transition cursor-pointer"
-      >
-        Volver al Dashboard
-      </button>
+    <div className="bg-black text-white min-h-screen px-6 md:px-20 py-16">
+      <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-6 mb-10">
+        <h1 className="text-3xl md:text-4xl font-light tracking-wide">
+          Gestión de Usuarios
+        </h1>
+
+        <button
+          onClick={() => router.push("/dashboard")}
+          className="text-white relative transition-all duration-300 hover:after:w-full after:content-[''] after:absolute after:left-0 after:-bottom-1 after:h-[1px] after:w-0 after:bg-white 
+          after:transition-all after:duration-300 hover:text-gray-300 cursor-pointer"
+        >
+          Volver al dashboard
+        </button>
+      </div>
 
       <input
         type="text"
         placeholder="Buscar por nombre o email"
         value={search}
-        onChange={(e) => setSearch(e.target.value)}
-        className="w-full mb-4 px-4 py-2 border rounded-lg text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+        onChange={(e) => {
+          setSearch(e.target.value);
+          setPage(1);
+        }}
+        className="w-full bg-neutral-900 border border-neutral-800 rounded-lg px-4 py-3 mb-10 text-white placeholder-gray-500 focus:outline-none focus:border-white transition"
       />
 
-      {filteredUsers.length === 0 ? (
-        <p className="text-gray-500">No se encontraron usuarios.</p>
-      ) : (
-        filteredUsers.map((user) => (
-          <div
-            key={user.id}
-            className="p-4 border rounded-lg mb-3 flex justify-between items-center"
+      <p className="text-gray-500 mb-8">
+        Usuarios encontrados: {filteredUsers.length}
+      </p>
+
+      <div className="space-y-6">
+        {paginatedUsers.length === 0 ? (
+          <p className="text-gray-500">No se encontraron usuarios.</p>
+        ) : (
+          paginatedUsers.map((user) => {
+            const isBusy = actionLoadingId === user.id;
+
+            return (
+              <div
+                key={user.id}
+                className="bg-neutral-900 border border-neutral-800 rounded-xl p-6 flex flex-col md:flex-row md:justify-between md:items-center gap-4 hover:border-neutral-600 transition cursor-pointer"
+              >
+                <div>
+                  <p className="text-lg font-light tracking-wide">
+                    {user.name}
+                  </p>
+                  <p className="text-sm text-gray-500">{user.email}</p>
+                </div>
+
+                {user.role === "user" && (
+                  <button
+                    disabled={isBusy}
+                    onClick={() => handlePromoteToCoach(user.id)}
+                    className="text-white relative transition-all duration-300 hover:after:w-full after:content-[''] after:absolute after:left-0 after:-bottom-1 after:h-[1px] after:w-0 after:bg-white 
+                    after:transition-all after:duration-300 hover:text-gray-300 cursor-pointer"
+                  >
+                    {isBusy ? "Procesando..." : "Ascender a Coach"}
+                  </button>
+                )}
+              </div>
+            );
+          })
+        )}
+      </div>
+
+      {totalPages > 1 && (
+        <div className="flex justify-center gap-4 mt-10 flex-wrap">
+          <button
+            disabled={page === 1}
+            onClick={() => setPage(page - 1)}
+            className="border border-neutral-700 px-4 py-2 rounded hover:bg-neutral-900 disabled:opacity-30 transition cursor-pointer"
           >
-            <div>
-              <p className="font-semibold text-gray-700">{user.name}</p>
-              <p className="text-sm text-gray-500">{user.email}</p>
-            </div>
+            ←
+          </button>
+
+          {Array.from({ length: totalPages }, (_, i) => (
             <button
-              onClick={() => handleChange(user.id)}
-              className="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600c cursor-pointer"
+              key={i}
+              onClick={() => setPage(i + 1)}
+              className={`px-5 py-2 rounded border transition cursor-pointer ${
+                page === i + 1
+                  ? "bg-white text-black border-white"
+                  : "border-neutral-700 hover:bg-neutral-900"
+              }`}
             >
-              Hacer Coach
+              {i + 1}
             </button>
-          </div>
-        ))
+          ))}
+
+          <button
+            disabled={page === totalPages}
+            onClick={() => setPage(page + 1)}
+            className="border border-neutral-700 px-4 py-2 rounded hover:bg-neutral-900 disabled:opacity-30 transition cursor-pointer"
+          >
+            →
+          </button>
+        </div>
       )}
     </div>
   );
