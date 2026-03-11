@@ -7,7 +7,7 @@ import {
 
 export function resolveVariant(name: string): MembershipVariant {
   const lower = name.toLowerCase();
-  if (lower.includes("oro") || lower.includes("oro")) return "gold";
+  if (lower.includes("oro")) return "gold";
   if (lower.includes("silver") || lower.includes("plata")) return "silver";
   if (lower.includes("bronze") || lower.includes("bronce")) return "bronze";
   return "single";
@@ -16,11 +16,8 @@ export function resolveVariant(name: string): MembershipVariant {
 function resolveFeatures(membership: BackendMembership): Feature[] {
   const features: Feature[] = [
     { icon: "workshop", text: "AGENDA TUS CLASES" },
-    { icon: "token", text: "30 TOKENS" },
-    {
-      icon: "shower",
-      text: "ACCESO A REGADERAS",
-    },
+    { icon: "token", text: "USA TUS TOKENS" },
+    { icon: "shower", text: "ACCESO A REGADERAS" },
   ];
 
   if (membership.includesCoachChat) {
@@ -36,5 +33,6 @@ export function mapToMembershipCard(membership: BackendMembership): Membership {
     price: `${Number(membership.price).toFixed(2)} USD`,
     membershipVariant: resolveVariant(membership.name),
     features: resolveFeatures(membership),
+    description: membership.description, // ← nuevo
   };
 }

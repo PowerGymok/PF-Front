@@ -85,21 +85,17 @@ const DashboardAdminPage = () => {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-10 mb-20">
         <div className="bg-neutral-900 border border-neutral-800 p-8 rounded-xl">
           <h2 className="text-sm text-gray-500 mb-2">Coaches Activos</h2>
-
           <p className="text-3xl font-light">{coaches.length}</p>
         </div>
 
         <div className="bg-neutral-900 border border-neutral-800 p-8 rounded-xl">
           <h2 className="text-sm text-gray-500 mb-2">Usuarios Registrados</h2>
-
           <p className="text-3xl font-light">{users.length}</p>
         </div>
 
         <div className="bg-neutral-900 border border-neutral-800 p-8 rounded-xl">
           <h2 className="text-sm text-gray-500 mb-2">Clases este mes</h2>
-
           <p className="text-3xl font-light">{classes.length}</p>
-
           <Link
             href="/admin/dashboard/clases"
             className="text-sm text-gray-400 mt-4 inline-block relative transition-all duration-300 hover:after:w-full after:content-[''] after:absolute after:left-0 after:-bottom-1 after:h-[1px] after:w-0 after:bg-white after:transition-all after:duration-300 hover:text-gray-300"
@@ -117,7 +113,6 @@ const DashboardAdminPage = () => {
           <h3 className="text-lg font-light tracking-wide mb-2">
             Gestionar Usuarios
           </h3>
-
           <p className="text-gray-500 leading-relaxed">
             Promover, buscar y administrar usuarios.
           </p>
@@ -130,22 +125,44 @@ const DashboardAdminPage = () => {
           <h3 className="text-lg font-light tracking-wide mb-2">
             Gestionar Coaches
           </h3>
-
           <p className="text-gray-500 leading-relaxed">
             Administrar coaches registrados.
           </p>
         </Link>
 
         <Link
-          href="/admin/dashboard/memberships/admin"
+          href="/admin/dashboard/memberships"
           className="bg-neutral-900 border border-neutral-800 p-8 rounded-xl hover:border-neutral-600 transition"
         >
           <h3 className="text-lg font-light tracking-wide mb-2">
             Gestionar Membresías
           </h3>
-
           <p className="text-gray-500 leading-relaxed">
             Crear y editar planes de membresía.
+          </p>
+        </Link>
+
+        <Link
+          href="/admin/dashboard/token-packages"
+          className="bg-neutral-900 border border-neutral-800 p-8 rounded-xl hover:border-neutral-600 transition"
+        >
+          <h3 className="text-lg font-light tracking-wide mb-2">
+            Gestionar Paquetes De Tokens.
+          </h3>
+          <p className="text-gray-500 leading-relaxed">
+            Crear y editar planes de tokens.
+          </p>
+        </Link>
+
+        <Link
+          href="/workouts"
+          className="bg-neutral-900 border border-neutral-800 p-8 rounded-xl hover:border-neutral-600 transition"
+        >
+          <h3 className="text-lg font-light tracking-wide mb-2">
+            Crear Nueva Clase De Catalogo
+          </h3>
+          <p className="text-gray-500 leading-relaxed">
+            Crear/editar o eliminar clases del catalogo.
           </p>
         </Link>
 
@@ -156,7 +173,6 @@ const DashboardAdminPage = () => {
           <h3 className="text-lg font-light tracking-wide mb-2">
             Crear Nueva Clase
           </h3>
-
           <p className="text-gray-500 leading-relaxed">
             Agregar nuevas clases al sistema.
           </p>
