@@ -21,13 +21,12 @@ const RegisterComponent = () => {
 
     onSubmit: async (values, { resetForm }) => {
       try {
-        // quitar cualquier cosa que no sea número (por seguridad extra)
         const cleanPhone = values.phone?.replace(/\D/g, "") || "";
 
-        // validar que no esté vacío después de limpiar
         if (!cleanPhone) {
           throw new Error("Teléfono inválido");
         }
+
         const payload: RegisterPayload = {
           name: values.name,
           email: values.email,
@@ -38,6 +37,7 @@ const RegisterComponent = () => {
           Birthdate: values.Birthdate,
           phone: cleanPhone,
         };
+
         const res = await RegisterUser(payload);
 
         if (!res?.accessToken) {
@@ -66,154 +66,178 @@ const RegisterComponent = () => {
 
         resetForm();
 
-        router.push("/dashboard");
+        router.push("/users/dashboard");
       } catch (error: unknown) {
         alert(error instanceof Error ? error.message : "Error al registrarse");
       }
     },
   });
+
   return (
-    <section className="min-h-screen bg-black flex items-center justify-center">
-      <div className="w-full max-w-md bg-neutral-900 text-white p-10 rounded-xl">
-        <h1 className="text-3xl font-bold mb-2">Registro</h1>
-        <p className="text-sm text-gray-400 mb-8">
-          ¿Tiene registro?
+    <section className="min-h-screen bg-[#0b0b0b] flex items-center justify-center px-4 py-16">
+
+      <div className="w-full max-w-lg bg-zinc-900 border border-zinc-800 text-white p-10 rounded-3xl shadow-2xl">
+
+        <h1 className="text-3xl font-bold text-center mb-2">
+          Registro
+        </h1>
+
+        <p className="text-sm text-gray-400 text-center mb-8">
+          ¿Ya tienes una cuenta?
           <span
-            className="text-blue-400 cursor-pointer ml-1"
+            className="text-white cursor-pointer ml-1 hover:underline"
             onClick={() => router.push("/login")}
           >
-            Clic aquí para iniciar sesión.
+            Inicia sesión
           </span>
         </p>
 
-        <form onSubmit={formik.handleSubmit} className="space-y-6">
+        <form onSubmit={formik.handleSubmit} className="space-y-5">
+
           {/* Nombre */}
           <div>
-            <label className="text-sm">Nombre*</label>
+            <label className="text-xs text-gray-400">NOMBRE *</label>
             <input
               type="text"
               name="name"
               value={formik.values.name}
               onChange={formik.handleChange}
-              className="w-full bg-transparent border-b border-gray-500 focus:outline-none py-2"
+              className="w-full mt-1 px-3 py-2 bg-transparent border border-zinc-700 rounded-lg focus:outline-none focus:border-white"
             />
             {formik.errors.name && (
-              <p className="text-red-400 text-xs">{formik.errors.name}</p>
+              <p className="text-red-500 text-xs mt-1">{formik.errors.name}</p>
             )}
           </div>
 
           {/* Email */}
           <div>
-            <label className="text-sm">Correo*</label>
+            <label className="text-xs text-gray-400">CORREO *</label>
             <input
               type="email"
               name="email"
               value={formik.values.email}
               onChange={formik.handleChange}
-              className="w-full bg-transparent border-b border-gray-500 focus:outline-none py-2"
+              className="w-full mt-1 px-3 py-2 bg-transparent border border-zinc-700 rounded-lg focus:outline-none focus:border-white"
             />
             {formik.errors.email && (
-              <p className="text-red-400 text-xs">{formik.errors.email}</p>
+              <p className="text-red-500 text-xs mt-1">{formik.errors.email}</p>
             )}
           </div>
 
           {/* Password */}
           <div>
-            <label className="text-sm">Contraseña*</label>
+            <label className="text-xs text-gray-400">CONTRASEÑA *</label>
             <input
               type="password"
               name="password"
               value={formik.values.password}
               onChange={formik.handleChange}
-              className="w-full bg-transparent border-b border-gray-500 focus:outline-none py-2"
+              className="w-full mt-1 px-3 py-2 bg-transparent border border-zinc-700 rounded-lg focus:outline-none focus:border-white"
             />
             {formik.errors.password && (
-              <p className="text-red-400 text-xs">{formik.errors.password}</p>
+              <p className="text-red-500 text-xs mt-1">{formik.errors.password}</p>
             )}
           </div>
 
           {/* Confirm Password */}
           <div>
-            <label className="text-sm">Confirmar contraseña*</label>
+            <label className="text-xs text-gray-400">
+              CONFIRMAR CONTRASEÑA *
+            </label>
             <input
               type="password"
               name="confirmPassword"
               value={formik.values.confirmPassword}
               onChange={formik.handleChange}
-              className="w-full bg-transparent border-b border-gray-500 focus:outline-none py-2"
+              className="w-full mt-1 px-3 py-2 bg-transparent border border-zinc-700 rounded-lg focus:outline-none focus:border-white"
             />
             {formik.errors.confirmPassword && (
-              <p className="text-red-400 text-xs">
+              <p className="text-red-500 text-xs mt-1">
                 {formik.errors.confirmPassword}
               </p>
             )}
           </div>
 
-          {/* Dirección */}
-          <div>
-            <label className="text-sm">Dirección*</label>
-            <input
-              type="text"
-              name="address"
-              value={formik.values.address}
-              onChange={formik.handleChange}
-              className="w-full bg-transparent border-b border-gray-500 focus:outline-none py-2"
-            />
-            {formik.errors.address && (
-              <p className="text-red-400 text-xs">{formik.errors.address}</p>
-            )}
+          {/* Dirección + Ciudad */}
+          <div className="grid grid-cols-2 gap-4">
+
+            <div>
+              <label className="text-xs text-gray-400">DIRECCIÓN *</label>
+              <input
+                type="text"
+                name="address"
+                value={formik.values.address}
+                onChange={formik.handleChange}
+                className="w-full mt-1 px-3 py-2 bg-transparent border border-zinc-700 rounded-lg focus:outline-none focus:border-white"
+              />
+              {formik.errors.address && (
+                <p className="text-red-500 text-xs mt-1">{formik.errors.address}</p>
+              )}
+            </div>
+
+            <div>
+              <label className="text-xs text-gray-400">CIUDAD *</label>
+              <input
+                type="text"
+                name="city"
+                value={formik.values.city}
+                onChange={formik.handleChange}
+                className="w-full mt-1 px-3 py-2 bg-transparent border border-zinc-700 rounded-lg focus:outline-none focus:border-white"
+              />
+              {formik.errors.city && (
+                <p className="text-red-500 text-xs mt-1">{formik.errors.city}</p>
+              )}
+            </div>
+
           </div>
 
-          <div>
-            <label className="text-sm">Ciudad*</label>
-            <input
-              type="text"
-              name="city"
-              value={formik.values.city}
-              onChange={formik.handleChange}
-              className="w-full bg-transparent border-b border-gray-500 focus:outline-none py-2"
-            />
-            {formik.errors.city && (
-              <p className="text-red-400 text-xs">{formik.errors.city}</p>
-            )}
+          {/* Fecha + Teléfono */}
+          <div className="grid grid-cols-2 gap-4">
+
+            <div>
+              <label className="text-xs text-gray-400">
+                FECHA DE NACIMIENTO *
+              </label>
+              <input
+                type="date"
+                name="Birthdate"
+                value={formik.values.Birthdate}
+                onChange={formik.handleChange}
+                className="w-full mt-1 px-3 py-2 bg-transparent border border-zinc-700 rounded-lg focus:outline-none focus:border-white"
+              />
+              {formik.errors.Birthdate && (
+                <p className="text-red-500 text-xs mt-1">
+                  {formik.errors.Birthdate}
+                </p>
+              )}
+            </div>
+
+            <div>
+              <label className="text-xs text-gray-400">TELÉFONO *</label>
+              <input
+                type="text"
+                name="phone"
+                value={formik.values.phone}
+                onChange={formik.handleChange}
+                className="w-full mt-1 px-3 py-2 bg-transparent border border-zinc-700 rounded-lg focus:outline-none focus:border-white"
+              />
+              {formik.errors.phone && (
+                <p className="text-red-500 text-xs mt-1">{formik.errors.phone}</p>
+              )}
+            </div>
+
           </div>
 
-          <div>
-            <label className="text-sm">Fecha de nacimiento*</label>
-            <input
-              type="date"
-              name="Birthdate"
-              value={formik.values.Birthdate}
-              onChange={formik.handleChange}
-              className="w-full bg-transparent border-b border-gray-500 focus:outline-none py-2"
-            />
-            {formik.errors.Birthdate && (
-              <p className="text-red-400 text-xs">{formik.errors.Birthdate}</p>
-            )}
-          </div>
-
-          {/* Teléfono */}
-          <div>
-            <label className="text-sm">Teléfono*</label>
-            <input
-              type="text"
-              name="phone"
-              value={formik.values.phone}
-              onChange={formik.handleChange}
-              className="w-full bg-transparent border-b border-gray-500 focus:outline-none py-2"
-            />
-            {formik.errors.phone && (
-              <p className="text-red-400 text-xs">{formik.errors.phone}</p>
-            )}
-          </div>
           <button
             type="submit"
             disabled={formik.isSubmitting}
-            className="w-full mt-6 bg-white text-black py-3 font-semibold rounded"
+            className="w-full mt-6 bg-gray-200 text-black hover:bg-white transition py-3 rounded-xl font-semibold"
           >
-            {formik.isSubmitting ? "Registrando..." : "Registrarse"}
+            {formik.isSubmitting ? "Registrando..." : "Regístrate"}
           </button>
+
         </form>
+
       </div>
     </section>
   );
