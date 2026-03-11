@@ -1,4 +1,5 @@
-import WorkoutsClient from "@/features/workouts/components/workoutClient";
+import WorkoutsClient from "@/features/workouts/components/WorkoutClient";
+import WorkoutsToolbar from "@/features/workouts/components/WorkoutsToolbar";
 import {
   mapWorkout,
   type WorkoutBackend,
@@ -10,7 +11,6 @@ const API_URL = process.env.NEXT_PUBLIC_API_URL;
 async function getWorkouts() {
   try {
     const res = await fetch(`${API_URL}/clases`, {
-      // Revalida cada 60 segundos — el catálogo cambia poco
       next: { revalidate: 60 },
     });
 
@@ -18,13 +18,11 @@ async function getWorkouts() {
 
     const data: WorkoutBackend[] = await res.json();
 
-    // Solo clases activas, mapeadas al tipo Workout del frontend
     return Array.isArray(data)
       ? data.filter((c) => c.isActive !== false).map(mapWorkout)
       : [];
   } catch (err) {
     console.error("[WorkoutsPage] Error fetching clases:", err);
-    // Fallback a mocks si el backend no responde
     return workoutsMock;
   }
 }
@@ -34,9 +32,13 @@ export default async function WorkoutsPage() {
 
   return (
     <main className="min-h-screen bg-[#0a0a0a] px-6 py-12 flex flex-col items-center gap-12">
-      <h1 className="font-['Bebas_Neue'] text-5xl text-white tracking-wider">
-        Nuestros Diferentes Entrenamientos
-      </h1>
+      {/* Header: título + toolbar admin/coach */}
+      <div className="w-full max-w-6xl flex items-center justify-between gap-4">
+        <h1 className="font-['Bebas_Neue'] text-5xl text-white tracking-wider">
+          Nuestros Diferentes Entrenamientos
+        </h1>
+        <WorkoutsToolbar />
+      </div>
 
       <WorkoutsClient initialWorkouts={workouts} />
     </main>

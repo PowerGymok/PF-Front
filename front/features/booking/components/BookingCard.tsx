@@ -18,7 +18,6 @@ interface Props {
   onCancelSchedule?: (
     idClassSchedule: string,
   ) => Promise<{ success: boolean; message: string }>;
-  onEditClass?: (booking: Booking) => void; // ✅ Admin — abrir modal de edición
 }
 
 export function BookingCard({
@@ -27,7 +26,6 @@ export function BookingCard({
   alreadyBooked = false,
   onReserve,
   onCancelSchedule,
-  onEditClass,
 }: Props) {
   const [mounted, setMounted] = useState(false);
   useEffect(() => {
@@ -180,33 +178,22 @@ export function BookingCard({
 
       case "admin":
         return (
-          <div className="flex flex-col gap-2">
-            {/* Botón editar */}
-            <button
-              onClick={() => onEditClass?.(booking)}
-              disabled={loading}
-              className="w-full py-3 rounded-full border border-white/30 text-white/70 font-semibold tracking-wide hover:border-white hover:text-white transition-all disabled:opacity-40 disabled:cursor-not-allowed"
-            >
-              EDITAR CLASE
-            </button>
-            {/* Botón eliminar con doble confirmación */}
-            <button
-              onClick={handleCancelClick}
-              disabled={loading}
-              className={`w-full py-3 rounded-full border transition font-semibold tracking-wide
-                ${
-                  confirmCancel
-                    ? "border-rose-400 bg-rose-400 text-black animate-pulse"
-                    : "border-red-500 text-red-500 hover:bg-red-500 hover:text-black"
-                } disabled:opacity-40 disabled:cursor-not-allowed`}
-            >
-              {loading
-                ? "Eliminando…"
-                : confirmCancel
-                  ? "¿CONFIRMAR ELIMINACIÓN?"
-                  : "ELIMINAR"}
-            </button>
-          </div>
+          <button
+            onClick={handleCancelClick}
+            disabled={loading}
+            className={`w-full py-3 rounded-full border transition font-semibold tracking-wide
+              ${
+                confirmCancel
+                  ? "border-rose-400 bg-rose-400 text-black animate-pulse"
+                  : "border-red-500 text-red-500 hover:bg-red-500 hover:text-black"
+              } disabled:opacity-40 disabled:cursor-not-allowed`}
+          >
+            {loading
+              ? "Eliminando…"
+              : confirmCancel
+                ? "¿CONFIRMAR ELIMINACIÓN?"
+                : "ELIMINAR"}
+          </button>
         );
 
       default:
