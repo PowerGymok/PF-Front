@@ -1,4 +1,4 @@
-import WorkoutsClient from "@/features/workouts/components/WorkoutClient";
+import WorkoutsClient from "../../features/workouts/components/workoutClient";
 import WorkoutsToolbar from "@/features/workouts/components/WorkoutsToolbar";
 import {
   mapWorkout,
