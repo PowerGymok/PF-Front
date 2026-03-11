@@ -8,7 +8,6 @@ import { getAllCoaches, GetAllUsers } from "@/services/user.services";
 import { AllUsers } from "@/interface/AllUsers";
 import { CoachInterface } from "@/interface/Coach";
 
-
 const DashboardAdminPage = () => {
   const { isLoading, dataUser, logOut } = useAuth();
   const router = useRouter();
@@ -20,7 +19,6 @@ const DashboardAdminPage = () => {
     if (dataUser && dataUser.user?.role !== "Admin")
       router.replace("/dashboard");
   }, [dataUser, isLoading, router]);
-
 
   useEffect(() => {
     const fetch = async () => {
@@ -114,14 +112,38 @@ const DashboardAdminPage = () => {
         </Link>
 
         <Link
-          href="/admin/dashboard/newClases"
+          href="/admin/dashboard/token-packages"
           className="bg-white p-6 rounded-xl shadow-md hover:shadow-lg transition"
         >
           <h3 className="text-lg font-semibold text-gray-800">
-            Crear Nueva Clase
+            Gestionar Tokens
           </h3>
           <p className="text-gray-500 mt-1">
-            Agregar nuevas clases al sistema.
+            Crear/eliminar paquete de tokens.
+          </p>
+        </Link>
+
+        <Link
+          href="/workouts"
+          className="bg-white p-6 rounded-xl shadow-md hover:shadow-lg transition"
+        >
+          <h3 className="text-lg font-semibold text-gray-800">
+            Gestionar Catalogo De Clases
+          </h3>
+          <p className="text-gray-500 mt-1">
+            Agregar/editar/eliminar clases al sistema.
+          </p>
+        </Link>
+
+        <Link
+          href="/booking"
+          className="bg-white p-6 rounded-xl shadow-md hover:shadow-lg transition"
+        >
+          <h3 className="text-lg font-semibold text-gray-800">
+            Crear Nueva Clase Calendario
+          </h3>
+          <p className="text-gray-500 mt-1">
+            Agregar nuevas clases al calendario.
           </p>
         </Link>
       </div>

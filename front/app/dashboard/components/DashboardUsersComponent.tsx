@@ -1,7 +1,7 @@
 "use client";
 
 import { useAuth } from "@/app/contexts/AuthContext";
-import { useEffect, useState} from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import CompleteProfileAlert from "@/app/dashboard/components/CompleteProfileAlert";
@@ -26,7 +26,7 @@ const DashboardUsersPage = () => {
     router.push("/");
   };
 
-  //marcado provisional hasta que se pruebe con coaches 
+  //marcado provisional hasta que se pruebe con coaches
   // const handleChat = (coachId: string) => {
   //     if (typeof window !== "undefined") {
   //       router.push(`${PATHROUTES.USERS_CHAT}?coachId=${coachId}`);
@@ -37,7 +37,7 @@ const DashboardUsersPage = () => {
 
   const isProfileComplete = dataUser?.user?.isProfileComplete;
 
-  const hasBookedClasses = false
+  const hasBookedClasses = false;
 
   return (
     <div className="min-h-screen bg-gray-100 p-8">
@@ -76,18 +76,24 @@ const DashboardUsersPage = () => {
 
       <div className="mt-10 flex gap-4 flex-wrap">
         <Link
-          href={"/workouts"}
+          href={"/users/dashboard/reservations"}
           className="bg-blue-500 hover:bg-blue-600 text-white px-6 py-2 rounded-lg transition"
         >
-          Agendar Nueva Clase
+          Mis Reservas
         </Link>
 
         {!hasBookedClasses ? (
-          <Link href="/booking" className="bg-blue-500 hover:bg-blue-600 text-white px-6 py-2 rounded-lg transition" >
+          <Link
+            href="/booking"
+            className="bg-blue-500 hover:bg-blue-600 text-white px-6 py-2 rounded-lg transition"
+          >
             Agenda tu primera clase
           </Link>
         ) : (
-          <button onClick={() => router.push(PATHROUTES.USERS_CHAT)} className="bg-green-500 hover:bg-green-600 text-white px-6 py-2 rounded-lg transition cursor-pointer" >
+          <button
+            onClick={() => router.push(PATHROUTES.USERS_CHAT)}
+            className="bg-green-500 hover:bg-green-600 text-white px-6 py-2 rounded-lg transition cursor-pointer"
+          >
             Chat con tu coach
           </button>
         )}

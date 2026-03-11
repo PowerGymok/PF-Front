@@ -298,7 +298,7 @@ export default function PaymentSuccessPage() {
               )}
               {state.flow === "tokens" && (
                 <ActionButton
-                  onClick={() => router.push("/tokens")}
+                  onClick={() => router.push("/users/dashboard/tokens")}
                   label="Ver mis tokens"
                 />
               )}
