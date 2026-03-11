@@ -3,6 +3,8 @@
 import { useMemo, useState } from "react";
 import WorkoutCard from "./WorkoutCard";
 import { Workout } from "../types/workout.types";
+import { useAuth } from "@/app/contexts/AuthContext";
+import EditClassModal from "@/features/booking/components/EditClassModal";
 
 interface Props {
   initialWorkouts: Workout[];
@@ -11,27 +13,35 @@ interface Props {
 export default function WorkoutsClient({ initialWorkouts }: Props) {
   const [search, setSearch] = useState("");
   const [intensityFilter, setIntensityFilter] = useState("");
+  const [workouts, setWorkouts] = useState<Workout[]>(initialWorkouts);
+  const [isEditOpen, setIsEditOpen] = useState(false);
+  const [editingId, setEditingId] = useState<string | undefined>();
+
+  const { dataUser } = useAuth();
+  const role = dataUser?.user?.role as string | undefined;
+  const isAdminOrCoach = role === "Admin" || role === "Coach";
 
   const filteredWorkouts = useMemo(() => {
     const searchValue = search.toLowerCase().trim();
-
-    return initialWorkouts.filter((w) => {
-      const searchable = `
-        ${w.name}
-        ${w.shortDescription}
-        ${w.fullDescription}
-        ${w.intensity}
-      `.toLowerCase();
-
+    return workouts.filter((w) => {
+      const searchable =
+        `${w.name} ${w.shortDescription} ${w.fullDescription} ${w.intensity}`.toLowerCase();
       const matchesSearch =
         searchValue === "" || searchable.includes(searchValue);
-
       const matchesIntensity =
         intensityFilter === "" || w.intensity === intensityFilter;
-
       return matchesSearch && matchesIntensity;
     });
-  }, [initialWorkouts, search, intensityFilter]);
+  }, [workouts, search, intensityFilter]);
+
+  const handleDeleted = (id: string) => {
+    setWorkouts((prev) => prev.filter((w) => w.id !== id));
+  };
+
+  const handleEditRequest = (workout: Workout) => {
+    setEditingId(workout.id);
+    setIsEditOpen(true);
+  };
 
   return (
     <div className="w-full max-w-6xl space-y-10">
@@ -60,7 +70,12 @@ export default function WorkoutsClient({ initialWorkouts }: Props) {
       {/* GRID */}
       <div className="grid gap-8 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
         {filteredWorkouts.map((workout) => (
-          <WorkoutCard key={workout.id} workout={workout} />
+          <WorkoutCard
+            key={workout.id}
+            workout={workout}
+            onDeleted={handleDeleted}
+            onEditRequest={isAdminOrCoach ? handleEditRequest : undefined}
+          />
         ))}
 
         {filteredWorkouts.length === 0 && (
@@ -69,6 +84,24 @@ export default function WorkoutsClient({ initialWorkouts }: Props) {
           </p>
         )}
       </div>
+
+      {/* Modal editar clase — solo Admin/Coach */}
+      {isAdminOrCoach && (
+        <EditClassModal
+          isOpen={isEditOpen}
+          onClose={() => {
+            setIsEditOpen(false);
+            setEditingId(undefined);
+          }}
+          onSuccess={() => {
+            setIsEditOpen(false);
+            setEditingId(undefined);
+            window.location.reload();
+          }}
+          authToken={dataUser?.token ?? ""}
+          preselectedId={editingId}
+        />
+      )}
     </div>
   );
 }

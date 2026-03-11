@@ -1,7 +1,7 @@
 "use client";
 
-import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { useAuth } from "@/app/contexts/AuthContext";
 import { DeleteMembership } from "@/features/memberships/services/membership.service";
 import { MembershipAdminResponse } from "@/features/memberships/validators/membershipSchema";
@@ -18,29 +18,21 @@ export default function MembershipAdminCard({
   const { dataUser } = useAuth();
   const router = useRouter();
   const [showModal, setShowModal] = useState(false);
-  const [deleteStatus, setDeleteStatus] = useState<null | "loading" | "error">(
-    null,
-  );
+  const [deleting, setDeleting] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
 
   const handleDelete = async () => {
-    setDeleteStatus("loading");
-    setErrorMsg("");
-
     const token = dataUser?.token;
-    if (!token) {
-      setDeleteStatus("error");
-      setErrorMsg("No hay sesión activa.");
-      return;
-    }
-
+    if (!token) return;
+    setDeleting(true);
     try {
       await DeleteMembership(membership.id, token);
       setShowModal(false);
       onDeleted(membership.id);
     } catch (error) {
-      setDeleteStatus("error");
       setErrorMsg(error instanceof Error ? error.message : "Error inesperado");
+    } finally {
+      setDeleting(false);
     }
   };
 
@@ -49,8 +41,7 @@ export default function MembershipAdminCard({
       <div style={styles.card}>
         {/* Header */}
         <div style={styles.header}>
-          <h3 style={{ ...styles.name, color: "black" }}>{membership.name}</h3>
-
+          <h3 style={styles.name}>{membership.name}</h3>
           <span
             style={{
               ...styles.badge,
@@ -65,64 +56,155 @@ export default function MembershipAdminCard({
 
         {/* Info */}
         <div style={styles.info}>
-          <span>{`${Number(membership.price).toFixed(2)} USD`}</span>
-
+          <span
+            style={styles.infoChip}
+          >{`${Number(membership.price).toFixed(2)} USD`}</span>
           {membership.durationDays && (
-            <span>⏱ {membership.durationDays} días</span>
+            <span style={styles.infoChip}>
+              ⏱ {membership.durationDays} días
+            </span>
           )}
           {membership.discountPercentage ? (
-            <span>🏷 {membership.discountPercentage}% dto.</span>
+            <span style={styles.infoChip}>
+              🏷 {membership.discountPercentage}% dto.
+            </span>
           ) : null}
-          <span>
+        </div>
+
+        {/* Beneficios */}
+        <div style={styles.benefits}>
+          <span
+            style={
+              membership.includesSpecialClasses
+                ? styles.benefitOn
+                : styles.benefitOff
+            }
+          >
             {membership.includesSpecialClasses ? "✓" : "✗"} Clases especiales
           </span>
-          <span>{membership.includesCoachChat ? "✓" : "✗"} Chat con coach</span>
+          <span
+            style={
+              membership.includesCoachChat
+                ? styles.benefitOn
+                : styles.benefitOff
+            }
+          >
+            {membership.includesCoachChat ? "✓" : "✗"} Chat con coach
+          </span>
         </div>
 
         {membership.description && (
           <p style={styles.description}>{membership.description}</p>
         )}
 
-        {/* Actions */}
+        {/* Divider */}
+        <div style={styles.divider} />
+
+        {/* Botones */}
         <div style={styles.actions}>
           <button
-            onClick={() => router.push(`/memberships/${membership.id}/edit`)}
-            style={styles.editBtn}
+            style={styles.btnVer}
+            onMouseEnter={(e) =>
+              (e.currentTarget.style.borderColor = "rgba(255,255,255,0.4)")
+            }
+            onMouseLeave={(e) =>
+              (e.currentTarget.style.borderColor = "rgba(255,255,255,0.15)")
+            }
+            onClick={() =>
+              router.push(`/admin/dashboard/memberships/${membership.id}`)
+            }
           >
+            <svg width="13" height="13" viewBox="0 0 14 14" fill="none">
+              <path
+                d="M7 2.5C4 2.5 1.5 7 1.5 7S4 11.5 7 11.5 12.5 7 12.5 7 10 2.5 7 2.5Z"
+                stroke="currentColor"
+                strokeWidth="1.4"
+                strokeLinejoin="round"
+              />
+              <circle
+                cx="7"
+                cy="7"
+                r="1.5"
+                stroke="currentColor"
+                strokeWidth="1.4"
+              />
+            </svg>
+            Ver
+          </button>
+
+          <button
+            style={styles.btnEditar}
+            onMouseEnter={(e) =>
+              (e.currentTarget.style.borderColor = "rgba(255,255,255,0.4)")
+            }
+            onMouseLeave={(e) =>
+              (e.currentTarget.style.borderColor = "rgba(255,255,255,0.15)")
+            }
+            onClick={() =>
+              router.push(`/admin/dashboard/memberships/${membership.id}/edit`)
+            }
+          >
+            <svg width="13" height="13" viewBox="0 0 14 14" fill="none">
+              <path
+                d="M9.5 2.5l2 2L4 12H2v-2L9.5 2.5Z"
+                stroke="currentColor"
+                strokeWidth="1.4"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </svg>
             Editar
           </button>
-          <button onClick={() => setShowModal(true)} style={styles.deleteBtn}>
+
+          <button
+            style={styles.btnEliminar}
+            onMouseEnter={(e) =>
+              (e.currentTarget.style.backgroundColor = "rgba(220,38,38,0.15)")
+            }
+            onMouseLeave={(e) =>
+              (e.currentTarget.style.backgroundColor = "transparent")
+            }
+            onClick={() => setShowModal(true)}
+          >
+            <svg width="13" height="13" viewBox="0 0 14 14" fill="none">
+              <path
+                d="M2 3.5h10M5 3.5V2.5h4v1M5.5 6v4M8.5 6v4M3 3.5l.7 7.5h6.6L11 3.5"
+                stroke="currentColor"
+                strokeWidth="1.4"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </svg>
             Eliminar
           </button>
         </div>
       </div>
 
-      {/* Modal de confirmación */}
+      {/* Modal confirmación */}
       {showModal && (
         <div style={styles.overlay}>
           <div style={styles.modal}>
             <h2 style={styles.modalTitle}>¿Eliminar membresía?</h2>
             <p style={styles.modalDesc}>
-              Estás a punto de eliminar <strong>{membership.name}</strong>. Esta
+              Estás a punto de eliminar{" "}
+              <strong style={{ color: "#fff" }}>{membership.name}</strong>. Esta
               acción no se puede deshacer.
             </p>
-
             {errorMsg && <p style={styles.error}>{errorMsg}</p>}
-
             <div style={styles.modalActions}>
               <button
                 onClick={() => setShowModal(false)}
-                disabled={deleteStatus === "loading"}
+                disabled={deleting}
                 style={styles.cancelBtn}
               >
                 Cancelar
               </button>
               <button
                 onClick={handleDelete}
-                disabled={deleteStatus === "loading"}
+                disabled={deleting}
                 style={styles.confirmBtn}
               >
-                {deleteStatus === "loading" ? "Eliminando..." : "Sí, eliminar"}
+                {deleting ? "Eliminando..." : "Sí, eliminar"}
               </button>
             </div>
           </div>
@@ -134,14 +216,14 @@ export default function MembershipAdminCard({
 
 const styles: Record<string, React.CSSProperties> = {
   card: {
-    border: "1px solid #e5e7eb",
-    borderRadius: 10,
-    padding: "1.25rem",
+    background: "#18181b",
+    border: "1px solid rgba(255,255,255,0.08)",
+    borderRadius: 14,
+    padding: "1.25rem 1.5rem",
     display: "flex",
     flexDirection: "column",
     gap: "0.75rem",
     fontFamily: "sans-serif",
-    background: "#fff",
   },
   header: {
     display: "flex",
@@ -149,7 +231,7 @@ const styles: Record<string, React.CSSProperties> = {
     alignItems: "center",
     gap: "0.5rem",
   },
-  name: { margin: 0, fontSize: "1rem", fontWeight: 700 },
+  name: { margin: 0, fontSize: "1rem", fontWeight: 700, color: "#fff" },
   badge: {
     fontSize: "0.7rem",
     fontWeight: 600,
@@ -157,76 +239,115 @@ const styles: Record<string, React.CSSProperties> = {
     borderRadius: 999,
     flexShrink: 0,
   },
-  badgeActive: { background: "#dcfce7", color: "#16a34a" },
-  badgeInactive: { background: "#fee2e2", color: "#dc2626" },
-  info: {
-    display: "flex",
-    flexWrap: "wrap",
-    gap: "0.4rem 1rem",
+  badgeActive: { background: "rgba(74,222,128,0.15)", color: "#4ade80" },
+  badgeInactive: { background: "rgba(248,113,113,0.15)", color: "#f87171" },
+  info: { display: "flex", flexWrap: "wrap", gap: "0.4rem" },
+  infoChip: {
+    fontSize: "0.78rem",
+    color: "rgba(255,255,255,0.5)",
+    background: "rgba(255,255,255,0.06)",
+    padding: "0.2rem 0.6rem",
+    borderRadius: 6,
+  },
+  benefits: { display: "flex", gap: "1rem", flexWrap: "wrap" },
+  benefitOn: { fontSize: "0.78rem", color: "#4ade80" },
+  benefitOff: { fontSize: "0.78rem", color: "rgba(255,255,255,0.2)" },
+  description: {
+    margin: 0,
     fontSize: "0.8rem",
-    color: "#555",
+    color: "rgba(255,255,255,0.4)",
+    lineHeight: 1.5,
   },
-  description: { margin: 0, fontSize: "0.825rem", color: "#777" },
-  actions: { display: "flex", gap: "0.5rem", marginTop: "0.25rem" },
-  editBtn: {
+  divider: { height: "1px", backgroundColor: "rgba(255,255,255,0.07)" },
+  actions: { display: "flex", gap: "0.5rem" },
+  btnVer: {
     flex: 1,
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: "0.35rem",
     padding: "0.5rem",
-    background: "#111",
-    color: "#fff",
-    border: "none",
-    borderRadius: 6,
-    fontSize: "0.85rem",
+    background: "transparent",
+    border: "1px solid rgba(255,255,255,0.15)",
+    borderRadius: 8,
+    fontSize: "0.8rem",
+    fontWeight: 500,
+    color: "rgba(255,255,255,0.7)",
     cursor: "pointer",
+    transition: "border-color 0.15s",
   },
-  deleteBtn: {
+  btnEditar: {
     flex: 1,
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: "0.35rem",
     padding: "0.5rem",
-    background: "#fff",
-    color: "#dc2626",
-    border: "1px solid #dc2626",
-    borderRadius: 6,
-    fontSize: "0.85rem",
+    background: "transparent",
+    border: "1px solid rgba(255,255,255,0.15)",
+    borderRadius: 8,
+    fontSize: "0.8rem",
+    fontWeight: 500,
+    color: "rgba(255,255,255,0.7)",
     cursor: "pointer",
+    transition: "border-color 0.15s",
+  },
+  btnEliminar: {
+    flex: 1,
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: "0.35rem",
+    padding: "0.5rem",
+    background: "transparent",
+    border: "1px solid rgba(220,38,38,0.4)",
+    borderRadius: 8,
+    fontSize: "0.8rem",
+    fontWeight: 500,
+    color: "#f87171",
+    cursor: "pointer",
+    transition: "background-color 0.15s",
   },
   overlay: {
     position: "fixed",
     inset: 0,
-    background: "rgba(0,0,0,0.5)",
+    background: "rgba(0,0,0,0.7)",
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
     zIndex: 50,
   },
   modal: {
-    background: "#fff",
-    borderRadius: 10,
+    background: "#18181b",
+    border: "1px solid rgba(255,255,255,0.1)",
+    borderRadius: 14,
     padding: "2rem",
     maxWidth: 400,
     width: "90%",
     display: "flex",
     flexDirection: "column",
     gap: "1rem",
-    fontFamily: "sans-serif",
   },
-  modalTitle: { margin: 0, fontSize: "1.1rem", fontWeight: 700 },
-  modalDesc: { margin: 0, fontSize: "0.9rem", color: "#444" },
-  error: { color: "red", margin: 0, fontSize: "0.85rem" },
+  modalTitle: { margin: 0, fontSize: "1.1rem", fontWeight: 700, color: "#fff" },
+  modalDesc: { margin: 0, fontSize: "0.9rem", color: "rgba(255,255,255,0.5)" },
+  error: { color: "#f87171", margin: 0, fontSize: "0.85rem" },
   modalActions: { display: "flex", gap: "0.75rem", justifyContent: "flex-end" },
   cancelBtn: {
     padding: "0.5rem 1rem",
-    background: "#f4f4f4",
-    border: "1px solid #ddd",
-    borderRadius: 6,
+    background: "transparent",
+    border: "1px solid rgba(255,255,255,0.15)",
+    borderRadius: 8,
     cursor: "pointer",
-    fontSize: "0.9rem",
+    fontSize: "0.875rem",
+    color: "rgba(255,255,255,0.6)",
   },
   confirmBtn: {
     padding: "0.5rem 1rem",
     background: "#dc2626",
     color: "#fff",
     border: "none",
-    borderRadius: 6,
+    borderRadius: 8,
     cursor: "pointer",
-    fontSize: "0.9rem",
+    fontSize: "0.875rem",
   },
 };

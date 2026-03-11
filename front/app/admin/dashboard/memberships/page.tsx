@@ -1,54 +1,73 @@
-import { GetMemberships } from "@/features/memberships/services/membership.service";
-import { MembershipCard } from "@/features/memberships/components/MembershipCard";
-import { mapToMembershipCard } from "@/features/memberships/utils/membership.mapper";
-import { BenefitsSection } from "@/features/memberships/components/BenefitsSection";
-import { DescriptionSection } from "@/features/memberships/components/DescriptionSection";
+"use client";
 
-export default async function MembershipsPage() {
-  const memberships = await GetMemberships();
-  const cards = memberships.map((m) => ({
-    ...mapToMembershipCard(m),
-    id: m.id,
-  }));
+import { useEffect, useState } from "react";
+import { useAuth } from "@/app/contexts/AuthContext";
+import { GetAdminMemberships } from "@/features/memberships/services/membership.service";
+import { MembershipAdminResponse } from "@/features/memberships/validators/membershipSchema";
+import MembershipAdminCard from "@/features/memberships/pages/GetAllMembership";
+import MembershipsToolbar from "@/features/memberships/components/MembershipsToolbar";
+
+export default function AdminMembershipsPage() {
+  const { dataUser } = useAuth();
+  const [memberships, setMemberships] = useState<MembershipAdminResponse[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+
+  useEffect(() => {
+    const token = dataUser?.token;
+    if (!token) return;
+
+    GetAdminMemberships(token)
+      .then((data) => setMemberships(data))
+      .catch((err) => setError(err.message ?? "Error al cargar membresías"))
+      .finally(() => setLoading(false));
+  }, [dataUser?.token]);
+
+  const handleDeleted = (id: string) => {
+    setMemberships((prev) => prev.filter((m) => m.id !== id));
+  };
 
   return (
-    <main className="bg-black">
-      <DescriptionSection />
-
-      <section className="py-12 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-7xl mx-auto mb-10">
-          <h1 className="text-2xl sm:text-3xl font-extrabold text-white">
-            Planes de membresía
-          </h1>
-          <div className="mt-2 h-0.5 w-16 bg-red-500" />
+    <main className="min-h-screen bg-black text-white px-6 py-10">
+      {/* Header + Toolbar */}
+      <div className="max-w-5xl mx-auto flex items-center justify-between mb-8">
+        <div>
+          <h1 className="text-2xl font-extrabold text-white">Membresías</h1>
+          <div className="mt-1.5 h-0.5 w-12 bg-red-500" />
         </div>
+        <MembershipsToolbar />
+      </div>
 
-        <div className="max-w-7xl mx-auto">
-          {cards.length === 0 ? (
-            <p className="text-white/50 text-center py-12">
-              No hay membresías disponibles.
-            </p>
-          ) : (
-            <div
-              className="grid gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
-              style={{
-                gridTemplateColumns: `repeat(${Math.min(cards.length, 4)}, minmax(0, 1fr))`,
-              }}
-            >
-              {cards.map(({ id, ...card }) => (
-                <div key={id} className="flex flex-col gap-2">
-                  <MembershipCard {...card} />
-                  <p className="text-white/30 text-xs text-center font-mono break-all">
-                    {id}
-                  </p>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
-      </section>
+      {/* Content */}
+      <div className="max-w-5xl mx-auto">
+        {loading && (
+          <p className="text-white/40 text-sm text-center py-16">
+            Cargando membresías...
+          </p>
+        )}
 
-      <BenefitsSection />
+        {!loading && error && (
+          <p className="text-red-400 text-sm text-center py-16">{error}</p>
+        )}
+
+        {!loading && !error && memberships.length === 0 && (
+          <p className="text-white/40 text-sm text-center py-16">
+            No hay membresías creadas aún.
+          </p>
+        )}
+
+        {!loading && !error && memberships.length > 0 && (
+          <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
+            {memberships.map((membership) => (
+              <MembershipAdminCard
+                key={membership.id}
+                membership={membership}
+                onDeleted={handleDeleted}
+              />
+            ))}
+          </div>
+        )}
+      </div>
     </main>
   );
 }

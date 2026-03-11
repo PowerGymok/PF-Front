@@ -224,7 +224,7 @@ const DashboardUsersPage = () => {
           href={"/workouts"}
           className="text-white relative transition-all duration-300 hover:after:w-full after:content-[''] after:absolute after:left-0 after:-bottom-1 after:h-[1px] after:w-0 after:bg-white after:transition-all after:duration-300 hover:text-gray-300"
         >
-          Agendar Nueva Clase
+          Mis Reservas
         </Link>
 
         {!hasBookedClasses ? (
