@@ -9,13 +9,21 @@ export const getConversationsByRole = async (
   userId: string
 ) => {
 
-  const decoded = JSON.parse(atob(token.split(".")[1]));
-const realUserId = decoded.sub;
+  if (!token) {
+    throw new Error("Token requerido para obtener conversaciones");
+  }
 
-const endpoint =
-  role === "Coach"
-    ? `/chat/conversations/coach/${realUserId}`
-    : `/chat/conversations/user/${realUserId}`;
+  const decoded = JSON.parse(atob(token.split(".")[1]));
+  const realUserId = decoded.sub;
+
+  if (!realUserId) {
+    throw new Error("UserId no válido en token");
+  }
+
+  const endpoint =
+    role === "Coach"
+      ? `/chat/conversations/coach/${realUserId}`
+      : `/chat/conversations/user/${realUserId}`;
 
   console.log("FULL URL:", `${API}${endpoint}`);
   console.log("TOKEN ENVIADO:", token);
@@ -23,7 +31,7 @@ const endpoint =
   const res = await fetch(`${API}${endpoint}`, {
     method: "GET",
     headers: {
-      "Authorization": `Bearer ${token}`,
+      Authorization: `Bearer ${token}`,
       "Content-Type": "application/json",
     },
   });
@@ -38,26 +46,63 @@ const endpoint =
 };
 
 
+// export const getMessagesByConversation = async (
+//   conversationId: string,
+//   token: string,
+//   userId: string
+// ) => {
+
+//   if (!conversationId || !userId || !token) return [];
+
+//   const res = await fetch(
+//     `${API}/chat/conversations/${conversationId}/messages?userId=${userId}`,
+//     {
+//       headers: {
+//         Authorization: `Bearer ${token}`,
+//         "Content-Type": "application/json",
+//       },
+//     }
+//   );
+
+//   if (!res.ok) {
+//     throw new Error("Error obteniendo mensajes");
+//   }
+
+//   return res.json();
+// };
+
 export const getMessagesByConversation = async (
-  conversationId: string,
-  token: string,
-  userId: string
+  conversationId: string | undefined,
+  token: string | undefined,
+  userId: string | undefined
 ) => {
+
+  if (!conversationId || !token || !userId) {
+    return [];
+  }
+
   const res = await fetch(
     `${API}/chat/conversations/${conversationId}/messages?userId=${userId}`,
     {
+      method: "GET",
       headers: {
-        "Authorization": `Bearer ${token}`,
+        Authorization: `Bearer ${token}`,
         "Content-Type": "application/json",
       },
     }
   );
 
   if (!res.ok) {
-    throw new Error("Error obteniendo mensajes");
+    const error = await res.text().catch(() => "");
+    console.error("BACKEND ERROR:", error);
+    throw new Error(`Error obteniendo mensajes: ${res.status}`);
   }
 
-  return res.json();
+  const data = await res.json();
+
+  if (!Array.isArray(data)) return [];
+
+  return data;
 };
 
 export const createConversation = async (
@@ -67,7 +112,7 @@ export const createConversation = async (
   const res = await fetch(`${API}/chat/conversations`, {
     method: "POST",
     headers: {
-      "Authorization": `Bearer ${token}`,
+      Authorization: `Bearer ${token}`,
       "Content-Type": "application/json",
     },
     body: JSON.stringify({ coachId }),

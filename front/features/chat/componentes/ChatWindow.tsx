@@ -68,10 +68,15 @@ const ChatWindow = () => {
           ) : (
             conversations.map((conversation) => {
 
-              const coachName =
-                conversation.coach?.name ||
-                conversation.coach?.email ||
-                "Coach";
+              const otherUser =
+                dataUser?.user?.role === "Coach"
+                ? conversation.user
+                : conversation.coach;
+
+                const displayName =
+                otherUser?.name ||
+                otherUser?.email ||
+                "Usuario";
 
               return (
                 <button
@@ -85,7 +90,7 @@ const ChatWindow = () => {
                 >
 
                   <p className="truncate">
-                    {coachName}
+                    {displayName}
                   </p>
 
                   <p className="text-[10px] text-gray-500 truncate">
@@ -108,7 +113,7 @@ const ChatWindow = () => {
         <div className="border-b border-gray-200 p-4">
           <h2 className="font-semibold text-gray-800">
             {activeConversation
-              ? `Chat con ${activeConversation?.coach?.name ?? "tu coach"}`
+              ? `Chat con ${dataUser?.user?.role === "Coach" ? activeConversation.user?.name || activeConversation.user?.email || "Usuario" : activeConversation.coach?.name || activeConversation.coach?.email || "Usuario"}`
               : "Selecciona un chat"}
           </h2>
         </div>
