@@ -138,7 +138,7 @@ const DashboardAdminPage = () => {
             Gestionar Membresías
           </h3>
           <p className="text-gray-500 leading-relaxed">
-            Crear y editar planes de membresía.
+            Crear/editar/reactivar o eliminar planes de membresía.
           </p>
         </Link>
 
@@ -150,7 +150,7 @@ const DashboardAdminPage = () => {
             Gestionar Paquetes De Tokens.
           </h3>
           <p className="text-gray-500 leading-relaxed">
-            Crear y editar planes de tokens.
+            Crear/reactivar o eliminar planes de tokens.
           </p>
         </Link>
 
@@ -159,10 +159,10 @@ const DashboardAdminPage = () => {
           className="bg-neutral-900 border border-neutral-800 p-8 rounded-xl hover:border-neutral-600 transition"
         >
           <h3 className="text-lg font-light tracking-wide mb-2">
-            Crear Nueva Clase De Catalogo
+            Gestionar Clases Del Catalogo
           </h3>
           <p className="text-gray-500 leading-relaxed">
-            Crear/editar o eliminar clases del catalogo.
+            Crear/editar/reactivar o eliminar clases del catalogo.
           </p>
         </Link>
 

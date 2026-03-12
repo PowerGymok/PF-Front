@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { fetchWithAuth } from "@/helpers/fetchWithAuth";
 import { useAuth } from "@/app/contexts/AuthContext";
+import { CompleteProfileInterface } from "@/interface/CompleteProfileInterface";
 
 export default function CompleteProfilePage() {
   const router = useRouter();
@@ -40,7 +41,7 @@ export default function CompleteProfilePage() {
           body: JSON.stringify({
             address: formData.address,
             city: formData.city,
-            phone: Number(formData.phone),
+            phone: String(formData.phone),
             Birthdate: formData.birthdate,
           }),
         },
@@ -124,7 +125,7 @@ export default function CompleteProfilePage() {
         />
 
         <input
-          type="number"
+          type="text"
           name="phone"
           placeholder="Teléfono"
           value={formData.phone}

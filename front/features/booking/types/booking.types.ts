@@ -10,7 +10,7 @@ export type Intensity = "baja" | "media" | "alta";
 export interface Booking {
   id: string;
   id_class_schedule: string;
-  classId: string; // ✅ id de la clase (no del schedule) — para editar
+  classId: string;
   title: string;
   description: string;
   coach: string;
@@ -20,8 +20,9 @@ export interface Booking {
   spaces_available: number;
   time: string;
   date: string;
-  duration?: number; // ✅ duración en minutos — para editar
+  duration?: number;
   tokens_required: number;
+  isActive?: boolean;
 }
 
 /*

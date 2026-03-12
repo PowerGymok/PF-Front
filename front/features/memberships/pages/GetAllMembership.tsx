@@ -3,22 +3,28 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/app/contexts/AuthContext";
-import { DeleteMembership } from "@/features/memberships/services/membership.service";
+import {
+  DeleteMembership,
+  ActivateMembership,
+} from "@/features/memberships/services/membership.service";
 import { MembershipAdminResponse } from "@/features/memberships/validators/membershipSchema";
 
 interface MembershipAdminCardProps {
   membership: MembershipAdminResponse;
   onDeleted: (id: string) => void;
+  onRestored?: (id: string) => void;
 }
 
 export default function MembershipAdminCard({
   membership,
   onDeleted,
+  onRestored,
 }: MembershipAdminCardProps) {
   const { dataUser } = useAuth();
   const router = useRouter();
   const [showModal, setShowModal] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const [restoring, setRestoring] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
 
   const handleDelete = async () => {
@@ -33,6 +39,21 @@ export default function MembershipAdminCard({
       setErrorMsg(error instanceof Error ? error.message : "Error inesperado");
     } finally {
       setDeleting(false);
+    }
+  };
+
+  const handleRestore = async () => {
+    const token = dataUser?.token;
+    if (!token) return;
+    setRestoring(true);
+    setErrorMsg("");
+    try {
+      await ActivateMembership(membership.id, token);
+      onRestored?.(membership.id);
+    } catch (error) {
+      setErrorMsg(error instanceof Error ? error.message : "Error inesperado");
+    } finally {
+      setRestoring(false);
     }
   };
 
@@ -97,86 +118,124 @@ export default function MembershipAdminCard({
           <p style={styles.description}>{membership.description}</p>
         )}
 
-        {/* Divider */}
         <div style={styles.divider} />
+
+        {errorMsg && <p style={styles.error}>{errorMsg}</p>}
 
         {/* Botones */}
         <div style={styles.actions}>
-          <button
-            style={styles.btnVer}
-            onMouseEnter={(e) =>
-              (e.currentTarget.style.borderColor = "rgba(255,255,255,0.4)")
-            }
-            onMouseLeave={(e) =>
-              (e.currentTarget.style.borderColor = "rgba(255,255,255,0.15)")
-            }
-            onClick={() =>
-              router.push(`/admin/dashboard/memberships/${membership.id}`)
-            }
-          >
-            <svg width="13" height="13" viewBox="0 0 14 14" fill="none">
-              <path
-                d="M7 2.5C4 2.5 1.5 7 1.5 7S4 11.5 7 11.5 12.5 7 12.5 7 10 2.5 7 2.5Z"
-                stroke="currentColor"
-                strokeWidth="1.4"
-                strokeLinejoin="round"
-              />
-              <circle
-                cx="7"
-                cy="7"
-                r="1.5"
-                stroke="currentColor"
-                strokeWidth="1.4"
-              />
-            </svg>
-            Ver
-          </button>
-
-          <button
-            style={styles.btnEditar}
-            onMouseEnter={(e) =>
-              (e.currentTarget.style.borderColor = "rgba(255,255,255,0.4)")
-            }
-            onMouseLeave={(e) =>
-              (e.currentTarget.style.borderColor = "rgba(255,255,255,0.15)")
-            }
-            onClick={() =>
-              router.push(`/admin/dashboard/memberships/${membership.id}/edit`)
-            }
-          >
-            <svg width="13" height="13" viewBox="0 0 14 14" fill="none">
-              <path
-                d="M9.5 2.5l2 2L4 12H2v-2L9.5 2.5Z"
-                stroke="currentColor"
-                strokeWidth="1.4"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-            </svg>
-            Editar
-          </button>
-
-          <button
-            style={styles.btnEliminar}
-            onMouseEnter={(e) =>
-              (e.currentTarget.style.backgroundColor = "rgba(220,38,38,0.15)")
-            }
-            onMouseLeave={(e) =>
-              (e.currentTarget.style.backgroundColor = "transparent")
-            }
-            onClick={() => setShowModal(true)}
-          >
-            <svg width="13" height="13" viewBox="0 0 14 14" fill="none">
-              <path
-                d="M2 3.5h10M5 3.5V2.5h4v1M5.5 6v4M8.5 6v4M3 3.5l.7 7.5h6.6L11 3.5"
-                stroke="currentColor"
-                strokeWidth="1.4"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-            </svg>
-            Eliminar
-          </button>
+          {membership.isActive ? (
+            <>
+              <button
+                style={styles.btnVer}
+                onMouseEnter={(e) =>
+                  (e.currentTarget.style.borderColor = "rgba(255,255,255,0.4)")
+                }
+                onMouseLeave={(e) =>
+                  (e.currentTarget.style.borderColor = "rgba(255,255,255,0.15)")
+                }
+                onClick={() =>
+                  router.push(`/admin/dashboard/memberships/${membership.id}`)
+                }
+              >
+                <svg width="13" height="13" viewBox="0 0 14 14" fill="none">
+                  <path
+                    d="M7 2.5C4 2.5 1.5 7 1.5 7S4 11.5 7 11.5 12.5 7 12.5 7 10 2.5 7 2.5Z"
+                    stroke="currentColor"
+                    strokeWidth="1.4"
+                    strokeLinejoin="round"
+                  />
+                  <circle
+                    cx="7"
+                    cy="7"
+                    r="1.5"
+                    stroke="currentColor"
+                    strokeWidth="1.4"
+                  />
+                </svg>
+                Ver
+              </button>
+              <button
+                style={styles.btnEditar}
+                onMouseEnter={(e) =>
+                  (e.currentTarget.style.borderColor = "rgba(255,255,255,0.4)")
+                }
+                onMouseLeave={(e) =>
+                  (e.currentTarget.style.borderColor = "rgba(255,255,255,0.15)")
+                }
+                onClick={() =>
+                  router.push(
+                    `/admin/dashboard/memberships/${membership.id}/edit`,
+                  )
+                }
+              >
+                <svg width="13" height="13" viewBox="0 0 14 14" fill="none">
+                  <path
+                    d="M9.5 2.5l2 2L4 12H2v-2L9.5 2.5Z"
+                    stroke="currentColor"
+                    strokeWidth="1.4"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                </svg>
+                Editar
+              </button>
+              <button
+                style={styles.btnEliminar}
+                onMouseEnter={(e) =>
+                  (e.currentTarget.style.backgroundColor =
+                    "rgba(220,38,38,0.15)")
+                }
+                onMouseLeave={(e) =>
+                  (e.currentTarget.style.backgroundColor = "transparent")
+                }
+                onClick={() => setShowModal(true)}
+              >
+                <svg width="13" height="13" viewBox="0 0 14 14" fill="none">
+                  <path
+                    d="M2 3.5h10M5 3.5V2.5h4v1M5.5 6v4M8.5 6v4M3 3.5l.7 7.5h6.6L11 3.5"
+                    stroke="currentColor"
+                    strokeWidth="1.4"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                </svg>
+                Eliminar
+              </button>
+            </>
+          ) : (
+            <button
+              style={restoring ? styles.btnRestoring : styles.btnReactivar}
+              disabled={restoring}
+              onMouseEnter={(e) =>
+                !restoring &&
+                (e.currentTarget.style.backgroundColor =
+                  "rgba(74,222,128,0.15)")
+              }
+              onMouseLeave={(e) =>
+                !restoring &&
+                (e.currentTarget.style.backgroundColor = "transparent")
+              }
+              onClick={handleRestore}
+            >
+              <svg width="13" height="13" viewBox="0 0 14 14" fill="none">
+                <path
+                  d="M2 7a5 5 0 1 1 1.5 3.5"
+                  stroke="currentColor"
+                  strokeWidth="1.4"
+                  strokeLinecap="round"
+                />
+                <path
+                  d="M2 4v3h3"
+                  stroke="currentColor"
+                  strokeWidth="1.4"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              </svg>
+              {restoring ? "Reactivando..." : "Reactivar"}
+            </button>
+          )}
         </div>
       </div>
 
@@ -308,6 +367,38 @@ const styles: Record<string, React.CSSProperties> = {
     cursor: "pointer",
     transition: "background-color 0.15s",
   },
+  btnReactivar: {
+    flex: 1,
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: "0.35rem",
+    padding: "0.5rem",
+    background: "transparent",
+    border: "1px solid rgba(74,222,128,0.4)",
+    borderRadius: 8,
+    fontSize: "0.8rem",
+    fontWeight: 500,
+    color: "#4ade80",
+    cursor: "pointer",
+    transition: "background-color 0.15s",
+  },
+  btnRestoring: {
+    flex: 1,
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: "0.35rem",
+    padding: "0.5rem",
+    background: "transparent",
+    border: "1px solid rgba(74,222,128,0.2)",
+    borderRadius: 8,
+    fontSize: "0.8rem",
+    fontWeight: 500,
+    color: "rgba(74,222,128,0.4)",
+    cursor: "not-allowed",
+  },
+  error: { color: "#f87171", margin: 0, fontSize: "0.85rem" },
   overlay: {
     position: "fixed",
     inset: 0,
@@ -330,7 +421,6 @@ const styles: Record<string, React.CSSProperties> = {
   },
   modalTitle: { margin: 0, fontSize: "1.1rem", fontWeight: 700, color: "#fff" },
   modalDesc: { margin: 0, fontSize: "0.9rem", color: "rgba(255,255,255,0.5)" },
-  error: { color: "#f87171", margin: 0, fontSize: "0.85rem" },
   modalActions: { display: "flex", gap: "0.75rem", justifyContent: "flex-end" },
   cancelBtn: {
     padding: "0.5rem 1rem",

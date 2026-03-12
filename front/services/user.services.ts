@@ -254,12 +254,63 @@ export const getAllCoaches = async (token: string, limit?: number) => {
   }
 };
 
-export const getPublicCoaches = async () => {
+export interface CoachPublic {
+  id?: string;
+  name: string;
+  profileImg: string | null;
+}
+
+export const getPublicCoaches = async (): Promise<CoachPublic[]> => {
   try {
-    //esperar a generar mi const res...
-    return mockCoaches;
+    const res = await fetch(
+      `${process.env.NEXT_PUBLIC_API_URL}/coach/nameAndImg`,
+    );
+
+    if (!res.ok) {
+      throw new Error("Error obteniendo coaches");
+    }
+
+    const data = await res.json();
+
+    return data;
   } catch (error) {
     console.error("Error obteniendo coaches:", error);
     return [];
   }
+};
+
+export const DeactivateUser = async (userId: string, token: string) => {
+  const res = await fetch(
+    `${process.env.NEXT_PUBLIC_API_URL}/users/inactive/${userId}`,
+    {
+      method: "PUT",
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    },
+  );
+
+  if (!res.ok) {
+    throw new Error("Error desactivando usuario");
+  }
+
+  return res.json();
+};
+
+export const ActivateUser = async (userId: string, token: string) => {
+  const res = await fetch(
+    `${process.env.NEXT_PUBLIC_API_URL}/users/active/${userId}`,
+    {
+      method: "PUT",
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    },
+  );
+
+  if (!res.ok) {
+    throw new Error("Error activando usuario");
+  }
+
+  return res.json();
 };
