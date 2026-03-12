@@ -30,6 +30,7 @@ export const GetCurrentUser = async (token: string) => {
     const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/me`, {
       method: "GET",
       headers: {
+        "Content-Type": "application/json",
         Authorization: `Bearer ${token}`,
       },
     });
@@ -126,6 +127,7 @@ export const GetUserById = async (id: string, token: string) => {
     const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/users/${id}`, {
       method: "GET",
       headers: {
+        "Content-Type": "application/json",
         Authorization: `Bearer ${token}`,
       },
     });
@@ -235,6 +237,7 @@ export const getAllCoaches = async (token: string, limit?: number) => {
     const res = await fetch(url, {
       method: "GET",
       headers: {
+        "Content-Type": "application/json",
         Authorization: `Bearer ${token}`,
       },
     });

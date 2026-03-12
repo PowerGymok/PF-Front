@@ -8,12 +8,10 @@ interface Props {
 }
 
 export default function AvatarUploader({ token }: Props) {
-
   const { dataUser, updateProfileImg } = useAuth();
   const [loading, setLoading] = useState(false);
 
   const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-
     if (!e.target.files?.length) return;
 
     const file = e.target.files[0];
@@ -22,16 +20,18 @@ export default function AvatarUploader({ token }: Props) {
     formData.append("file", file);
 
     try {
-
       setLoading(true);
 
-      const res = await fetch("http://localhost:3030/files/avatar", {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${token}`,
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/files/avatar`,
+        {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+          body: formData,
         },
-        body: formData,
-      });
+      );
 
       const data = await res.json();
 
@@ -40,21 +40,15 @@ export default function AvatarUploader({ token }: Props) {
       if (data.profileImg) {
         updateProfileImg(data.profileImg);
       }
-
     } catch (error) {
-
       console.error("Upload error", error);
-
     } finally {
-
       setLoading(false);
-
     }
   };
 
   return (
     <div className="flex flex-col items-center">
-
       <img
         src={`${dataUser?.user?.profileImg}?t=${Date.now()}`}
         alt="avatar"
@@ -62,7 +56,6 @@ export default function AvatarUploader({ token }: Props) {
       />
 
       <label className="mt-2 cursor-pointer text-sm text-blue-600 hover:underline">
-
         {loading ? "Subiendo..." : "Cambiar foto"}
 
         <input
@@ -71,9 +64,7 @@ export default function AvatarUploader({ token }: Props) {
           onChange={handleUpload}
           className="hidden"
         />
-
       </label>
-
     </div>
   );
 }

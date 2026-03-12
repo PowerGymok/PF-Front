@@ -33,7 +33,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
 
         const parsedData: UserSession = JSON.parse(stored);
 
-        const res = await fetch("http://localhost:3030/auth/me", {
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/me`, {
           headers: {
             Authorization: `Bearer ${parsedData.token}`,
           },

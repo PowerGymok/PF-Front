@@ -1,4 +1,4 @@
-import CoachClassesHistoryComponent from "../components/CoachClasesHistoryComponent";
+import CreateScheduleComponent from "../components/CreateScheduleComponent";
 
 export default function CoachClassesPage() {
   return (
@@ -8,7 +8,7 @@ export default function CoachClassesPage() {
         Mis clases
       </h1>
 
-      <CoachClassesHistoryComponent />
+      <CreateScheduleComponent />
 
     </div>
   );

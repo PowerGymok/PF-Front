@@ -4,6 +4,8 @@ import { useAuth } from "@/app/contexts/AuthContext";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { useTokenStatus } from "@/features/token-packages/hooks/useTokenStatus";
+import RenewalModal from "@/features/payments/components/RenewalModal";
 import CompleteProfileAlert from "@/app/dashboard/components/CompleteProfileAlert";
 import { PATHROUTES } from "@/utils/PathRoutes";
 import AvatarUploader from "@/components/AvatarUploader";
@@ -18,6 +20,9 @@ const DashboardUsersPage = () => {
   const [futureClasses, setFutureClasses] = useState(0);
   const [completedClasses, setCompletedClasses] = useState(0);
   const [tokens, setTokens] = useState(0);
+  const [isRenewalOpen, setIsRenewalOpen] = useState(false);
+  const { status: membershipStatus, refetch: refetchMembership } =
+    useTokenStatus();
 
   useEffect(() => {
     if (isLoading) return;
@@ -144,6 +149,69 @@ const DashboardUsersPage = () => {
         </div>
       </div>
 
+      {/* MEMBRESÍA */}
+      {membershipStatus && !membershipStatus.hasActiveMembership && (
+        <div className="bg-neutral-900 border border-neutral-800 p-8 rounded-xl mb-10">
+          <h2 className="text-sm text-gray-500 mb-1">Membresía</h2>
+          <p className="text-white/50 text-sm mt-1">
+            No tienes una membresía activa.
+          </p>
+          <Link
+            href="/memberships"
+            className="text-sm text-gray-400 mt-4 inline-block relative transition-all duration-300 hover:after:w-full after:content-[''] after:absolute after:left-0 after:-bottom-1 after:h-[1px] after:w-0 after:bg-white after:transition-all after:duration-300 hover:text-gray-300"
+          >
+            Ver planes
+          </Link>
+        </div>
+      )}
+      {membershipStatus?.hasActiveMembership &&
+        membershipStatus.activeMembership && (
+          <div className="bg-neutral-900 border border-neutral-800 p-8 rounded-xl mb-10">
+            <div className="flex items-start justify-between gap-4 flex-wrap">
+              <div>
+                <h2 className="text-sm text-gray-500 mb-1">Membresía activa</h2>
+                <p className="text-xl font-light text-white">
+                  {membershipStatus.activeMembership.name}
+                </p>
+                <p className="text-sm text-gray-500 mt-1">
+                  Vence:{" "}
+                  {new Date(
+                    membershipStatus.activeMembership.endDate,
+                  ).toLocaleDateString("es-MX", {
+                    year: "numeric",
+                    month: "long",
+                    day: "numeric",
+                  })}
+                </p>
+                <div className="flex gap-3 mt-3 flex-wrap">
+                  {membershipStatus.activeMembership.includesCoachChat && (
+                    <span className="text-xs text-emerald-400 border border-emerald-400/20 bg-emerald-400/5 px-2.5 py-1 rounded-full">
+                      Chat con coach
+                    </span>
+                  )}
+                  {membershipStatus.activeMembership.includesSpecialClasses && (
+                    <span className="text-xs text-blue-400 border border-blue-400/20 bg-blue-400/5 px-2.5 py-1 rounded-full">
+                      Clases especiales
+                    </span>
+                  )}
+                  {membershipStatus.activeMembership.discountPercentage > 0 && (
+                    <span className="text-xs text-amber-400 border border-amber-400/20 bg-amber-400/5 px-2.5 py-1 rounded-full">
+                      {membershipStatus.activeMembership.discountPercentage}%
+                      descuento
+                    </span>
+                  )}
+                </div>
+              </div>
+              <button
+                onClick={() => setIsRenewalOpen(true)}
+                className="text-sm font-semibold border border-white/20 text-white/70 px-5 py-2.5 rounded-xl hover:border-white hover:text-white active:scale-[.98] transition-all flex-shrink-0"
+              >
+                Renovar membresía
+              </button>
+            </div>
+          </div>
+        )}
+
       {/* PROGRESO */}
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-10 mb-20">
@@ -221,7 +289,7 @@ const DashboardUsersPage = () => {
 
       <div className="flex gap-6 flex-wrap">
         <Link
-          href={"/workouts"}
+          href={"/users/dashboard/reservation"}
           className="text-white relative transition-all duration-300 hover:after:w-full after:content-[''] after:absolute after:left-0 after:-bottom-1 after:h-[1px] after:w-0 after:bg-white after:transition-all after:duration-300 hover:text-gray-300"
         >
           Mis Reservas
@@ -243,6 +311,21 @@ const DashboardUsersPage = () => {
           </button>
         )}
       </div>
+
+      {/* Modal renovación */}
+      {membershipStatus?.activeMembership && dataUser && (
+        <RenewalModal
+          isOpen={isRenewalOpen}
+          onClose={() => setIsRenewalOpen(false)}
+          onSuccess={() => {
+            refetchMembership();
+          }}
+          userId={dataUser.user.id}
+          membershipId={membershipStatus.activeMembership.name}
+          membershipName={membershipStatus.activeMembership.name}
+          authToken={dataUser.token}
+        />
+      )}
 
       <div className="mt-24">
         <button
