@@ -79,30 +79,30 @@ export const ChatProvider = ({ children }: { children: ReactNode }) => {
     });
 
     socket.on("newMessage", (message: MessageSessionProps) => {
-  setMessages((prev) => {
-    const exists = prev.some((msg) => {
-      const sameId = msg.id === message.id;
+      setMessages((prev) => {
+        const exists = prev.some((msg) => {
+          const sameId = msg.id === message.id;
 
-      const sameSignature =
-        msg.content === message.content &&
-        msg.senderId === message.senderId &&
-        Math.abs(
-          new Date(msg.createdAt).getTime() -
-            new Date(message.createdAt).getTime()
-        ) < 3000;
+          const sameSignature =
+            msg.content === message.content &&
+            msg.senderId === message.senderId &&
+            Math.abs(
+              new Date(msg.createdAt).getTime() -
+                new Date(message.createdAt).getTime(),
+            ) < 3000;
 
-      return sameId || sameSignature;
+          return sameId || sameSignature;
+        });
+
+        if (exists) return prev;
+
+        if (activeConversation?.id === message.conversationId) {
+          return [...prev, message];
+        }
+
+        return prev;
+      });
     });
-
-    if (exists) return prev;
-
-    if (activeConversation?.id === message.conversationId) {
-      return [...prev, message];
-    }
-
-    return prev;
-  });
-});
     return () => {
       socket.disconnect();
       socketRef.current = null;
@@ -132,12 +132,11 @@ export const ChatProvider = ({ children }: { children: ReactNode }) => {
 
         setActiveConversation((prev) => {
           if (prev) {
-            const stillExists = data.find((c) => c.id === prev.id);
+            const stillExists = data.find((c: any) => c.id === prev.id);
             if (stillExists) return stillExists;
           }
           return data.length > 0 ? data[0] : null;
         });
-
       } catch (error) {
         console.error("Error cargando conversaciones:", error);
         setConversations([]);
@@ -168,7 +167,7 @@ export const ChatProvider = ({ children }: { children: ReactNode }) => {
         const data = await getMessagesByConversation(
           activeConversation.id,
           token,
-          userId
+          userId,
         );
 
         setMessages(data);
@@ -176,7 +175,6 @@ export const ChatProvider = ({ children }: { children: ReactNode }) => {
         if (socketRef.current) {
           socketRef.current.emit("joinConversation", activeConversation.id);
         }
-
       } catch (error) {
         console.error("Error cargando mensajes:", error);
         setMessages([]);
@@ -192,53 +190,57 @@ export const ChatProvider = ({ children }: { children: ReactNode }) => {
         socketRef.current.emit("leaveConversation", activeConversation.id);
       }
     };
-
   }, [activeConversation, token, userId, isLoading]);
 
   /**
    * SEND MESSAGE
    */
- const sendMessage = (content: string) => {
-  const clean = content.trim();
+  const sendMessage = (content: string) => {
+    const clean = content.trim();
 
-  if (!socketRef.current) return;
-  if (!activeConversation?.id) return;
-  if (!clean) return;
+    if (!socketRef.current) return;
+    if (!activeConversation?.id) return;
+    if (!clean) return;
 
-  const senderId = dataUser?.user?.id;
-  if (!senderId) return;
+    const senderId = dataUser?.user?.id;
+    if (!senderId) return;
 
-  const optimisticMessage: MessageSessionProps = {
-    id: `temp-${Date.now()}`,
-    content: clean,
-    senderId: senderId,
-    createdAt: new Date().toISOString(),
-    conversationId: activeConversation.id,
-    type: "text",
-    isRead: false,
+    const optimisticMessage: MessageSessionProps = {
+      id: `temp-${Date.now()}`,
+      content: clean,
+      senderId: senderId,
+      conversationId: activeConversation.id,
+      createdAt: new Date().toISOString(),
+      type: "user",
+      isRead: false,
+      sender: {
+        id: senderId ?? "",
+        name: "You",
+        email: "",
+      },
+    };
+
+    setMessages((prev) => {
+      const exists = prev.some(
+        (msg) =>
+          msg.content === optimisticMessage.content &&
+          msg.senderId === optimisticMessage.senderId &&
+          Math.abs(
+            new Date(msg.createdAt).getTime() -
+              new Date(optimisticMessage.createdAt).getTime(),
+          ) < 3000,
+      );
+
+      if (exists) return prev;
+
+      return [...prev, optimisticMessage];
+    });
+
+    socketRef.current.emit("sendMessage", {
+      conversationId: activeConversation.id,
+      content: clean,
+    });
   };
-
-  setMessages((prev) => {
-    const exists = prev.some(
-      (msg) =>
-        msg.content === optimisticMessage.content &&
-        msg.senderId === optimisticMessage.senderId &&
-        Math.abs(
-          new Date(msg.createdAt).getTime() -
-            new Date(optimisticMessage.createdAt).getTime()
-        ) < 3000
-    );
-
-    if (exists) return prev;
-
-    return [...prev, optimisticMessage];
-  });
-
-  socketRef.current.emit("sendMessage", {
-    conversationId: activeConversation.id,
-    content: clean,
-  });
-};
   return (
     <ChatContext.Provider
       value={{

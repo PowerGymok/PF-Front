@@ -5,7 +5,7 @@ export type BillingInterval = "monthly";
 export interface Plan {
   id: MembershipType;
   price: number;
-  currency: "USD";
+  currency: "USD" | "MXN";
   interval?: BillingInterval;
 }
 
@@ -36,7 +36,7 @@ export interface TokenPackage {
   description?: string;
   tokenAmount: number;
   price: number;
-  currency: "usd";
+  currency: "USD" | "MXN";
 }
 
 export interface SpendTokensRequest {

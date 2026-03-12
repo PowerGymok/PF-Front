@@ -23,6 +23,7 @@ const NavBarComponent = () => {
 
   const pathname = usePathname();
 
+  const isAuthenticated = !!dataUser?.token;
   useEffect(() => {
     setMounted(true);
   }, []);
@@ -76,7 +77,7 @@ const NavBarComponent = () => {
 
         {/* Perfil / Login */}
         <div className="hidden md:flex text-white gap-4">
-          {dataUser ? (
+          {isAuthenticated ? (
             <Link href={PATHROUTES.DASHBOARD}>
               {role === "Admin" ? (
                 <div className="w-8 h-8 rounded-full bg-white flex items-center justify-center">
@@ -122,7 +123,7 @@ const NavBarComponent = () => {
           ))}
 
           <div className="border-t border-gray-700 pt-4">
-            {dataUser?.token ? (
+            {isAuthenticated ? (
               <>
                 <Link
                   href={PATHROUTES.DASHBOARD}
