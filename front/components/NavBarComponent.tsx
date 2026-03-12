@@ -66,7 +66,7 @@ const NavBarComponent = () => {
               href={item.route}
               className={clsx(
                 "hover:text-gray-300 relative transition-all duration-300 hover:after:w-full after:content-[''] after:absolute after:left-0 after:-bottom-1 after:h-[1px] after:w-0 after:bg-white after:transition-all after:duration-300",
-                pathname === item.route && "after:w-full"
+                pathname === item.route && "after:w-full",
               )}
             >
               {item.nameToRender}
@@ -79,22 +79,22 @@ const NavBarComponent = () => {
           {dataUser ? (
             <Link href={PATHROUTES.DASHBOARD}>
               {role === "Admin" ? (
-  <div className="w-8 h-8 rounded-full bg-white flex items-center justify-center">
-    <PowerGym_Logo className="w-5 h-5 text-black" />
-  </div>
-) : profileImg ? (
-  <Image
-    src={profileImg}
-    alt="Foto de perfil"
-    width={32}
-    height={32}
-    className="w-8 h-8 rounded-full object-cover"
-  />
-) : (
-  <div className="w-8 h-8 rounded-full bg-gray-500 flex items-center justify-center font-bold">
-    {userInitial}
-  </div>
-)}
+                <div className="w-8 h-8 rounded-full bg-white flex items-center justify-center">
+                  <PowerGym_Logo className="w-5 h-5 text-black" />
+                </div>
+              ) : profileImg ? (
+                <Image
+                  src={profileImg}
+                  alt="Foto de perfil"
+                  width={32}
+                  height={32}
+                  className="w-8 h-8 rounded-full object-cover"
+                />
+              ) : (
+                <div className="w-8 h-8 rounded-full bg-gray-500 flex items-center justify-center font-bold">
+                  {userInitial}
+                </div>
+              )}
             </Link>
           ) : (
             <Link
@@ -122,7 +122,7 @@ const NavBarComponent = () => {
           ))}
 
           <div className="border-t border-gray-700 pt-4">
-            {dataUser ? (
+            {dataUser?.token ? (
               <>
                 <Link
                   href={PATHROUTES.DASHBOARD}

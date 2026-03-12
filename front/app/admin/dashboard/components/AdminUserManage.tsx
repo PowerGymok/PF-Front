@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { GetAllUsers } from "@/services/user.services";
 import { AllUsers } from "@/interface/AllUsers";
 import { UpdateUserRole } from "@/services/user.services";
+import { ActivateUser, DeactivateUser } from "@/services/user.services";
 
 const AdminUserManage = () => {
   const { dataUser } = useAuth();
@@ -26,6 +27,7 @@ const AdminUserManage = () => {
 
       try {
         const response = await GetAllUsers(dataUser.token, 1000);
+        console.log("Usuarios obtenidos:", response);
         setUsers(response);
       } catch (error: any) {
         if (error.status === 401) {
@@ -55,6 +57,28 @@ const AdminUserManage = () => {
 
   const startIndex = (page - 1) * limit;
   const paginatedUsers = filteredUsers.slice(startIndex, startIndex + limit);
+
+  const handleToggleUserStatus = async (userId: string, isActive: boolean) => {
+    if (!dataUser?.token) return;
+
+    try {
+      setActionLoadingId(userId);
+
+      if (isActive) {
+        await DeactivateUser(userId, dataUser.token);
+      } else {
+        await ActivateUser(userId, dataUser.token);
+      }
+
+      setUsers((prev) =>
+        prev.map((u) => (u.id === userId ? { ...u, isActive: !isActive } : u)),
+      );
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setActionLoadingId(null);
+    }
+  };
 
   const handlePromoteToCoach = async (userId: string) => {
     if (!dataUser?.token) return;
@@ -134,6 +158,14 @@ const AdminUserManage = () => {
                   <p className="text-sm text-gray-500">{user.email}</p>
                 </div>
 
+                <p
+                  className={`text-xs ${
+                    user.isActive ? "text-green-400" : "text-red-400"
+                  }`}
+                >
+                  {user.isActive ? "Activo" : "Suspendido"}
+                </p>
+
                 {user.role === "user" && (
                   <button
                     disabled={isBusy}
@@ -144,6 +176,17 @@ const AdminUserManage = () => {
                     {isBusy ? "Procesando..." : "Ascender a Coach"}
                   </button>
                 )}
+                <button
+                  disabled={isBusy}
+                  onClick={() => handleToggleUserStatus(user.id, user.isActive)}
+                  className="text-red-400 relative transition-all duration-300 hover:after:w-full after:content-[''] after:absolute after:left-0 after:-bottom-1 after:h-[1px] after:w-0 after:bg-red-400 after:transition-all after:duration-300 hover:text-red-300 cursor-pointer"
+                >
+                  {isBusy
+                    ? "Procesando..."
+                    : user.isActive
+                      ? "Desactivar Usuario"
+                      : "Activar Usuario"}
+                </button>
               </div>
             );
           })
