@@ -1,50 +1,64 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { getPublicCoaches } from "../../services/user.services";
-import { CoachPublic } from "@/services/mockCoaches";
-import { useRouter } from "next/navigation";
-import { PATHROUTES } from "@/utils/PathRoutes";
+import { getPublicCoaches, CoachPublic } from "@/services/user.services";
 
 const CoachesPage = () => {
   const [coaches, setCoaches] = useState<CoachPublic[]>([]);
-  const router = useRouter();
+
   useEffect(() => {
     const loadCoaches = async () => {
       const data = await getPublicCoaches();
-
       setCoaches(data);
     };
 
     loadCoaches();
   }, []);
 
-  const handleChat = (coachId: string) => {
-    if (typeof window !== "undefined") {
-      router.push(`${PATHROUTES.USERS_CHAT}?coachId=${coachId}`);
-    } else {
-      console.error("No se puede redirigir en el servidor");
-    }
-  };
-
   return (
-    <div>
-      <h1 className="text-2xl font-bold">Coaches</h1>
+    <div className="min-h-screen bg-black text-white">
+      {/* HERO */}
+      <section className="text-center py-20 px-6">
+        <h1 className="text-5xl font-bold mb-6">Nuestros Coaches</h1>
 
-      <div className="grid grid-cols-3 gap-4">
-        {coaches.map((coach) => (
-          <div key={coach.id} className="border p-4 rounded">
-            <img src={coach.image} alt={coach.name} />
-            <h2>{coach.name}</h2>
-            <button
-              className="mt-2 bg-blue-500 text-white px-3 py-1 rounded cursor-pointer"
-              onClick={() => handleChat(coach.id)}
+        <p className="text-gray-400 max-w-2xl mx-auto text-lg">
+          Entrena con profesionales certificados que te ayudarán a alcanzar tu
+          máximo rendimiento.
+        </p>
+      </section>
+
+      {/* GRID COACHES */}
+      <section className="max-w-6xl mx-auto px-6 pb-20">
+        <div className="grid gap-10 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
+          {coaches.map((coach, index) => (
+            <div
+              key={index}
+              className="group relative overflow-hidden rounded-xl bg-zinc-900 hover:bg-zinc-800 transition-all duration-300"
             >
-              Iniciar Chat
-            </button>
-          </div>
-        ))}
-      </div>
+              {/* IMAGE */}
+              <div className="aspect-square overflow-hidden">
+                <img
+                  src={
+                    coach.profileImg ||
+                    "https://res.cloudinary.com/demo/image/upload/v1312461204/sample.jpg"
+                  }
+                  alt={coach.name}
+                  className="h-full w-full object-cover group-hover:scale-110 transition-transform duration-500"
+                />
+              </div>
+
+              {/* INFO */}
+              <div className="p-4 text-center">
+                <h2 className="text-lg font-semibold tracking-wide">
+                  {coach.name}
+                </h2>
+
+                <p className="text-sm text-gray-400">PowerGym Coach</p>
+              </div>
+            </div>
+          ))}
+        </div>
+      </section>
     </div>
   );
 };
