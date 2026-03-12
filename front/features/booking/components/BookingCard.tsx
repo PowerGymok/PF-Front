@@ -21,6 +21,7 @@ interface Props {
   onRestore?: (
     idClass: string,
   ) => Promise<{ success: boolean; message: string }>;
+  onEditClass?: (booking: Booking) => void;
 }
 
 export function BookingCard({
