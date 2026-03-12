@@ -1,5 +1,5 @@
 export interface CompleteProfileInterface {
-  phone: number;
+  phone: string;
   address: string;
   city: string;
   Birthdate: string;

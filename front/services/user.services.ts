@@ -3,6 +3,7 @@ import { LoginSchema } from "@/validators/loginSchema";
 import { RegisterSchema, RegisterPayload } from "@/validators/registerSchema";
 import { AllUsers } from "@/interface/AllUsers";
 import { CompleteProfileInterface } from "@/interface/CompleteProfileInterface";
+import { mockCoaches } from "./mockCoaches";
 
 export const LoginUser = async (userData: LoginSchema) => {
   try {
@@ -29,6 +30,7 @@ export const GetCurrentUser = async (token: string) => {
     const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/me`, {
       method: "GET",
       headers: {
+        "Content-Type": "application/json",
         Authorization: `Bearer ${token}`,
       },
     });
@@ -68,9 +70,16 @@ export const RegisterUser = async (userData: RegisterPayload) => {
   }
 };
 
-export const GetAllUsers = async (token: string): Promise<AllUsers[]> => {
+export const GetAllUsers = async (
+  token: string,
+  limit?: number,
+): Promise<AllUsers[]> => {
   try {
-    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/users`, {
+    const url = limit
+      ? `${process.env.NEXT_PUBLIC_API_URL}/users?limit=${limit}`
+      : `${process.env.NEXT_PUBLIC_API_URL}/users`;
+
+    const res = await fetch(url, {
       method: "GET",
       headers: {
         Authorization: `Bearer ${token}`,
@@ -79,9 +88,9 @@ export const GetAllUsers = async (token: string): Promise<AllUsers[]> => {
 
     if (!res.ok) {
       const error = await res.json();
-
       throw new Error(error.message || "Error obteniendo usuarios");
     }
+
     return await res.json();
   } catch (error) {
     throw error;
@@ -118,6 +127,7 @@ export const GetUserById = async (id: string, token: string) => {
     const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/users/${id}`, {
       method: "GET",
       headers: {
+        "Content-Type": "application/json",
         Authorization: `Bearer ${token}`,
       },
     });
@@ -216,4 +226,91 @@ export const UsersCompleteProfile = async (
     if (error instanceof Error) throw error;
     throw new Error("Error completando perfil");
   }
+};
+
+export const getAllCoaches = async (token: string, limit?: number) => {
+  try {
+    const url = limit
+      ? `${process.env.NEXT_PUBLIC_API_URL}/coach?limit=${limit}`
+      : `${process.env.NEXT_PUBLIC_API_URL}/coach`;
+
+    const res = await fetch(url, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    if (!res.ok) {
+      const error = await res.json().catch(() => ({}));
+      throw new Error(error.message || "Error obteniendo coaches");
+    }
+
+    return await res.json();
+  } catch (error) {
+    if (error instanceof Error) throw error;
+    throw new Error("Error obteniendo coaches");
+  }
+};
+
+export interface CoachPublic {
+  id?: string;
+  name: string;
+  profileImg: string | null;
+}
+
+export const getPublicCoaches = async (): Promise<CoachPublic[]> => {
+  try {
+    const res = await fetch(
+      `${process.env.NEXT_PUBLIC_API_URL}/coach/nameAndImg`,
+    );
+
+    if (!res.ok) {
+      throw new Error("Error obteniendo coaches");
+    }
+
+    const data = await res.json();
+
+    return data;
+  } catch (error) {
+    console.error("Error obteniendo coaches:", error);
+    return [];
+  }
+};
+
+export const DeactivateUser = async (userId: string, token: string) => {
+  const res = await fetch(
+    `${process.env.NEXT_PUBLIC_API_URL}/users/inactive/${userId}`,
+    {
+      method: "PUT",
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    },
+  );
+
+  if (!res.ok) {
+    throw new Error("Error desactivando usuario");
+  }
+
+  return res.json();
+};
+
+export const ActivateUser = async (userId: string, token: string) => {
+  const res = await fetch(
+    `${process.env.NEXT_PUBLIC_API_URL}/users/active/${userId}`,
+    {
+      method: "PUT",
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    },
+  );
+
+  if (!res.ok) {
+    throw new Error("Error activando usuario");
+  }
+
+  return res.json();
 };

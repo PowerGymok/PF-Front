@@ -1,9 +1,15 @@
 "use client";
 
-import { createContext, useContext, useEffect, useRef, useState } from "react";
+import {
+  createContext,
+  useContext,
+  useEffect,
+  useRef,
+  useState,
+  ReactNode,
+} from "react";
 import { io, Socket } from "socket.io-client";
 import { useAuth } from "@/app/contexts/AuthContext";
-import { getUserIdFromToken } from "@/utils/decodeToken";
 import {
   getConversationsByRole,
   getMessagesByConversation,
@@ -16,108 +22,223 @@ interface ChatContextProps {
   activeConversation: ConversationSession | null;
   messages: MessageSessionProps[];
   isConnected: boolean;
+  isLoadingConversations: boolean;
+  isLoadingMessages: boolean;
   setActiveConversation: (conversation: ConversationSession) => void;
   sendMessage: (content: string) => void;
+  socket: Socket | null;
 }
 
 const ChatContext = createContext<ChatContextProps | undefined>(undefined);
 
-export const ChatProvider = ({ children }: { children: React.ReactNode }) => {
-  const { dataUser } = useAuth();
+export const ChatProvider = ({ children }: { children: ReactNode }) => {
+  const { dataUser, isLoading } = useAuth();
 
   const [conversations, setConversations] = useState<ConversationSession[]>([]);
   const [activeConversation, setActiveConversation] =
     useState<ConversationSession | null>(null);
   const [messages, setMessages] = useState<MessageSessionProps[]>([]);
   const [isConnected, setIsConnected] = useState(false);
+  const [isLoadingConversations, setIsLoadingConversations] = useState(false);
+  const [isLoadingMessages, setIsLoadingMessages] = useState(false);
 
   const socketRef = useRef<Socket | null>(null);
 
-  const userId = dataUser?.token ? getUserIdFromToken(dataUser.token) : null;
+  const token = dataUser?.token;
+  const userId = dataUser?.user?.id;
+  const role = dataUser?.user?.role as "user" | "Coach" | "Admin" | undefined;
 
+  /**
+   * SOCKET CONNECTION
+   */
   useEffect(() => {
-    if (!dataUser?.token || !userId) return;
+    if (isLoading) return;
+    if (!token || !userId) return;
 
-    const socketInstance = io(`${process.env.NEXT_PUBLIC_API_URL}/chat`, {
+    if (socketRef.current) {
+      socketRef.current.disconnect();
+      socketRef.current = null;
+    }
+
+    const socket = io(`${process.env.NEXT_PUBLIC_API_URL}/chat`, {
+      transports: ["websocket"],
+      auth: { token },
       query: { userId },
     });
 
-    socketRef.current = socketInstance;
+    socketRef.current = socket;
 
-    socketInstance.on("connect", () => {
-      console.log("Conectado al chat");
+    socket.on("connect", () => {
+      console.log("Chat conectado");
       setIsConnected(true);
     });
 
-    socketInstance.on("disconnect", () => {
-      console.log("Desconectado del chat");
+    socket.on("disconnect", () => {
+      console.log("Chat desconectado");
       setIsConnected(false);
     });
 
-    socketInstance.on("newMessage", (message: MessageSessionProps) => {
-      setMessages((prev) => [...prev, message]);
+    socket.on("newMessage", (message: MessageSessionProps) => {
+  setMessages((prev) => {
+    const exists = prev.some((msg) => {
+      const sameId = msg.id === message.id;
+
+      const sameSignature =
+        msg.content === message.content &&
+        msg.senderId === message.senderId &&
+        Math.abs(
+          new Date(msg.createdAt).getTime() -
+            new Date(message.createdAt).getTime()
+        ) < 3000;
+
+      return sameId || sameSignature;
     });
 
-    socketInstance.on("connect_error", (err) => {
-      console.error("Error socket:", err);
-    });
+    if (exists) return prev;
 
+    if (activeConversation?.id === message.conversationId) {
+      return [...prev, message];
+    }
+
+    return prev;
+  });
+});
     return () => {
-      socketInstance.disconnect();
+      socket.disconnect();
+      socketRef.current = null;
     };
-  }, [dataUser?.token, userId]);
+  }, [isLoading, token, userId]);
 
+  /**
+   * LOAD CONVERSATIONS
+   */
   useEffect(() => {
-    if (!dataUser?.token || !userId) return;
+    if (isLoading) return;
+    if (!token || !userId || !role) return;
+
+    if (role === "Admin") {
+      setConversations([]);
+      setActiveConversation(null);
+      return;
+    }
 
     const loadConversations = async () => {
-      if (!dataUser) return;
-
-      const role = dataUser.user.role;
-      const userId = dataUser.user.id;
-
-      if (role === "Admin") return;
-
       try {
-        const data = await getConversationsByRole(role, userId, dataUser.token);
+        setIsLoadingConversations(true);
+
+        const data = await getConversationsByRole(role, token, userId);
 
         setConversations(data);
+
+        setActiveConversation((prev) => {
+          if (prev) {
+            const stillExists = data.find((c) => c.id === prev.id);
+            if (stillExists) return stillExists;
+          }
+          return data.length > 0 ? data[0] : null;
+        });
+
       } catch (error) {
         console.error("Error cargando conversaciones:", error);
+        setConversations([]);
+        setActiveConversation(null);
+      } finally {
+        setIsLoadingConversations(false);
       }
     };
 
     loadConversations();
-  }, [dataUser?.token, userId]);
+  }, [isLoading, token, userId, role]);
 
+  /**
+   * LOAD MESSAGES
+   */
   useEffect(() => {
-    if (!activeConversation || !dataUser?.token || !userId) return;
+    if (isLoading) return;
+    if (!token || !userId) return;
+    if (!activeConversation?.id) {
+      setMessages([]);
+      return;
+    }
 
     const loadMessages = async () => {
       try {
+        setIsLoadingMessages(true);
+
         const data = await getMessagesByConversation(
           activeConversation.id,
-          userId,
-          dataUser.token,
+          token,
+          userId
         );
+
         setMessages(data);
+
+        if (socketRef.current) {
+          socketRef.current.emit("joinConversation", activeConversation.id);
+        }
+
       } catch (error) {
         console.error("Error cargando mensajes:", error);
+        setMessages([]);
+      } finally {
+        setIsLoadingMessages(false);
       }
     };
 
     loadMessages();
-  }, [activeConversation, dataUser?.token, userId]);
 
-  const sendMessage = (content: string) => {
-    if (!socketRef.current || !activeConversation) return;
+    return () => {
+      if (socketRef.current && activeConversation?.id) {
+        socketRef.current.emit("leaveConversation", activeConversation.id);
+      }
+    };
 
-    socketRef.current.emit("sendMessage", {
-      conversationId: activeConversation.id,
-      content,
-    });
+  }, [activeConversation, token, userId, isLoading]);
+
+  /**
+   * SEND MESSAGE
+   */
+ const sendMessage = (content: string) => {
+  const clean = content.trim();
+
+  if (!socketRef.current) return;
+  if (!activeConversation?.id) return;
+  if (!clean) return;
+
+  const senderId = dataUser?.user?.id;
+  if (!senderId) return;
+
+  const optimisticMessage: MessageSessionProps = {
+    id: `temp-${Date.now()}`,
+    content: clean,
+    senderId: senderId,
+    createdAt: new Date().toISOString(),
+    conversationId: activeConversation.id,
+    type: "text",
+    isRead: false,
   };
 
+  setMessages((prev) => {
+    const exists = prev.some(
+      (msg) =>
+        msg.content === optimisticMessage.content &&
+        msg.senderId === optimisticMessage.senderId &&
+        Math.abs(
+          new Date(msg.createdAt).getTime() -
+            new Date(optimisticMessage.createdAt).getTime()
+        ) < 3000
+    );
+
+    if (exists) return prev;
+
+    return [...prev, optimisticMessage];
+  });
+
+  socketRef.current.emit("sendMessage", {
+    conversationId: activeConversation.id,
+    content: clean,
+  });
+};
   return (
     <ChatContext.Provider
       value={{
@@ -125,8 +246,11 @@ export const ChatProvider = ({ children }: { children: React.ReactNode }) => {
         activeConversation,
         messages,
         isConnected,
+        isLoadingConversations,
+        isLoadingMessages,
         setActiveConversation,
         sendMessage,
+        socket: socketRef.current,
       }}
     >
       {children}
@@ -136,6 +260,10 @@ export const ChatProvider = ({ children }: { children: React.ReactNode }) => {
 
 export const useChat = () => {
   const context = useContext(ChatContext);
-  if (!context) throw new Error("useChat debe usarse dentro de ChatProvider");
+
+  if (!context) {
+    throw new Error("useChat debe usarse dentro de ChatProvider");
+  }
+
   return context;
 };

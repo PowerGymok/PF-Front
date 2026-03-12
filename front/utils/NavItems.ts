@@ -31,4 +31,9 @@ export const NavItems = [
   //   nameToRender: "Registro",
   //   route: PATHROUTES.REGISTER,
   // },
+  {
+    id: 7,
+    nameToRender: "Coaches",
+    route: PATHROUTES.COACHES,
+  },
 ];

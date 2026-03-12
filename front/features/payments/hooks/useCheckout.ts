@@ -6,7 +6,6 @@ import {
   CheckoutRequest,
   CheckoutResponse,
   TokenCheckoutRequest,
-  TokenCheckoutResponse,
 } from "../types/payment.types";
 
 const stripePromise = loadStripe(
@@ -20,8 +19,6 @@ export function useCheckout() {
   const [error, setError] = useState<string | null>(null);
   const [clientSecret, setClientSecret] = useState<string | null>(null);
   const [transactionId, setTransactionId] = useState<string | null>(null);
-
-  // ── Helpers internos ──────────────────────────────────────────────────────
 
   const prepareState = () => {
     setLoading(true);
@@ -45,12 +42,10 @@ export function useCheckout() {
     return result;
   };
 
-  // ── Membresías: POST /payments/membership ─────────────────────────────────
-
+  // ── Nueva membresía: POST /payments/membership ────────────────────────────
   const initPayment = async (data: CheckoutRequest, token: string) => {
     try {
       prepareState();
-
       const response = await fetch(`${API_URL}/payments/membership`, {
         method: "POST",
         headers: {
@@ -59,7 +54,6 @@ export function useCheckout() {
         },
         body: JSON.stringify(data),
       });
-
       const result = await handleResponse(response);
       setClientSecret(result.clientSecret);
       setTransactionId(result.transactionId);
@@ -71,15 +65,36 @@ export function useCheckout() {
     }
   };
 
-  // ── Tokens: POST /payments/tokens ─────────────────────────────────────────
+  // ── Renovar membresía: POST /payments/membership/renew ────────────────────
+  const initRenewal = async (data: CheckoutRequest, token: string) => {
+    try {
+      prepareState();
+      const response = await fetch(`${API_URL}/payments/membership/renew`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(data),
+      });
+      const result = await handleResponse(response);
+      setClientSecret(result.clientSecret);
+      setTransactionId(result.transactionId);
+    } catch (err: any) {
+      console.error("[useCheckout] initRenewal:", err);
+      setError(err.message || "No se pudo iniciar la renovación.");
+    } finally {
+      setLoading(false);
+    }
+  };
 
+  // ── Tokens: POST /payments/tokens ─────────────────────────────────────────
   const initTokenPayment = async (
     data: TokenCheckoutRequest,
     token: string,
   ) => {
     try {
       prepareState();
-
       const response = await fetch(`${API_URL}/payments/tokens`, {
         method: "POST",
         headers: {
@@ -88,7 +103,6 @@ export function useCheckout() {
         },
         body: JSON.stringify(data),
       });
-
       const result = await handleResponse(response);
       setClientSecret(result.clientSecret);
       setTransactionId(result.transactionId);
@@ -100,31 +114,23 @@ export function useCheckout() {
     }
   };
 
-  // ── Confirmar con Stripe Elements (compartido) ────────────────────────────
-
+  // ── Confirmar con Stripe Elements ─────────────────────────────────────────
   const confirmPayment = async (elements: any, returnUrl: string) => {
     const stripe = await stripePromise;
     if (!stripe || !elements || !clientSecret) return { error: "No iniciado" };
-
     setLoading(true);
-
     const { error, paymentIntent } = await stripe.confirmPayment({
       elements,
       confirmParams: { return_url: returnUrl },
       redirect: "if_required",
     });
-
     setLoading(false);
-
     if (error) {
       setError(error.message ?? "Error al confirmar el pago");
       return { error: error.message };
     }
-
     return { paymentIntent };
   };
-
-  // ── Reset ─────────────────────────────────────────────────────────────────
 
   const reset = () => {
     setClientSecret(null);
@@ -135,6 +141,7 @@ export function useCheckout() {
 
   return {
     initPayment,
+    initRenewal,
     initTokenPayment,
     confirmPayment,
     clientSecret,

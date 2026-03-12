@@ -1,31 +1,54 @@
 "use client";
 
-import { Booking } from "../types/booking.types";
 import { BookingCard } from "./BookingCard";
+import type { Booking } from "../types/booking.types";
 
-interface Props {
+type Variant = "user" | "coach" | "admin";
+
+interface BookingsGridProps {
   bookings: Booking[];
-  variant?: "user" | "coach" | "admin";
-  onSchedule?: (id: string) => void;
+  variant?: Variant;
+  bookedScheduleIds: Set<string>;
+  onReserve?: (
+    booking: Booking,
+  ) => Promise<{ success: boolean; message: string }>;
+  onCancelSchedule?: (
+    idClassSchedule: string,
+  ) => Promise<{ success: boolean; message: string }>;
+  onEditClass?: (booking: Booking) => void; // ✅ Admin
 }
 
-export default function BookingGrid({ bookings, variant, onSchedule }: Props) {
+export default function BookingsGrid({
+  bookings,
+  variant,
+  bookedScheduleIds,
+  onReserve,
+  onCancelSchedule,
+  onEditClass,
+}: BookingsGridProps) {
+  if (bookings.length === 0) {
+    return (
+      <div className="flex flex-col items-center justify-center py-20 gap-3">
+        <p className="text-white/25 text-sm">
+          No hay clases disponibles para esta fecha.
+        </p>
+      </div>
+    );
+  }
+
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+    <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
       {bookings.map((booking) => (
         <BookingCard
           key={booking.id}
           booking={booking}
           variant={variant}
-          onSchedule={onSchedule}
+          alreadyBooked={bookedScheduleIds.has(booking.id_class_schedule)}
+          onReserve={onReserve}
+          onCancelSchedule={onCancelSchedule}
+          onEditClass={onEditClass}
         />
       ))}
-
-      {bookings.length === 0 && (
-        <p className="text-red-400 col-span-full">
-          No hay entrenamientos disponibles
-        </p>
-      )}
     </div>
   );
 }

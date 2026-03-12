@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useRef } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useAuth } from "@/app/contexts/AuthContext";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -35,32 +35,29 @@ export function useTokenStatus() {
   const [status, setStatus] = useState<TokenStatus | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const hasFetched = useRef(false);
+
+  const fetchStatus = useCallback(async () => {
+    if (!dataUser?.user) return;
+    try {
+      const userId = getUserIdFromToken(dataUser.token);
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/payments/status/${userId}`,
+        { headers: { Authorization: `Bearer ${dataUser.token}` } },
+      );
+      if (!res.ok) throw new Error(`Error ${res.status}`);
+      const data: TokenStatus = await res.json();
+      setStatus(data);
+    } catch (err: any) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  }, [dataUser]);
 
   useEffect(() => {
     if (isAuthLoading || !dataUser?.user) return;
-    if (hasFetched.current) return;
-    hasFetched.current = true;
-
-    const fetchStatus = async () => {
-      try {
-        const userId = getUserIdFromToken(dataUser.token);
-        const res = await fetch(
-          `${process.env.NEXT_PUBLIC_API_URL}/payments/status/${userId}`,
-          { headers: { Authorization: `Bearer ${dataUser.token}` } },
-        );
-        if (!res.ok) throw new Error(`Error ${res.status}`);
-        const data: TokenStatus = await res.json();
-        setStatus(data);
-      } catch (err: any) {
-        setError(err.message);
-      } finally {
-        setLoading(false);
-      }
-    };
-
     fetchStatus();
-  }, [isAuthLoading, dataUser]);
+  }, [isAuthLoading, dataUser, fetchStatus]);
 
-  return { status, loading, error };
+  return { status, loading, error, refetch: fetchStatus };
 }

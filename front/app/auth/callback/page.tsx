@@ -22,8 +22,11 @@ export default function CallbackPage() {
 
         localStorage.setItem("token", token);
 
+        // ✅ Ahora pedimos el usuario al backend
+
         const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/me`, {
           headers: {
+            "Content-Type": "application/json",
             Authorization: `Bearer ${token}`,
           },
         });
@@ -47,14 +50,15 @@ export default function CallbackPage() {
             phone: data.phone,
             orders: data.orders || [],
             isProfileComplete: data.isProfileComplete,
+            profileImg: data.profileImg,
           },
         });
 
         // 🔴 Redirección según perfil
-        if (!data.isProfileComplete) {
-          router.push("/complete-profile");
-          return;
-        }
+        // if (!data.isProfileComplete) {
+        //   router.push("/complete-profile");
+        //   return;
+        // }
 
         // ✅ Siempre ir a /dashboard
         router.push("/dashboard");

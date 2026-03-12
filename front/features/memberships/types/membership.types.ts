@@ -12,4 +12,5 @@ export interface Membership {
   price: string;
   membershipVariant: MembershipVariant;
   features: Feature[];
+  description?: string;
 }

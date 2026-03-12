@@ -8,7 +8,7 @@ export const navCoach = [
   },
   {
     id: 2,
-    nameToRender: "My Clases",
+    nameToRender: "Mis Clases",
     route: PATHROUTES.WORKOUTS,
   },
   {

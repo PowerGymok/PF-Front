@@ -16,7 +16,6 @@ export default function DashboardLayout({
     const checkUser = async () => {
       try {
         await fetchWithAuth(`${process.env.NEXT_PUBLIC_API_URL}/auth/me`);
-
         setLoading(false);
       } catch (error: unknown) {
         if (error instanceof Error) {

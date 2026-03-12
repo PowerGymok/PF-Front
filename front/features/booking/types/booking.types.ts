@@ -1,31 +1,34 @@
 /*
-  INTENSITY TYPE
-
-  - Define los niveles de intensidad posibles para un workshop.
-  - Se usa como contrato fuerte en TypeScript para evitar valores inválidos.
-  - En producción:
-    * Puede mapearse a un ENUM en base de datos.
+  INTENSITY TYPE — alineado al backend
+  Backend enum: 'alta' | 'media' | 'baja'
 */
-export type Intensity = "BAJO" | "MEDIO" | "ALTO";
+export type Intensity = "baja" | "media" | "alta";
 
 /*
-  WORKSHOP INTERFACE
-
-  - Representa la estructura de datos de una clase en la aplicación.
-  - En producción:
-    * id debe provenir de la base de datos.
-    * coach debería ser relación (workshop -> coach_id -> tabla coaches).
-    * spotsAvailable debe actualizarse mediante lógica transaccional segura.
+  BOOKING INTERFACE
 */
 export interface Booking {
-  id: string; // UUID
+  id: string;
+  id_class_schedule: string;
+  classId: string;
   title: string;
   description: string;
   coach: string;
   intensity: Intensity;
   image?: string;
   capacity: number;
-  spots_available: number;
+  spaces_available: number;
   time: string;
   date: string;
+  duration?: number;
+  tokens_required: number;
+  isActive?: boolean;
+}
+
+/*
+  USER SESSION
+*/
+export interface BookingUserMeta {
+  membership_active: boolean;
+  tokens: number;
 }

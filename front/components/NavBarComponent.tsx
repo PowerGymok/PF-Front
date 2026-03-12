@@ -1,26 +1,37 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { PATHROUTES } from "@/utils/PathRoutes";
 import { useAuth } from "@/app/contexts/AuthContext";
 import { GymLogoComponent } from "./GymLogoComponent";
 import clsx from "clsx";
 import { usePathname } from "next/navigation";
+import Image from "next/image";
 
 import { navAdmin } from "../utils/Navigation/navAdmin";
 import { navCoach } from "../utils/Navigation/navCoach";
 import { navPublic } from "../utils/Navigation/navPublic";
 import { navUser } from "../utils/Navigation/navUsers";
+import { PowerGym_Logo } from "../components/icons/PowerGym_Logo";
 
 const NavBarComponent = () => {
   const { dataUser, logOut, userInitial } = useAuth();
-  const role = dataUser?.user?.role;
 
+  const [mounted, setMounted] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
+
   const pathname = usePathname();
 
-  
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  if (!mounted) return null;
+
+  const role = dataUser?.user?.role;
+  const profileImg = dataUser?.user?.profileImg;
+
   let navItems = navPublic;
 
   if (role === "Admin") {
@@ -34,7 +45,6 @@ const NavBarComponent = () => {
   return (
     <header className="w-full bg-black px-4 md:px-10">
       <div className="flex items-center justify-between h-[70px]">
-        
         {/* Logo */}
         <Link href={PATHROUTES.HOME}>
           <GymLogoComponent className="w-14 h-14 sm:w-16 sm:h-16 md:w-20 md:h-20 lg:w-24 lg:h-24" />
@@ -56,7 +66,7 @@ const NavBarComponent = () => {
               href={item.route}
               className={clsx(
                 "hover:text-gray-300 relative transition-all duration-300 hover:after:w-full after:content-[''] after:absolute after:left-0 after:-bottom-1 after:h-[1px] after:w-0 after:bg-white after:transition-all after:duration-300",
-                pathname === item.route && "after:w-full"
+                pathname === item.route && "after:w-full",
               )}
             >
               {item.nameToRender}
@@ -64,14 +74,27 @@ const NavBarComponent = () => {
           ))}
         </nav>
 
-        {/* Login / Dashboard */}
+        {/* Perfil / Login */}
         <div className="hidden md:flex text-white gap-4">
           {dataUser ? (
-            <Link
-              href={PATHROUTES.DASHBOARD}
-              className="w-8 h-8 rounded-full bg-gray-500 flex items-center justify-center font-bold"
-            >
-              {userInitial}
+            <Link href={PATHROUTES.DASHBOARD}>
+              {role === "Admin" ? (
+                <div className="w-8 h-8 rounded-full bg-white flex items-center justify-center">
+                  <PowerGym_Logo className="w-5 h-5 text-black" />
+                </div>
+              ) : profileImg ? (
+                <Image
+                  src={profileImg}
+                  alt="Foto de perfil"
+                  width={32}
+                  height={32}
+                  className="w-8 h-8 rounded-full object-cover"
+                />
+              ) : (
+                <div className="w-8 h-8 rounded-full bg-gray-500 flex items-center justify-center font-bold">
+                  {userInitial}
+                </div>
+              )}
             </Link>
           ) : (
             <Link
@@ -99,22 +122,38 @@ const NavBarComponent = () => {
           ))}
 
           <div className="border-t border-gray-700 pt-4">
-            {dataUser ? (
+            {dataUser?.token ? (
               <>
                 <Link
                   href={PATHROUTES.DASHBOARD}
                   onClick={() => setIsOpen(false)}
                   className="block mb-2"
                 >
-                  Perfil ({userInitial})
+                  {role === "Admin" ? (
+                    <Image
+                      src="/images/admin-avatar.png"
+                      alt="Admin"
+                      width={32}
+                      height={32}
+                      className="w-8 h-8 rounded-full object-cover inline-block mr-2"
+                    />
+                  ) : profileImg ? (
+                    <Image
+                      src={profileImg}
+                      alt="Foto de perfil"
+                      width={32}
+                      height={32}
+                      className="w-8 h-8 rounded-full object-cover inline-block mr-2"
+                    />
+                  ) : (
+                    `Perfil (${userInitial})`
+                  )}
                 </Link>
+
                 <button onClick={logOut}>Logout</button>
               </>
             ) : (
-              <Link
-                href={PATHROUTES.LOGIN}
-                onClick={() => setIsOpen(false)}
-              >
+              <Link href={PATHROUTES.LOGIN} onClick={() => setIsOpen(false)}>
                 Login
               </Link>
             )}

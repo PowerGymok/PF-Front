@@ -9,7 +9,12 @@ export interface MessageSessionProps {
   content: string;
   type: MessageType;
   senderId: string | null;
+  sender:{
+    id: string;
+    name: string;
+    email: string;
+  }
   createdAt: string;
   isRead: boolean;
-  messages: MessageSessionProps[];
+
 }

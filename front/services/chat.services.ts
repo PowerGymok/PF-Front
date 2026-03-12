@@ -1,124 +1,143 @@
 import { MessageSessionProps } from "@/interface/MessageSession";
 import { ConversationSession } from "@/interface/ConversationSession";
 
-//modicacion de service para acceder al endpoint segun el role para simiplicar codigo
+const API = process.env.NEXT_PUBLIC_API_URL;
+
 export const getConversationsByRole = async (
-  role: "user" | "Coach",
-  id: string,
+  role: "user" | "Coach" | "Admin",
   token: string,
-): Promise<ConversationSession[]> => {
+  userId: string
+) => {
+
+  if (!token) {
+    throw new Error("Token requerido para obtener conversaciones");
+  }
+
+  const decoded = JSON.parse(atob(token.split(".")[1]));
+  const realUserId = decoded.sub;
+
+  if (!realUserId) {
+    throw new Error("UserId no válido en token");
+  }
+
   const endpoint =
     role === "Coach"
-      ? `/chat/conversations/coach/${id}`
-      : `/conversations/user/${id}`;
+      ? `/chat/conversations/coach/${realUserId}`
+      : `/chat/conversations/user/${realUserId}`;
 
-  const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}${endpoint}`, {
+  console.log("FULL URL:", `${API}${endpoint}`);
+  console.log("TOKEN ENVIADO:", token);
+
+  const res = await fetch(`${API}${endpoint}`, {
+    method: "GET",
     headers: {
       Authorization: `Bearer ${token}`,
+      "Content-Type": "application/json",
     },
   });
 
   if (!res.ok) {
-    throw new Error("Error obteniendo conversaciones");
+    const error = await res.text();
+    console.log("BACKEND ERROR:", error);
+    throw new Error(`Error obteniendo conversaciones: ${res.status}`);
   }
 
   return res.json();
 };
 
+
+// export const getMessagesByConversation = async (
+//   conversationId: string,
+//   token: string,
+//   userId: string
+// ) => {
+
+//   if (!conversationId || !userId || !token) return [];
+
+//   const res = await fetch(
+//     `${API}/chat/conversations/${conversationId}/messages?userId=${userId}`,
+//     {
+//       headers: {
+//         Authorization: `Bearer ${token}`,
+//         "Content-Type": "application/json",
+//       },
+//     }
+//   );
+
+//   if (!res.ok) {
+//     throw new Error("Error obteniendo mensajes");
+//   }
+
+//   return res.json();
+// };
+
 export const getMessagesByConversation = async (
-  userId: string,
-  conversationId: string,
-  token: string,
-): Promise<MessageSessionProps[]> => {
+  conversationId: string | undefined,
+  token: string | undefined,
+  userId: string | undefined
+) => {
+
+  if (!conversationId || !token || !userId) {
+    return [];
+  }
+
   const res = await fetch(
-    `${process.env.NEXT_PUBLIC_API_URL}/chat/conversations/${conversationId}/messages?userId=${userId}`,
+    `${API}/chat/conversations/${conversationId}/messages?userId=${userId}`,
     {
+      method: "GET",
       headers: {
         Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
       },
-    },
+    }
   );
 
   if (!res.ok) {
-    throw new Error("Error obteniendo mensajes");
+    const error = await res.text().catch(() => "");
+    console.error("BACKEND ERROR:", error);
+    throw new Error(`Error obteniendo mensajes: ${res.status}`);
   }
 
-  return res.json();
+  const data = await res.json();
+
+  if (!Array.isArray(data)) return [];
+
+  return data;
 };
 
 export const createConversation = async (
   coachId: string,
-  token: string,
+  token: string
 ): Promise<ConversationSession> => {
-  const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/conversations`, {
+  const res = await fetch(`${API}/chat/conversations`, {
     method: "POST",
     headers: {
-      "Content-Type": "application/json",
       Authorization: `Bearer ${token}`,
+      "Content-Type": "application/json",
     },
     body: JSON.stringify({ coachId }),
   });
 
   if (!res.ok) {
-    throw new Error("Error creando conversación");
-  }
-
-  return res.json();
-};
-
-export const getAccesChat = async (token: string, userId: string) => {
-  const res = await fetch(
-    `${process.env.NEXT_PUBLIC_API_URL}/chat/access/${userId}`,
-    {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    },
-  );
-
-  if (!res.ok) {
-    throw new Error("Error obteniendo sesiones activas");
+    const error = await res.json().catch(() => ({}));
+    throw new Error(error.message || "Error creando conversación");
   }
 
   return res.json();
 };
 
 export const closeChat = async (conversationId: string, token: string) => {
-  try {
-    const res = await fetch(
-      `${process.env.NEXT_PUBLIC_API_URL}/chat/conversations/${conversationId}/close`,
-      {
-        method: "PATCH",
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      },
-    );
-    if (!res.ok) {
-      const error = await res.json();
-      throw new Error(error.message || "Error cerrando la conversación");
-    }
-    return await res.json();
-  } catch (error) {
-    throw error;
-  }
-};
-
-export const getCoachConversations = async (coachId: string, token: string) => {
-  const res = await fetch(
-    `${process.env.NEXT_PUBLIC_API_URL}/chat/conversations/coach/${coachId}`,
-    {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
+  const res = await fetch(`${API}/chat/conversations/${conversationId}/close`, {
+    method: "PATCH",
+    headers: {
+      Authorization: `Bearer ${token}`,
+      "Content-Type": "application/json",
     },
-  );
+  });
 
   if (!res.ok) {
     const error = await res.json().catch(() => ({}));
-    throw new Error(
-      error.message || "Error obteniendo conversaciones del coach",
-    );
+    throw new Error(error.message || "Error cerrando conversación");
   }
 
   return res.json();

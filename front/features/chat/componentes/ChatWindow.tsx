@@ -1,155 +1,235 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
-import BubbleMessage from "./BubbleMessages";
+import { useEffect, useRef, useState } from "react";
 import { useAuth } from "@/app/contexts/AuthContext";
-import {
-  getConversationsByRole,
-  getMessagesByConversation,
-  getAccesChat,
-} from "../../../services/chat.services";
+import { useChat } from "@/app/contexts/ChatContext";
 
-interface Message {
-  id: string;
-  content: string;
-  sender: "user" | "coach";
-  createdAt: string;
-}
-
-export default function ChatWindow() {
+const ChatWindow = () => {
   const { dataUser } = useAuth();
 
-  const [messages, setMessages] = useState<Message[]>([]);
+  const {
+    conversations,
+    activeConversation,
+    messages,
+    isConnected,
+    isLoadingConversations,
+    isLoadingMessages,
+    setActiveConversation,
+    sendMessage,
+  } = useChat();
+
+  const messagesContainerRef = useRef<HTMLDivElement>(null);
   const [newMessage, setNewMessage] = useState("");
-  const [selectedConversation, setSelectedConversation] = useState<any>(null);
-  const [loading, setLoading] = useState(true);
 
-  const bottomRef = useRef<HTMLDivElement>(null);
+  const currentUserId = dataUser?.user?.id;
 
-  const currentUserRole = dataUser?.user?.role === "Coach" ? "coach" : "user";
-
-  useEffect(() => {
-    if (!dataUser) return;
-
-    const initChat = async () => {
-      try {
-        const role = dataUser.user.role as "user" | "Coach";
-        const userId = dataUser.user.id;
-        const token = dataUser.token;
-
-        if (role === "user") {
-          const access = await getAccesChat(token, userId);
-          if (!access) {
-            setLoading(false);
-            return;
-          }
-        }
-
-        const conversations = await getConversationsByRole(role, userId, token);
-
-        if (conversations.length > 0) {
-          const conversation = conversations[0];
-          setSelectedConversation(conversation);
-
-          const msgs = await getMessagesByConversation(
-            userId,
-            conversation.id,
-            token,
-          );
-
-          const formattedMessages: Message[] = msgs.map((msg: any) => ({
-            id: msg.id,
-            content: msg.content,
-            sender:
-              msg.senderId === userId
-                ? currentUserRole
-                : currentUserRole === "user"
-                  ? "coach"
-                  : "user",
-            createdAt: new Date(msg.createdAt).toLocaleTimeString([], {
-              hour: "2-digit",
-              minute: "2-digit",
-            }),
-          }));
-
-          setMessages(formattedMessages);
-        }
-      } catch (error) {
-        console.error("Error initializing chat:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    initChat();
-  }, [dataUser]);
-
-  const sendMessage = () => {
-    if (!newMessage.trim() || !selectedConversation) return;
-
-    const message: Message = {
-      id: crypto.randomUUID(),
-      content: newMessage,
-      sender: currentUserRole,
-      createdAt: new Date().toLocaleTimeString([], {
-        hour: "2-digit",
-        minute: "2-digit",
-      }),
-    };
-
-    setMessages((prev) => [...prev, message]);
+  const handleSendMessage = () => {
+    if (!newMessage.trim()) return;
+    sendMessage(newMessage);
     setNewMessage("");
   };
 
   useEffect(() => {
-    bottomRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages]);
+    if (messagesContainerRef.current) {
+        messagesContainerRef.current.scrollTop =
+        messagesContainerRef.current.scrollHeight;
+    }
+  }, [messages, currentUserId]);
 
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center h-[600px]">
-        Cargando chat
-      </div>
-    );
-  }
-
-  if (!dataUser || dataUser.user.role === "Admin") {
-    return null;
-  }
+  if (!currentUserId) return null;
 
   return (
-    <div className="flex flex-col h-[600px] max-w-2xl mx-auto bg-white rounded-2xl shadow-xl overflow-hidden">
-      <div className="bg-gray-600 text-white p-4 font-semibold">
-        Coach PowerGym
+    <div className="w-full h-full bg-black flex overflow-hidden text-white">
+
+      <div className="w-[160px] border-r border-neutral-800 bg-neutral-950 flex flex-col">
+
+        <div className="p-4 border-b border-neutral-800">
+          <h3 className="text-sm font-light tracking-wide">
+            Chats
+          </h3>
+
+          <p
+            className={`text-xs mt-2 ${
+              isConnected ? "text-green-400" : "text-red-400"
+            }`}
+          >
+            {isConnected ? "Conectado" : "Desconectado"}
+          </p>
+        </div>
+
+        <div className="flex-1 overflow-y-auto">
+
+          {isLoadingConversations ? (
+            <p className="text-xs text-neutral-500 p-4">
+              Cargando conversaciones...
+            </p>
+          ) : conversations.length === 0 ? (
+            <p className="text-xs text-neutral-500 p-4">
+              Sin conversaciones
+            </p>
+          ) : (
+            conversations.map((conversation) => {
+
+              const otherUser =
+                dataUser?.user?.role === "Coach"
+                  ? conversation.user
+                  : conversation.coach;
+
+              const displayName =
+                otherUser?.name ||
+                otherUser?.email ||
+                "Usuario";
+
+              return (
+                <button
+                  key={conversation.id}
+                  onClick={() => setActiveConversation(conversation)}
+                  className={`w-full text-left px-4 py-3 border-b border-neutral-900 text-xs transition cursor-pointer ${
+                    activeConversation?.id === conversation.id
+                      ? "bg-neutral-800 text-white"
+                      : "hover:bg-neutral-900 text-neutral-400"
+                  }`}
+                >
+                  <p className="truncate font-light tracking-wide">
+                    {displayName}
+                  </p>
+
+                  <p className="text-[10px] text-neutral-600 truncate">
+                    {conversation.id.slice(0, 8)}...
+                  </p>
+                </button>
+              );
+            })
+          )}
+
+        </div>
+
       </div>
 
-      <div className="flex-1 overflow-y-auto p-4 bg-gray-100">
-        {messages.map((msg) => (
-          <BubbleMessage
-            key={msg.id}
-            message={msg}
-            currentUserRole={currentUserRole}
-          />
-        ))}
-        <div ref={bottomRef} />
-      </div>
+      <div className="flex-1 flex flex-col bg-black">
 
-      <div className="p-4 border-t flex gap-2">
-        <input
-          type="text"
-          value={newMessage}
-          onChange={(e) => setNewMessage(e.target.value)}
-          placeholder="Escribe un mensaje..."
-          className="flex-1 border rounded-full px-4 py-2 focus:outline-none focus:ring-2 focus:ring-gray-500"
-          onKeyDown={(e) => e.key === "Enter" && sendMessage()}
-        />
-        <button
-          onClick={sendMessage}
-          className="bg-gray-600 text-white px-5 rounded-full hover:bg-blue-700 transition"
+        <div className="border-b border-neutral-800 p-4">
+          <h2 className="text-sm font-light tracking-wide text-neutral-300">
+            {activeConversation
+              ? `Chat con ${
+                  dataUser?.user?.role === "Coach"
+                    ? activeConversation.user?.name ||
+                      activeConversation.user?.email ||
+                      "Usuario"
+                    : activeConversation.coach?.name ||
+                      activeConversation.coach?.email ||
+                      "Usuario"
+                }`
+              : "Selecciona un chat"}
+          </h2>
+        </div>
+
+        <div
+          ref={messagesContainerRef}
+          className="flex-1 min-h-0 overflow-y-auto p-5 bg-neutral-950 space-y-4 pb-4"
         >
-          Enviar
-        </button>
+
+          {!activeConversation ? (
+            <div className="h-full flex items-center justify-center text-sm text-neutral-500">
+              No hay conversación activa
+            </div>
+
+          ) : isLoadingMessages ? (
+            <div className="h-full flex items-center justify-center text-sm text-neutral-500">
+              Cargando mensajes...
+            </div>
+
+          ) : messages.length === 0 ? (
+            <div className="h-full flex items-center justify-center text-sm text-neutral-500">
+              Aún no hay mensajes
+            </div>
+
+          ) : (
+            messages.map((msg) => {
+
+              console.log("Mensaje recibido:", msg);
+              console.log("senderId:", msg.senderId);
+              console.log("currentUserId:", currentUserId);
+
+              const isMine = String(msg.sender?.id ?? msg.senderId) === String(currentUserId);
+
+              return (
+                <div
+                  key={msg.id}
+                  className={`flex ${
+                    isMine ? "justify-end" : "justify-start"
+                  }`}
+                >
+
+                  <div
+                    className={`max-w-[75%] px-4 py-2 rounded-lg text-sm ${
+                      isMine
+                        ? "bg-white text-black"
+                        : "bg-neutral-800 text-neutral-200"
+                    }`}
+                  >
+
+                    <p className="font-light leading-relaxed">
+                      {msg.content}
+                    </p>
+
+                    {msg.createdAt && (
+                      <p
+                        className={`text-[10px] mt-1 ${
+                          isMine
+                            ? "text-neutral-600"
+                            : "text-neutral-400"
+                        }`}
+                      >
+                        {new Date(msg.createdAt).toLocaleTimeString([], {
+                          hour: "2-digit",
+                          minute: "2-digit",
+                        })}
+                      </p>
+                    )}
+
+                  </div>
+
+                </div>
+              );
+            })
+          )}
+
+        </div>
+
+        {/* INPUT */}
+
+        <div className="border-t border-neutral-800 p-4 flex gap-2 bg-black flex-shrink-0">
+
+          <input
+            type="text"
+            value={newMessage}
+            onChange={(e) => setNewMessage(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") handleSendMessage();
+            }}
+            disabled={!activeConversation}
+            placeholder={
+              activeConversation
+                ? "Escribe un mensaje..."
+                : "Selecciona una conversación"
+            }
+            className="flex-1 bg-neutral-900 border border-neutral-800 rounded-lg px-3 py-2 text-sm text-white placeholder-neutral-500 outline-none focus:border-neutral-600 disabled:opacity-40"
+          />
+
+          <button
+            onClick={handleSendMessage}
+            disabled={!activeConversation || !newMessage.trim()}
+            className="bg-white text-black px-4 py-2 rounded-lg text-sm hover:bg-neutral-200 transition disabled:opacity-40 disabled:cursor-not-allowed"
+          >
+            Enviar
+          </button>
+
+        </div>
+
       </div>
     </div>
   );
-}
+};
+
+export default ChatWindow;

@@ -153,3 +153,25 @@ export const GetAdminMemberships = async (
     throw new Error("Error al obtener membresías");
   }
 };
+
+export const ActivateMembership = async (
+  id: string,
+  token: string,
+): Promise<void> => {
+  try {
+    const res = await fetch(
+      `${process.env.NEXT_PUBLIC_API_URL}/memberships/active/${id}`,
+      {
+        method: "PATCH",
+        headers: { Authorization: `Bearer ${token}` },
+      },
+    );
+    if (!res.ok) {
+      const error = await res.json().catch(() => ({}));
+      throw new Error(error.message || "Error al reactivar la membresía");
+    }
+  } catch (error) {
+    if (error instanceof Error) throw new Error(error.message);
+    throw new Error("Error al reactivar la membresía");
+  }
+};

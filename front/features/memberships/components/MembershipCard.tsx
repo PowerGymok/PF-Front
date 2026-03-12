@@ -7,26 +7,22 @@ import { FeatureItem } from "@/features/memberships/components/FeatureItem";
 import { Membership } from "@/features/memberships/types/membership.types";
 import { useAuth } from "@/app/contexts/AuthContext";
 
-import { useEffect } from "react";
-
 export function MembershipCard({
   title,
   price,
   features,
   membershipVariant,
+  description,
 }: Membership) {
   const router = useRouter();
   const { dataUser, isLoading } = useAuth();
   const styles = variantStyles[membershipVariant];
 
   const handleClick = () => {
-    if (isLoading) return; // espera a que se hidrate el estado
-
+    if (isLoading) return;
     if (dataUser?.user) {
-      //  Logueado → ir al checkout con la membresía seleccionada
       router.push(`/payment/checkout?plan=${membershipVariant}`);
     } else {
-      //  No logueado → ir al registro indicando el plan
       router.push(`/register?plan=${membershipVariant}`);
     }
   };
@@ -34,10 +30,10 @@ export function MembershipCard({
   return (
     <div
       className={clsx(
-        "group relative flex flex-col justify-between ",
+        "group relative flex flex-col justify-between",
         "w-full max-w-sm mx-auto",
         "border-2 rounded-3xl p-5 text-white bg-black",
-        "transition-all duration-300 hover:scale-105  hover:shadow-2xl",
+        "transition-all duration-300 hover:scale-105 hover:shadow-2xl",
         styles.border,
         styles.hoverBorder,
       )}
@@ -67,8 +63,15 @@ export function MembershipCard({
         </div>
       </div>
 
+      {/* Descripción — debajo de iconos, encima del precio */}
+      {description && (
+        <p className="mt-8 text-base text-white text-center leading-snug px-3">
+          {description}
+        </p>
+      )}
+
       {/* Precio + Botón */}
-      <div className="mt-7.5 text-center space-y-5">
+      <div className="mt-5 text-center space-y-5">
         <p
           className={clsx(
             "text-3xl font-extrabold transition-colors duration-300",
@@ -81,7 +84,7 @@ export function MembershipCard({
         <button
           onClick={handleClick}
           disabled={isLoading}
-          className="w-full py-3 rounded-full border border-white font-semibold hover:bg-white hover:text-black transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
+          className="w-full py-3 rounded-full border border-white font-semibold hover:bg-white hover:text-black transition-all duration-300 disabled:opacity-50 cursor-pointer disabled:cursor-not-allowed"
         >
           {isLoading
             ? "Cargando…"
