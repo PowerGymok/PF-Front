@@ -15,6 +15,7 @@ export interface Workout {
   fullDescription: string;
   benefits: string[];
   requirements: string;
+  isActive: boolean;
 }
 
 /* ─────────────────────────────────────────
@@ -73,5 +74,6 @@ export function mapWorkout(item: WorkoutBackend): Workout {
     fullDescription: item.description ?? "",
     benefits: item.benefits ?? [],
     requirements: item.requirements ?? "",
+    isActive: item.isActive,
   };
 }

@@ -18,6 +18,9 @@ interface Props {
   onCancelSchedule?: (
     idClassSchedule: string,
   ) => Promise<{ success: boolean; message: string }>;
+  onRestore?: (
+    idClass: string,
+  ) => Promise<{ success: boolean; message: string }>;
 }
 
 export function BookingCard({
@@ -26,6 +29,7 @@ export function BookingCard({
   alreadyBooked = false,
   onReserve,
   onCancelSchedule,
+  onRestore,
 }: Props) {
   const [mounted, setMounted] = useState(false);
   useEffect(() => {
@@ -115,6 +119,14 @@ export function BookingCard({
     setLoading(false);
   };
 
+  const handleRestoreClick = async () => {
+    if (!onRestore || loading) return;
+    setLoading(true);
+    const result = await onRestore(booking.classId);
+    showFeedback(result.success, result.message);
+    setLoading(false);
+  };
+
   /* ── Acciones por rol ── */
   const renderActions = () => {
     switch (variant) {
@@ -177,7 +189,15 @@ export function BookingCard({
         );
 
       case "admin":
-        return (
+        return booking.isActive === false ? (
+          <button
+            onClick={handleRestoreClick}
+            disabled={loading}
+            className="w-full py-3 rounded-full border border-emerald-500 text-emerald-400 font-semibold tracking-wide hover:bg-emerald-500 hover:text-black transition-all duration-300 disabled:opacity-40 disabled:cursor-not-allowed"
+          >
+            {loading ? "Reactivando…" : "REACTIVAR"}
+          </button>
+        ) : (
           <button
             onClick={handleCancelClick}
             disabled={loading}
