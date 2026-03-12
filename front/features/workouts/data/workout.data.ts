@@ -2,7 +2,7 @@ import { Workout } from "../types/workout.types";
 
 export const workoutsMock: Workout[] = [
   {
-    id: 1,
+    id: "1",
     name: "CrossFit Avanzado",
     intensity: "alta",
     duration: 60,
@@ -21,10 +21,11 @@ export const workoutsMock: Workout[] = [
     ],
     requirements:
       "Experiencia previa en entrenamiento funcional. Evaluación obligatoria.",
+    isActive: true,
   },
 
   {
-    id: 2,
+    id: "2",
     name: "HIIT Express",
     intensity: "alta",
     duration: 45,
@@ -40,10 +41,11 @@ export const workoutsMock: Workout[] = [
       "Sesiones rápidas y efectivas",
     ],
     requirements: "Condición física básica recomendada.",
+    isActive: true,
   },
 
   {
-    id: 3,
+    id: "3",
     name: "Spartan Conditioning",
     intensity: "alta",
     duration: 55,
@@ -59,10 +61,11 @@ export const workoutsMock: Workout[] = [
       "Mejora disciplina",
     ],
     requirements: "Recomendado para nivel intermedio-avanzado.",
+    isActive: true,
   },
 
   {
-    id: 4,
+    id: "4",
     name: "Yoga Flow",
     intensity: "media",
     duration: 50,
@@ -75,10 +78,11 @@ export const workoutsMock: Workout[] = [
       "Clase fluida que combina fuerza, flexibilidad y control corporal. Ideal para equilibrar cuerpo y mente.",
     benefits: ["Mayor flexibilidad", "Reducción de estrés", "Mejor postura"],
     requirements: "Tapete obligatorio. Apto para todos los niveles.",
+    isActive: true,
   },
 
   {
-    id: 5,
+    id: "5",
     name: "Functional Core",
     intensity: "media",
     duration: 40,
@@ -94,10 +98,11 @@ export const workoutsMock: Workout[] = [
       "Mejor rendimiento deportivo",
     ],
     requirements: "Sin lesiones lumbares activas.",
+    isActive: true,
   },
 
   {
-    id: 6,
+    id: "6",
     name: "Boxing Conditioning",
     intensity: "alta",
     duration: 50,
@@ -113,10 +118,11 @@ export const workoutsMock: Workout[] = [
       "Desarrollo de resistencia",
     ],
     requirements: "Guantes opcionales. Apto para nivel intermedio.",
+    isActive: true,
   },
 
   {
-    id: 7,
+    id: "7",
     name: "Powerlifting Básico",
     intensity: "baja",
     duration: 70,
@@ -128,10 +134,11 @@ export const workoutsMock: Workout[] = [
       "Clase centrada en sentadilla, press banca y peso muerto con progresión estructurada.",
     benefits: ["Incremento de fuerza", "Mejor técnica", "Progresión segura"],
     requirements: "Experiencia básica con barra.",
+    isActive: true,
   },
 
   {
-    id: 8,
+    id: "8",
     name: "Mobility Reset",
     intensity: "baja",
     duration: 35,
@@ -147,10 +154,11 @@ export const workoutsMock: Workout[] = [
       "Recuperación activa",
     ],
     requirements: "Apto para todos los niveles.",
+    isActive: true,
   },
 
   {
-    id: 9,
+    id: "9",
     name: "TRX Strength",
     intensity: "media",
     duration: 45,
@@ -166,10 +174,11 @@ export const workoutsMock: Workout[] = [
       "Trabajo de core constante",
     ],
     requirements: "Apto para nivel principiante-intermedio.",
+    isActive: true,
   },
 
   {
-    id: 10,
+    id: "10",
     name: "Cardio Dance",
     intensity: "media",
     duration: 50,
@@ -185,10 +194,11 @@ export const workoutsMock: Workout[] = [
       "Ambiente divertido",
     ],
     requirements: "Ropa cómoda. Apto para todos.",
+    isActive: true,
   },
 
   {
-    id: 11,
+    id: "11",
     name: "Strength & Conditioning",
     intensity: "alta",
     duration: 65,
@@ -200,10 +210,11 @@ export const workoutsMock: Workout[] = [
       "Programa mixto que combina levantamientos pesados con intervalos metabólicos.",
     benefits: ["Mayor fuerza", "Mejor resistencia", "Progreso medible"],
     requirements: "Experiencia intermedia recomendada.",
+    isActive: true,
   },
 
   {
-    id: 12,
+    id: "12",
     name: "Stretch & Relax",
     intensity: "baja",
     duration: 40,
@@ -219,5 +230,6 @@ export const workoutsMock: Workout[] = [
       "Recuperación muscular",
     ],
     requirements: "Apto para todos los niveles.",
+    isActive: true,
   },
 ];
