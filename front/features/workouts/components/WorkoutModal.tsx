@@ -13,6 +13,7 @@ interface WorkoutModalProps {
   workout: Workout;
   onClose: () => void;
   onDeleted?: (id: string) => void;
+  onRestored?: (id: string) => void;
   onEditRequest?: (workout: Workout) => void;
 }
 
@@ -20,6 +21,7 @@ export default function WorkoutModal({
   workout,
   onClose,
   onDeleted,
+  onRestored,
   onEditRequest,
 }: WorkoutModalProps) {
   const router = useRouter();
@@ -29,6 +31,7 @@ export default function WorkoutModal({
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [deleteError, setDeleteError] = useState<string | null>(null);
+  const [isRestoring, setIsRestoring] = useState(false);
 
   const role = dataUser?.user?.role as string | undefined;
   const isAdminOrCoach = role === "Admin" || role === "Coach";
@@ -79,6 +82,27 @@ export default function WorkoutModal({
       setConfirmDelete(false);
     } finally {
       setIsDeleting(false);
+    }
+  };
+
+  const handleRestore = async () => {
+    setIsRestoring(true);
+    setDeleteError(null);
+    try {
+      const res = await fetch(`${API_URL}/clases/active/${workout.id}`, {
+        method: "PATCH",
+        headers: { Authorization: `Bearer ${dataUser?.token}` },
+      });
+      if (!res.ok) {
+        const body = await res.json().catch(() => ({}));
+        throw new Error(body?.message ?? `Error ${res.status}`);
+      }
+      onRestored?.(workout.id);
+      onClose();
+    } catch (err: any) {
+      setDeleteError(err.message);
+    } finally {
+      setIsRestoring(false);
     }
   };
 
@@ -167,39 +191,52 @@ export default function WorkoutModal({
           {/* CTAs según rol */}
           {isAdminOrCoach ? (
             <div className="flex flex-col gap-3 mt-2">
-              {/* Editar */}
-              <button
-                onClick={() => onEditRequest?.(workout)}
-                className="cursor-pointer py-3 text-sm font-semibold rounded-lg border border-white/20 text-white/70 hover:border-white hover:text-white transition-all"
-              >
-                EDITAR
-              </button>
-
-              {/* Eliminar con doble confirmación */}
-              <button
-                onClick={handleDelete}
-                disabled={isDeleting}
-                className={`cursor-pointer py-3 text-sm font-semibold rounded-lg border transition-all
-                  ${
-                    confirmDelete
-                      ? "border-rose-400 bg-rose-400/10 text-rose-300 animate-pulse"
-                      : "border-red-500 text-red-500 hover:bg-red-500/10"
-                  } disabled:opacity-40 disabled:cursor-not-allowed`}
-              >
-                {isDeleting
-                  ? "Eliminando..."
-                  : confirmDelete
-                    ? "¿Confirmar eliminación?"
-                    : "ELIMINAR"}
-              </button>
-
-              {confirmDelete && !isDeleting && (
+              {workout.isActive === false ? (
+                /* Clase inactiva — solo Reactivar */
                 <button
-                  onClick={() => setConfirmDelete(false)}
-                  className="text-xs text-white/30 hover:text-white/60 transition-colors text-center"
+                  onClick={handleRestore}
+                  disabled={isRestoring}
+                  className="cursor-pointer py-3 text-sm font-semibold rounded-lg border border-emerald-500 text-emerald-400 hover:bg-emerald-500/10 transition-all disabled:opacity-40 disabled:cursor-not-allowed"
                 >
-                  Cancelar
+                  {isRestoring ? "Reactivando..." : "REACTIVAR CLASE"}
                 </button>
+              ) : (
+                <>
+                  {/* Editar */}
+                  <button
+                    onClick={() => onEditRequest?.(workout)}
+                    className="cursor-pointer py-3 text-sm font-semibold rounded-lg border border-white/20 text-white/70 hover:border-white hover:text-white transition-all"
+                  >
+                    EDITAR
+                  </button>
+
+                  {/* Eliminar con doble confirmación */}
+                  <button
+                    onClick={handleDelete}
+                    disabled={isDeleting}
+                    className={`cursor-pointer py-3 text-sm font-semibold rounded-lg border transition-all
+                      ${
+                        confirmDelete
+                          ? "border-rose-400 bg-rose-400/10 text-rose-300 animate-pulse"
+                          : "border-red-500 text-red-500 hover:bg-red-500/10"
+                      } disabled:opacity-40 disabled:cursor-not-allowed`}
+                  >
+                    {isDeleting
+                      ? "Eliminando..."
+                      : confirmDelete
+                        ? "¿Confirmar eliminación?"
+                        : "ELIMINAR"}
+                  </button>
+
+                  {confirmDelete && !isDeleting && (
+                    <button
+                      onClick={() => setConfirmDelete(false)}
+                      className="text-xs text-white/30 hover:text-white/60 transition-colors text-center"
+                    >
+                      Cancelar
+                    </button>
+                  )}
+                </>
               )}
             </div>
           ) : (

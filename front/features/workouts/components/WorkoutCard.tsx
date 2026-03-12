@@ -14,12 +14,14 @@ import { Spots_Icon } from "@/components/icons/Spots_Icon";
 interface WorkoutCardProps {
   workout: Workout;
   onDeleted?: (id: string) => void;
+  onRestored?: (id: string) => void;
   onEditRequest?: (workout: Workout) => void;
 }
 
 export default function WorkoutCard({
   workout,
   onDeleted,
+  onRestored,
   onEditRequest,
 }: WorkoutCardProps) {
   const [open, setOpen] = useState(false);
@@ -30,7 +32,7 @@ export default function WorkoutCard({
     <>
       <article
         onClick={() => setOpen(true)}
-        className={`group cursor-pointer bg-[#111] border border-zinc-800 rounded-2xl overflow-hidden transition-all duration-300 hover:-translate-y-2 hover:shadow-2xl ${intensityStyles.borderHover}`}
+        className={`group cursor-pointer bg-[#111] border border-zinc-800 rounded-2xl overflow-hidden transition-all duration-300 hover:-translate-y-2 hover:shadow-2xl ${intensityStyles.borderHover} ${!workout.isActive ? "opacity-50 grayscale" : ""}`}
       >
         {/* Imagen */}
         <div className="relative h-48 overflow-hidden">
@@ -48,6 +50,13 @@ export default function WorkoutCard({
           >
             {intensityLabelMap[workout.intensity]}
           </span>
+
+          {/* Badge inactiva */}
+          {!workout.isActive && (
+            <span className="absolute top-3 left-3 text-xs font-semibold uppercase tracking-wider px-3 py-1 rounded-full bg-zinc-700 text-zinc-300">
+              Inactiva
+            </span>
+          )}
         </div>
 
         {/* Body */}
@@ -97,6 +106,7 @@ export default function WorkoutCard({
           workout={workout}
           onClose={() => setOpen(false)}
           onDeleted={onDeleted}
+          onRestored={onRestored}
           onEditRequest={onEditRequest}
         />
       )}

@@ -18,9 +18,7 @@ async function getWorkouts() {
 
     const data: WorkoutBackend[] = await res.json();
 
-    return Array.isArray(data)
-      ? data.filter((c) => c.isActive !== false).map(mapWorkout)
-      : [];
+    return Array.isArray(data) ? data.map(mapWorkout) : [];
   } catch (err) {
     console.error("[WorkoutsPage] Error fetching clases:", err);
     return workoutsMock;

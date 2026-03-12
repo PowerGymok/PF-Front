@@ -59,7 +59,7 @@ export const GetAdminTokenPackages = async (
 ): Promise<TokenPackageAdminResponse[]> => {
   try {
     const res = await fetch(
-      `${process.env.NEXT_PUBLIC_API_URL}/token-packages`,
+      `${process.env.NEXT_PUBLIC_API_URL}/token-packages/all`,
       {
         cache: "no-store",
         headers: {
@@ -102,5 +102,27 @@ export const DeleteTokenPackage = async (
   } catch (error) {
     if (error instanceof Error) throw new Error(error.message);
     throw new Error("Error al eliminar el paquete");
+  }
+};
+
+export const ActivateTokenPackage = async (
+  id: string,
+  token: string,
+): Promise<void> => {
+  try {
+    const res = await fetch(
+      `${process.env.NEXT_PUBLIC_API_URL}/token-packages/active/${id}`,
+      {
+        method: "PATCH",
+        headers: { Authorization: `Bearer ${token}` },
+      },
+    );
+    if (!res.ok) {
+      const error = await res.json().catch(() => ({}));
+      throw new Error(error.message || "Error al reactivar el paquete");
+    }
+  } catch (error) {
+    if (error instanceof Error) throw new Error(error.message);
+    throw new Error("Error al reactivar el paquete");
   }
 };
