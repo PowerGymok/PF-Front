@@ -35,6 +35,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
 
         const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/me`, {
           headers: {
+            "Content-Type": "application/json",
             Authorization: `Bearer ${parsedData.token}`,
           },
         });
