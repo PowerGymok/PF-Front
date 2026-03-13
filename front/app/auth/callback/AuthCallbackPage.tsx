@@ -14,17 +14,12 @@ export default function CallbackPage() {
   useEffect(() => {
     const getUser = async () => {
       try {
-        // ✅ Leer token desde la URL
         const token = searchParams.get("token");
 
         if (!token) {
           router.push("/login");
           return;
         }
-
-        localStorage.setItem("token", token);
-
-        // ✅ Ahora pedimos el usuario al backend
 
         const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/me`, {
           headers: {
@@ -34,16 +29,17 @@ export default function CallbackPage() {
         });
 
         if (!res.ok) {
+          localStorage.removeItem("userSession");
+          localStorage.removeItem("token");
           router.push("/login");
           return;
         }
 
         const data = await res.json();
 
-        // 🟢 Actualizamos el contexto
-        setDataUser({
+        const session = {
           login: true,
-          token: token,
+          token,
           user: {
             id: data.id,
             name: data.name,
@@ -54,18 +50,16 @@ export default function CallbackPage() {
             isProfileComplete: data.isProfileComplete,
             profileImg: data.profileImg,
           },
-        });
+        };
 
-        // 🔴 Redirección según perfil
-        // if (!data.isProfileComplete) {
-        //   router.push("/complete-profile");
-        //   return;
-        // }
+        setDataUser(session);
+        localStorage.setItem("userSession", JSON.stringify(session));
 
-        // ✅ Siempre ir a /dashboard
         router.push("/dashboard");
       } catch (error) {
         console.error("Error en Google callback:", error);
+        localStorage.removeItem("userSession");
+        localStorage.removeItem("token");
         router.push("/login");
       }
     };

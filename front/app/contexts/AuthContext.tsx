@@ -32,9 +32,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     const loadUser = async () => {
       try {
         const stored = localStorage.getItem("userSession");
-        const token = localStorage.getItem("token");
 
-        if (!stored || !token) {
+        if (!stored) {
           clearSession();
           return;
         }
@@ -62,6 +61,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
 
         const updatedSession: UserSession = {
           ...parsedData,
+          login: true,
+          token: parsedData.token,
           user: {
             ...parsedData.user,
             ...user,
@@ -82,7 +83,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
 
   useEffect(() => {
     if (!isLoading) {
-      if (dataUser) {
+      if (dataUser?.token) {
         localStorage.setItem("userSession", JSON.stringify(dataUser));
       } else {
         localStorage.removeItem("userSession");
