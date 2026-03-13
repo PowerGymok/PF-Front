@@ -25,21 +25,33 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   const clearSession = () => {
     setDataUser(null);
     localStorage.removeItem("userSession");
+    localStorage.removeItem("token");
   };
 
   useEffect(() => {
     const loadUser = async () => {
       try {
         const stored = localStorage.getItem("userSession");
+        const legacyToken = localStorage.getItem("token");
 
-        if (!stored) {
+        if (!stored && !legacyToken) {
           clearSession();
           return;
         }
 
-        const parsedData: UserSession = JSON.parse(stored);
+        let parsedData: UserSession | null = null;
+        let token = "";
 
-        if (!parsedData?.token) {
+        if (stored) {
+          parsedData = JSON.parse(stored);
+          token = parsedData?.token || "";
+        }
+
+        if (!token && legacyToken) {
+          token = legacyToken;
+        }
+
+        if (!token) {
           clearSession();
           return;
         }
@@ -47,7 +59,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
         const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/me`, {
           headers: {
             "Content-Type": "application/json",
-            Authorization: `Bearer ${parsedData.token}`,
+            Authorization: `Bearer ${token}`,
           },
         });
 
@@ -59,15 +71,17 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
         const user = await res.json();
 
         const updatedSession: UserSession = {
-          ...parsedData,
+          ...(parsedData as UserSession),
+          token,
           user: {
-            ...parsedData.user,
+            ...(parsedData?.user || {}),
             ...user,
           },
         };
 
         setDataUser(updatedSession);
         localStorage.setItem("userSession", JSON.stringify(updatedSession));
+        localStorage.setItem("token", token);
       } catch (error) {
         clearSession();
       } finally {
@@ -82,8 +96,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     if (!isLoading) {
       if (dataUser) {
         localStorage.setItem("userSession", JSON.stringify(dataUser));
+        localStorage.setItem("token", dataUser.token);
       } else {
         localStorage.removeItem("userSession");
+        localStorage.removeItem("token");
       }
     }
   }, [dataUser, isLoading]);
@@ -105,6 +121,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
       };
 
       localStorage.setItem("userSession", JSON.stringify(updatedUser));
+      localStorage.setItem("token", updatedUser.token);
       return updatedUser;
     });
   };
