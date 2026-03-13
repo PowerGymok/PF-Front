@@ -22,16 +22,27 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [isProfileComplete, setIsProfileComplete] = useState<boolean>(true);
 
+  const clearSession = () => {
+    setDataUser(null);
+    localStorage.removeItem("userSession");
+  };
+
   useEffect(() => {
     const loadUser = async () => {
       try {
         const stored = localStorage.getItem("userSession");
+
         if (!stored) {
-          setIsLoading(false);
+          clearSession();
           return;
         }
 
         const parsedData: UserSession = JSON.parse(stored);
+
+        if (!parsedData?.token) {
+          clearSession();
+          return;
+        }
 
         const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/me`, {
           headers: {
@@ -41,21 +52,24 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
         });
 
         if (!res.ok) {
-          setDataUser(parsedData);
+          clearSession();
           return;
         }
 
         const user = await res.json();
+
         const updatedSession: UserSession = {
           ...parsedData,
-          user: { ...parsedData.user, ...user },
+          user: {
+            ...parsedData.user,
+            ...user,
+          },
         };
 
         setDataUser(updatedSession);
         localStorage.setItem("userSession", JSON.stringify(updatedSession));
       } catch (error) {
-        const stored = localStorage.getItem("userSession");
-        if (stored) setDataUser(JSON.parse(stored));
+        clearSession();
       } finally {
         setIsLoading(false);
       }
@@ -65,23 +79,31 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   }, []);
 
   useEffect(() => {
-    if (dataUser && !isLoading) {
-      localStorage.setItem("userSession", JSON.stringify(dataUser));
+    if (!isLoading) {
+      if (dataUser) {
+        localStorage.setItem("userSession", JSON.stringify(dataUser));
+      } else {
+        localStorage.removeItem("userSession");
+      }
     }
   }, [dataUser, isLoading]);
 
   const logOut = () => {
-    setDataUser(null);
-    localStorage.removeItem("userSession");
+    clearSession();
   };
 
   const updateProfileImg = (img: string) => {
     setDataUser((prev) => {
       if (!prev) return prev;
+
       const updatedUser = {
         ...prev,
-        user: { ...prev.user, profileImg: img },
+        user: {
+          ...prev.user,
+          profileImg: img,
+        },
       };
+
       localStorage.setItem("userSession", JSON.stringify(updatedUser));
       return updatedUser;
     });
