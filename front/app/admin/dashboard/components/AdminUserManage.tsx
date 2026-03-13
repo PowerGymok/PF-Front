@@ -69,12 +69,11 @@ const AdminUserManage = () => {
       } else {
         await ActivateUser(userId, dataUser.token);
       }
-
-      setUsers((prev) =>
-        prev.map((u) => (u.id === userId ? { ...u, isActive: !isActive } : u)),
-      );
     } catch (error) {
       console.error(error);
+      setUsers((prev) =>
+        prev.map((u) => (u.id === userId ? { ...u, isActive: !u.isActive } : u)),
+      );
     } finally {
       setActionLoadingId(null);
     }
