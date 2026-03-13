@@ -240,74 +240,74 @@ export const ChatProvider = ({ children }: { children: ReactNode }) => {
     };
   }, [activeConversation, token, userId, isLoading]);
 
-//   useEffect(() => {
-//   if (!activeConversation?.id) return;
-//   if (!token || !userId) return;
+  useEffect(() => {
+  if (!activeConversation?.id) return;
+  if (!token || !userId) return;
 
-//   const interval = setInterval(async () => {
-//     try {
-//       const data = await getMessagesByConversation(
-//         activeConversation.id,
-//         token,
-//         userId
-//       );
+  const interval = setInterval(async () => {
+    try {
+      const data = await getMessagesByConversation(
+        activeConversation.id,
+        token,
+        userId
+      );
 
-//       setMessages([...data]);
-//     } catch (error) {
-//       console.error("Chat polling error:", error);
-//     }
-//   }, 1500);
+      setMessages([...data]);
+    } catch (error) {
+      console.error("Chat polling error:", error);
+    }
+  }, 1500);
 
-//   return () => clearInterval(interval);
+  return () => clearInterval(interval);
 
-// }, [activeConversation?.id, token, userId]);
+}, [activeConversation?.id, token, userId]);
 
-//   useEffect(() => {
-//   if (!activeConversation?.id) return;
-//   if (!token || !userId) return;
+  useEffect(() => {
+  if (!activeConversation?.id) return;
+  if (!token || !userId) return;
 
-//   const interval = setInterval(async () => {
-//     try {
+  const interval = setInterval(async () => {
+    try {
 
-//       const data = await getMessagesByConversation(
-//         activeConversation.id,
-//         token,
-//         userId
-//       );
+      const data = await getMessagesByConversation(
+        activeConversation.id,
+        token,
+        userId
+      );
 
-//       setMessages(data);
+      setMessages(data);
 
-//     } catch (error) {
-//       console.error("Polling chat error:", error);
-//     }
-//   }, 2000);
+    } catch (error) {
+      console.error("Polling chat error:", error);
+    }
+  }, 2000);
 
-//   return () => clearInterval(interval);
+  return () => clearInterval(interval);
 
-// }, [activeConversation, token, userId]);
+}, [activeConversation, token, userId]);
 
-//   /**
-//    * POLLING FALLBACK (IMPORTANTE PARA LA DEMO)
-//    */
-//   useEffect(() => {
-//     if (!activeConversation?.id || !token || !userId) return;
+  /**
+   * POLLING FALLBACK (IMPORTANTE PARA LA DEMO)
+   */
+  useEffect(() => {
+    if (!activeConversation?.id || !token || !userId) return;
 
-//     const interval = setInterval(async () => {
-//       try {
-//         const data = await getMessagesByConversation(
-//           activeConversation.id,
-//           token,
-//           userId
-//         );
+    const interval = setInterval(async () => {
+      try {
+        const data = await getMessagesByConversation(
+          activeConversation.id,
+          token,
+          userId
+        );
 
-//         setMessages(data);
-//       } catch (error) {
-//         console.error("Polling mensajes error:", error);
-//       }
-//     }, 2500); // cada 2.5 segundos
+        setMessages(data);
+      } catch (error) {
+        console.error("Polling mensajes error:", error);
+      }
+    }, 2500); // cada 2.5 segundos
 
-//     return () => clearInterval(interval);
-//   }, [activeConversation, token, userId]);
+    return () => clearInterval(interval);
+  }, [activeConversation, token, userId]);
 
 
   // send message
