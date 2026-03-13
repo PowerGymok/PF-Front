@@ -2,7 +2,13 @@
 
 import { UserSession } from "@/interface/UserSession";
 import { AuthContextProps } from "@/interface/AuthContextProps";
-import { useState, useEffect, useContext, createContext } from "react";
+import {
+  useState,
+  useEffect,
+  useContext,
+  createContext,
+  ReactNode,
+} from "react";
 
 const AuthContext = createContext<AuthContextProps>({
   dataUser: null,
@@ -15,47 +21,111 @@ const AuthContext = createContext<AuthContextProps>({
   updateProfileImg: () => {},
 });
 
-export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
-  children,
-}) => {
-  const [dataUser, setDataUser] = useState<UserSession | null>(null);
-  const [isLoading, setIsLoading] = useState<boolean>(true);
-  const [isProfileComplete, setIsProfileComplete] = useState<boolean>(true);
+export const AuthProvider = ({ children }: { children: ReactNode }) => {
+  const [dataUser, setDataUserState] = useState<UserSession | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isProfileComplete, setIsProfileComplete] = useState(true);
+
+  const persistSession = (session: UserSession | null) => {
+    if (!session) {
+      localStorage.removeItem("userSession");
+      return;
+    }
+    localStorage.setItem("userSession", JSON.stringify(session));
+  };
+
+  const setDataUser = (session: UserSession | null) => {
+    setDataUserState(session);
+    persistSession(session);
+  };
+
+  const logOut = () => {
+    setDataUserState(null);
+    localStorage.removeItem("userSession");
+    localStorage.removeItem("token"); // por si en algún flujo viejo lo guardaste así
+  };
+
+  const updateProfileImg = (img: string) => {
+    setDataUserState((prev) => {
+      if (!prev) return prev;
+
+      const updatedSession = {
+        ...prev,
+        user: {
+          ...prev.user,
+          profileImg: img,
+        },
+      };
+
+      localStorage.setItem("userSession", JSON.stringify(updatedSession));
+      return updatedSession;
+    });
+  };
 
   useEffect(() => {
     const loadUser = async () => {
       try {
-        const stored = localStorage.getItem("userSession");
-        if (!stored) {
+        const storedSession = localStorage.getItem("userSession");
+
+        if (!storedSession) {
           setIsLoading(false);
           return;
         }
 
-        const parsedData: UserSession = JSON.parse(stored);
+        let parsedData: UserSession;
+
+        try {
+          parsedData = JSON.parse(storedSession);
+        } catch {
+          localStorage.removeItem("userSession");
+          setIsLoading(false);
+          return;
+        }
+
+        if (!parsedData?.token) {
+          localStorage.removeItem("userSession");
+          setIsLoading(false);
+          return;
+        }
+
+        // Primero hidratamos con lo que ya existe en localStorage
+        setDataUserState(parsedData);
+
+        // Si no existe API_URL, no intentamos refrescar
+        if (!process.env.NEXT_PUBLIC_API_URL) {
+          setIsLoading(false);
+          return;
+        }
 
         const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/me`, {
+          method: "GET",
           headers: {
             "Content-Type": "application/json",
             Authorization: `Bearer ${parsedData.token}`,
           },
+          cache: "no-store",
         });
 
+        // Si el backend falla, NO tumbamos la sesión local
         if (!res.ok) {
-          setDataUser(parsedData);
+          setIsLoading(false);
           return;
         }
 
-        const user = await res.json();
+        const userFromApi = await res.json();
+
         const updatedSession: UserSession = {
           ...parsedData,
-          user: { ...parsedData.user, ...user },
+          user: {
+            ...parsedData.user,
+            ...userFromApi,
+          },
         };
 
-        setDataUser(updatedSession);
+        setDataUserState(updatedSession);
         localStorage.setItem("userSession", JSON.stringify(updatedSession));
       } catch (error) {
-        const stored = localStorage.getItem("userSession");
-        if (stored) setDataUser(JSON.parse(stored));
+        console.error("Error loading auth session:", error);
       } finally {
         setIsLoading(false);
       }
@@ -63,29 +133,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
 
     loadUser();
   }, []);
-
-  useEffect(() => {
-    if (dataUser && !isLoading) {
-      localStorage.setItem("userSession", JSON.stringify(dataUser));
-    }
-  }, [dataUser, isLoading]);
-
-  const logOut = () => {
-    setDataUser(null);
-    localStorage.removeItem("userSession");
-  };
-
-  const updateProfileImg = (img: string) => {
-    setDataUser((prev) => {
-      if (!prev) return prev;
-      const updatedUser = {
-        ...prev,
-        user: { ...prev.user, profileImg: img },
-      };
-      localStorage.setItem("userSession", JSON.stringify(updatedUser));
-      return updatedUser;
-    });
-  };
 
   const userInitial = dataUser?.user?.email
     ? dataUser.user.email.charAt(0).toUpperCase()
