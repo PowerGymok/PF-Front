@@ -250,6 +250,16 @@ export const ChatProvider = ({ children }: { children: ReactNode }) => {
       conversationId: activeConversationRef.current.id,
       content: clean,
     });
+    setTimeout(async () => {
+      if (!activeConversationRef.current?.id || !token || !userId) return;
+
+      const data = await getMessagesByConversation(
+        activeConversationRef.current.id,
+        token,
+        userId
+      );
+      setMessages(data);
+    }, 800);
   };
 
   return (
