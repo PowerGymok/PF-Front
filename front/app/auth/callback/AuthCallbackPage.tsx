@@ -13,16 +13,22 @@ export default function CallbackPage() {
   const { setDataUser } = useAuth();
   const hasRun = useRef(false);
 
+  const token = searchParams.get("token");
+
   useEffect(() => {
     if (hasRun.current) return;
     hasRun.current = true;
 
+    const clearAndRedirect = () => {
+      localStorage.removeItem("userSession");
+      localStorage.removeItem("token");
+      router.replace("/login");
+    };
+
     const getUser = async () => {
       try {
-        const token = searchParams.get("token");
-
         if (!token) {
-          router.replace("/login");
+          clearAndRedirect();
           return;
         }
 
@@ -30,7 +36,7 @@ export default function CallbackPage() {
 
         if (!apiUrl) {
           console.error("NEXT_PUBLIC_API_URL no está definida");
-          router.replace("/login");
+          clearAndRedirect();
           return;
         }
 
@@ -44,9 +50,7 @@ export default function CallbackPage() {
         });
 
         if (!res.ok) {
-          localStorage.removeItem("userSession");
-          localStorage.removeItem("token");
-          router.replace("/login");
+          clearAndRedirect();
           return;
         }
 
@@ -60,7 +64,7 @@ export default function CallbackPage() {
             name: data.name,
             email: data.email,
             role: data.role,
-            phone: data.phone,
+            phone: data.phone ?? "",
             orders: data.orders ?? [],
             isProfileComplete: data.isProfileComplete ?? true,
             profileImg: data.profileImg ?? null,
@@ -82,14 +86,12 @@ export default function CallbackPage() {
         router.replace("/dashboard");
       } catch (error) {
         console.error("Error en Google callback:", error);
-        localStorage.removeItem("userSession");
-        localStorage.removeItem("token");
-        router.replace("/login");
+        clearAndRedirect();
       }
     };
 
     getUser();
-  }, [router, searchParams, setDataUser]);
+  }, [router, setDataUser, token]);
 
   return (
     <div className="flex justify-center items-center min-h-screen">
