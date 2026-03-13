@@ -43,6 +43,7 @@ export const ChatProvider = ({ children }: { children: ReactNode }) => {
   const [isLoadingMessages, setIsLoadingMessages] = useState(false);
 
   const socketRef = useRef<Socket | null>(null);
+  const [socket, setSocket] = useState<Socket | null>(null);
 
   const token = dataUser?.token;
   const userId = dataUser?.user?.id;
@@ -67,6 +68,7 @@ export const ChatProvider = ({ children }: { children: ReactNode }) => {
     });
 
     socketRef.current = socket;
+    setSocket(socket);
 
     socket.on("connect", () => {
       console.log("Chat conectado");
@@ -76,6 +78,15 @@ export const ChatProvider = ({ children }: { children: ReactNode }) => {
     socket.on("disconnect", () => {
       console.log("Chat desconectado");
       setIsConnected(false);
+    });
+    socket.on("connect_error", (err) => {
+      console.error("Socket error:", err.message);
+    });
+    socket.on("reconnect", () => {
+      console.log("Socket reconnected");
+    });
+    socket.on("reconnect_attempt", () => {
+      console.log("Reconnecting...");
     });
 
     socket.on("newMessage", (message: MessageSessionProps) => {
@@ -106,6 +117,7 @@ export const ChatProvider = ({ children }: { children: ReactNode }) => {
     return () => {
       socket.disconnect();
       socketRef.current = null;
+      setSocket(null);
     };
   }, [isLoading, token, userId]);
 
@@ -252,7 +264,7 @@ export const ChatProvider = ({ children }: { children: ReactNode }) => {
         isLoadingMessages,
         setActiveConversation,
         sendMessage,
-        socket: socketRef.current,
+        socket: socket,
       }}
     >
       {children}
