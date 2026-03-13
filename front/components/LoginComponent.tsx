@@ -27,9 +27,6 @@ const LoginComponent = () => {
         }
 
         const token = res.accessToken;
-
-        localStorage.setItem("token", token);
-
         const user = await GetCurrentUser(token);
 
         const session = {
@@ -47,12 +44,11 @@ const LoginComponent = () => {
           },
         };
 
+        localStorage.setItem("token", token);
+        localStorage.setItem("userSession", JSON.stringify(session));
         setDataUser(session);
 
-        localStorage.setItem("userSession", JSON.stringify(session));
-
         resetForm();
-
         router.push("/dashboard");
       } catch (error) {
         console.error(error);
@@ -63,10 +59,7 @@ const LoginComponent = () => {
 
   return (
     <div className="flex items-center justify-center min-h-screen px-4">
-      
       <div className="w-full max-w-md bg-zinc-900 border border-zinc-800 rounded-2xl shadow-xl p-8">
-
-        {/* Titulo */}
         <div className="text-center mb-6">
           <h1 className="text-3xl font-bold text-white">Bienvenido</h1>
           <p className="text-gray-400 text-sm mt-2">
@@ -74,12 +67,10 @@ const LoginComponent = () => {
           </p>
         </div>
 
-        {/* Google Login */}
         <section className="mb-6">
           <GoogleLoginButton />
         </section>
 
-        {/* Divider */}
         <div className="flex items-center gap-4 my-6">
           <div className="h-px bg-zinc-700 w-full"></div>
           <span className="text-gray-400 text-sm">o</span>
@@ -87,7 +78,6 @@ const LoginComponent = () => {
         </div>
 
         <form onSubmit={formik.handleSubmit}>
-
           <InputComponent
             type="email"
             placeholder="Correo electrónico"
@@ -120,12 +110,10 @@ const LoginComponent = () => {
             </div>
           )}
 
-          {/* Botón login */}
           <div className="flex justify-center mt-6">
             <ButtonComponent type="submit" label="Iniciar Sesión" />
           </div>
 
-          {/* Register */}
           <p className="text-gray-400 flex justify-center gap-2 mt-6 text-sm">
             ¿Todavía no tienes una cuenta?
             <Link
@@ -135,7 +123,6 @@ const LoginComponent = () => {
               Regístrate
             </Link>
           </p>
-
         </form>
       </div>
     </div>

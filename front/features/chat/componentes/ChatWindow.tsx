@@ -22,6 +22,7 @@ const ChatWindow = () => {
   const [newMessage, setNewMessage] = useState("");
 
   const currentUserId = dataUser?.user?.id;
+  const role = dataUser?.user?.role;
 
   const handleSendMessage = () => {
     if (!newMessage.trim()) return;
@@ -31,22 +32,26 @@ const ChatWindow = () => {
 
   useEffect(() => {
     if (messagesContainerRef.current) {
-        messagesContainerRef.current.scrollTop =
+      messagesContainerRef.current.scrollTop =
         messagesContainerRef.current.scrollHeight;
     }
-  }, [messages, currentUserId]);
+  }, [messages]);
+  
+
+  useEffect(() => {
+  setNewMessage((prev) => prev);
+}, [messages]);
 
   if (!currentUserId) return null;
 
   return (
     <div className="w-full h-full bg-black flex overflow-hidden text-white">
 
+      {/* SIDEBAR */}
       <div className="w-[160px] border-r border-neutral-800 bg-neutral-950 flex flex-col">
 
         <div className="p-4 border-b border-neutral-800">
-          <h3 className="text-sm font-light tracking-wide">
-            Chats
-          </h3>
+          <h3 className="text-sm font-light tracking-wide">Chats</h3>
 
           <p
             className={`text-xs mt-2 ${
@@ -63,15 +68,17 @@ const ChatWindow = () => {
             <p className="text-xs text-neutral-500 p-4">
               Cargando conversaciones...
             </p>
+
           ) : conversations.length === 0 ? (
             <p className="text-xs text-neutral-500 p-4">
               Sin conversaciones
             </p>
+
           ) : (
             conversations.map((conversation) => {
 
               const otherUser =
-                dataUser?.user?.role === "Coach"
+                role === "Coach"
                   ? conversation.user
                   : conversation.coach;
 
@@ -106,13 +113,15 @@ const ChatWindow = () => {
 
       </div>
 
+      {/* CHAT AREA */}
       <div className="flex-1 flex flex-col bg-black">
 
+        {/* HEADER */}
         <div className="border-b border-neutral-800 p-4">
           <h2 className="text-sm font-light tracking-wide text-neutral-300">
             {activeConversation
               ? `Chat con ${
-                  dataUser?.user?.role === "Coach"
+                  role === "Coach"
                     ? activeConversation.user?.name ||
                       activeConversation.user?.email ||
                       "Usuario"
@@ -124,6 +133,7 @@ const ChatWindow = () => {
           </h2>
         </div>
 
+        {/* MENSAJES */}
         <div
           ref={messagesContainerRef}
           className="flex-1 min-h-0 overflow-y-auto p-5 bg-neutral-950 space-y-4 pb-4"
@@ -147,11 +157,12 @@ const ChatWindow = () => {
           ) : (
             messages.map((msg) => {
 
-              console.log("Mensaje recibido:", msg);
-              console.log("senderId:", msg.senderId);
-              console.log("currentUserId:", currentUserId);
+              const senderId = msg.sender?.id ?? msg.senderId;
 
-              const isMine = String(msg.sender?.id ?? msg.senderId) === String(currentUserId);
+              const isMine = String(senderId) === String(currentUserId);
+                // senderId === currentUserId ||
+                // (msg.type === "user" && role !== "Coach") ||
+                // (msg.type === "coach" && role === "Coach");
 
               return (
                 <div
@@ -198,7 +209,6 @@ const ChatWindow = () => {
         </div>
 
         {/* INPUT */}
-
         <div className="border-t border-neutral-800 p-4 flex gap-2 bg-black flex-shrink-0">
 
           <input

@@ -22,16 +22,29 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [isProfileComplete, setIsProfileComplete] = useState<boolean>(true);
 
+  const clearSession = () => {
+    setDataUser(null);
+    localStorage.removeItem("userSession");
+    localStorage.removeItem("token");
+  };
+
   useEffect(() => {
     const loadUser = async () => {
       try {
         const stored = localStorage.getItem("userSession");
-        if (!stored) {
-          setIsLoading(false);
+        const token = localStorage.getItem("token");
+
+        if (!stored || !token) {
+          clearSession();
           return;
         }
 
         const parsedData: UserSession = JSON.parse(stored);
+
+        if (!parsedData?.token || parsedData.token !== token) {
+          clearSession();
+          return;
+        }
 
         const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/me`, {
           headers: {
@@ -41,21 +54,27 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
         });
 
         if (!res.ok) {
-          setDataUser(parsedData);
+          clearSession();
           return;
         }
 
         const user = await res.json();
+
         const updatedSession: UserSession = {
           ...parsedData,
-          user: { ...parsedData.user, ...user },
+          login: true,
+          token: parsedData.token,
+          user: {
+            ...parsedData.user,
+            ...user,
+          },
         };
 
         setDataUser(updatedSession);
         localStorage.setItem("userSession", JSON.stringify(updatedSession));
+        localStorage.setItem("token", parsedData.token);
       } catch (error) {
-        const stored = localStorage.getItem("userSession");
-        if (stored) setDataUser(JSON.parse(stored));
+        clearSession();
       } finally {
         setIsLoading(false);
       }
@@ -65,24 +84,35 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   }, []);
 
   useEffect(() => {
-    if (dataUser && !isLoading) {
-      localStorage.setItem("userSession", JSON.stringify(dataUser));
+    if (!isLoading) {
+      if (dataUser?.token) {
+        localStorage.setItem("userSession", JSON.stringify(dataUser));
+        localStorage.setItem("token", dataUser.token);
+      } else {
+        localStorage.removeItem("userSession");
+        localStorage.removeItem("token");
+      }
     }
   }, [dataUser, isLoading]);
 
   const logOut = () => {
-    setDataUser(null);
-    localStorage.removeItem("userSession");
+    clearSession();
   };
 
   const updateProfileImg = (img: string) => {
     setDataUser((prev) => {
       if (!prev) return prev;
+
       const updatedUser = {
         ...prev,
-        user: { ...prev.user, profileImg: img },
+        user: {
+          ...prev.user,
+          profileImg: img,
+        },
       };
+
       localStorage.setItem("userSession", JSON.stringify(updatedUser));
+      localStorage.setItem("token", updatedUser.token);
       return updatedUser;
     });
   };
