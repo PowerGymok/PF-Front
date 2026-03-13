@@ -150,6 +150,14 @@ const NavBarComponent = () => {
               Login
             </Link>
           )}
+          {isAuthenticated && (
+            <button
+              onClick={logOut}
+              className="text-md hover:text-gray-300 relative transition-all duration-300 hover:after:w-full after:content-[''] after:absolute after:left-0 after:-bottom-1 after:h-[1px] after:w-0 after:bg-white after:transition-all after:duration-300"
+            >
+              Logout
+            </button>
+          )}
         </div>
       </div>
 
@@ -167,7 +175,7 @@ const NavBarComponent = () => {
           ))}
 
           <div className="border-t border-gray-700 pt-4">
-            {!isAuthenticated ? (
+            {isAuthenticated ? (
               <>
                 <Link
                   href={PATHROUTES.DASHBOARD}
