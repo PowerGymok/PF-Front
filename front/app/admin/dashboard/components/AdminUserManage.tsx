@@ -88,8 +88,6 @@ const AdminUserManage = () => {
       await UpdateUserRole(userId, "Coach", dataUser.token);
       alert("Usuario ascendido a Coach exitosamente.");
 
-      router.push("/dashboard");
-
       setUsers((prev) =>
         prev.map((u) => (u.id === userId ? { ...u, role: "Coach" } : u)),
       );
