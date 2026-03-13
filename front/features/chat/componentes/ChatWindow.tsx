@@ -154,10 +154,10 @@ const ChatWindow = () => {
 
               const senderId = msg.sender?.id ?? msg.senderId;
 
-              const isMine =
-                senderId === currentUserId ||
-                (msg.type === "user" && role !== "Coach") ||
-                (msg.type === "coach" && role === "Coach");
+              const isMine = String(senderId) === String(currentUserId);
+                // senderId === currentUserId ||
+                // (msg.type === "user" && role !== "Coach") ||
+                // (msg.type === "coach" && role === "Coach");
 
               return (
                 <div
