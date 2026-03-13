@@ -20,27 +20,11 @@ const NavBarComponent = () => {
 
   const [mounted, setMounted] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
-  const [now, setNow] = useState(Date.now());
-  const [hasLocalToken, setHasLocalToken] = useState(false);
 
   const pathname = usePathname();
 
   useEffect(() => {
     setMounted(true);
-  }, []);
-
-  useEffect(() => {
-    const checkToken = () => {
-      const token = localStorage.getItem("token");
-      setHasLocalToken(!!token);
-      setNow(Date.now());
-    };
-
-    checkToken();
-
-    const interval = setInterval(checkToken, 1000);
-
-    return () => clearInterval(interval);
   }, []);
 
   const isTokenExpired = useMemo(() => {
@@ -53,31 +37,22 @@ const NavBarComponent = () => {
       if (parts.length !== 3) return false;
 
       const payload = JSON.parse(atob(parts[1]));
+
       if (!payload?.exp) return false;
 
-      return payload.exp * 1000 <= now;
+      return payload.exp * 1000 <= Date.now();
     } catch {
       return false;
     }
-  }, [dataUser?.token, now]);
+  }, [dataUser?.token]);
 
   const isAuthenticated =
     mounted &&
     !isLoading &&
     !!dataUser?.token &&
-    !!hasLocalToken &&
+    !!dataUser?.user &&
     dataUser?.login === true &&
     !isTokenExpired;
-
-  useEffect(() => {
-    if (!mounted || isLoading) return;
-
-    if (dataUser && !isAuthenticated) {
-      logOut();
-    }
-  }, [mounted, isLoading, dataUser, isAuthenticated, logOut]);
-
-  if (!mounted) return null;
 
   const role = isAuthenticated ? dataUser?.user?.role : null;
   const profileImg = isAuthenticated ? dataUser?.user?.profileImg : null;
@@ -89,10 +64,12 @@ const NavBarComponent = () => {
       navItems = navAdmin;
     } else if (role === "Coach") {
       navItems = navCoach;
-    } else if (role === "user") {
+    } else if (role === "user" || role === "User") {
       navItems = navUser;
     }
   }
+
+  if (!mounted) return null;
 
   return (
     <header className="w-full bg-black px-4 md:px-10">
@@ -123,27 +100,36 @@ const NavBarComponent = () => {
           ))}
         </nav>
 
-        <div className="hidden md:flex text-white gap-4">
+        <div className="hidden md:flex text-white gap-4 items-center">
           {isAuthenticated ? (
-            <Link href={PATHROUTES.DASHBOARD}>
-              {role === "Admin" ? (
-                <div className="w-8 h-8 rounded-full bg-white flex items-center justify-center">
-                  <PowerGym_Logo className="w-5 h-5 text-black" />
-                </div>
-              ) : profileImg ? (
-                <Image
-                  src={profileImg}
-                  alt="Foto de perfil"
-                  width={32}
-                  height={32}
-                  className="w-8 h-8 rounded-full object-cover"
-                />
-              ) : (
-                <div className="w-8 h-8 rounded-full bg-gray-500 flex items-center justify-center font-bold">
-                  {userInitial}
-                </div>
-              )}
-            </Link>
+            <>
+              <Link href={PATHROUTES.DASHBOARD}>
+                {role === "Admin" ? (
+                  <div className="w-8 h-8 rounded-full bg-white flex items-center justify-center">
+                    <PowerGym_Logo className="w-5 h-5 text-black" />
+                  </div>
+                ) : profileImg ? (
+                  <Image
+                    src={profileImg}
+                    alt="Foto de perfil"
+                    width={32}
+                    height={32}
+                    className="w-8 h-8 rounded-full object-cover"
+                  />
+                ) : (
+                  <div className="w-8 h-8 rounded-full bg-gray-500 flex items-center justify-center font-bold">
+                    {userInitial}
+                  </div>
+                )}
+              </Link>
+
+              <button
+                onClick={logOut}
+                className="text-sm hover:text-gray-300 relative transition-all duration-300 hover:after:w-full after:content-[''] after:absolute after:left-0 after:-bottom-1 after:h-[1px] after:w-0 after:bg-white after:transition-all after:duration-300"
+              >
+                Logout
+              </button>
+            </>
           ) : (
             <Link
               href={PATHROUTES.LOGIN}
@@ -196,7 +182,14 @@ const NavBarComponent = () => {
                   )}
                 </Link>
 
-                <button onClick={logOut}>Logout</button>
+                <button
+                  onClick={() => {
+                    setIsOpen(false);
+                    logOut();
+                  }}
+                >
+                  Logout
+                </button>
               </>
             ) : (
               <Link href={PATHROUTES.LOGIN} onClick={() => setIsOpen(false)}>

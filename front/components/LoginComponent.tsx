@@ -9,6 +9,8 @@ import { LoginInitialValues, LoginValidation } from "@/validators/loginSchema";
 import ButtonComponent from "./ButtonComponent";
 import GoogleLoginButton from "./GoogleLoginButton";
 import Link from "next/link";
+import { PATHROUTES } from "@/utils/PathRoutes";
+import { UserSession } from "@/interface/UserSession";
 
 const LoginComponent = () => {
   const router = useRouter();
@@ -29,7 +31,7 @@ const LoginComponent = () => {
         const token = res.accessToken;
         const user = await GetCurrentUser(token);
 
-        const session = {
+        const session: UserSession = {
           login: true,
           token,
           user: {
@@ -38,20 +40,29 @@ const LoginComponent = () => {
             email: user.email,
             role: user.role,
             phone: user.phone,
-            orders: [],
-            profileImg: user.profileImg,
-            isProfileComplete: user.isProfileComplete,
+            orders: user.orders ?? [],
+            profileImg: user.profileImg ?? null,
+            isProfileComplete: user.isProfileComplete ?? true,
           },
         };
 
-        localStorage.setItem("token", token);
-        localStorage.setItem("userSession", JSON.stringify(session));
         setDataUser(session);
 
         resetForm();
-        router.push("/dashboard");
+
+        if (user.role === "Admin") {
+          router.push("/admin/dashboard");
+          return;
+        }
+
+        if (user.role === "Coach") {
+          router.push("/coach/dashboard");
+          return;
+        }
+
+        router.push(PATHROUTES.DASHBOARD);
       } catch (error) {
-        console.error(error);
+        console.error("Error en login:", error);
         alert("Inicio de sesión incorrecto");
       }
     },
@@ -117,7 +128,7 @@ const LoginComponent = () => {
           <p className="text-gray-400 flex justify-center gap-2 mt-6 text-sm">
             ¿Todavía no tienes una cuenta?
             <Link
-              href={"register"}
+              href="/register"
               className="text-white relative transition-all duration-300 hover:after:w-full after:content-[''] after:absolute after:left-0 after:-bottom-1 after:h-[1px] after:w-0 after:bg-white after:transition-all after:duration-300 hover:text-gray-300"
             >
               Regístrate
