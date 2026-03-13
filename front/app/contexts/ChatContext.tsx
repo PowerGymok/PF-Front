@@ -217,6 +217,29 @@ export const ChatProvider = ({ children }: { children: ReactNode }) => {
   }, [activeConversation, token, userId, isLoading]);
 
   /**
+   * POLLING FALLBACK (IMPORTANTE PARA LA DEMO)
+   */
+  useEffect(() => {
+    if (!activeConversation?.id || !token || !userId) return;
+
+    const interval = setInterval(async () => {
+      try {
+        const data = await getMessagesByConversation(
+          activeConversation.id,
+          token,
+          userId
+        );
+
+        setMessages(data);
+      } catch (error) {
+        console.error("Polling mensajes error:", error);
+      }
+    }, 2500); // cada 2.5 segundos
+
+    return () => clearInterval(interval);
+  }, [activeConversation, token, userId]);
+
+  /**
    * SEND MESSAGE
    */
   const sendMessage = (content: string) => {
@@ -250,20 +273,6 @@ export const ChatProvider = ({ children }: { children: ReactNode }) => {
       conversationId: activeConversationRef.current.id,
       content: clean,
     });
-    setTimeout(async () => {
-      try {
-        if (!activeConversationRef.current?.id || !token || !userId) return;
-
-      const data = await getMessagesByConversation(
-        activeConversationRef.current.id,
-        token,
-        userId
-      );
-      setMessages(data);
-      } catch (error) {
-        console.error("Error actualizando mensajes después de enviar:", error);
-      }
-    }, 800);
   };
 
   return (
