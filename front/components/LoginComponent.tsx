@@ -44,8 +44,9 @@ const LoginComponent = () => {
           },
         };
 
-        setDataUser(session);
+        localStorage.setItem("token", token);
         localStorage.setItem("userSession", JSON.stringify(session));
+        setDataUser(session);
 
         resetForm();
         router.push("/dashboard");

@@ -52,8 +52,9 @@ export default function CallbackPage() {
           },
         };
 
-        setDataUser(session);
+        localStorage.setItem("token", token);
         localStorage.setItem("userSession", JSON.stringify(session));
+        setDataUser(session);
 
         router.push("/dashboard");
       } catch (error) {

@@ -16,7 +16,7 @@ import { navUser } from "../utils/Navigation/navUsers";
 import { PowerGym_Logo } from "../components/icons/PowerGym_Logo";
 
 const NavBarComponent = () => {
-  const { dataUser, logOut, userInitial } = useAuth();
+  const { dataUser, logOut, userInitial, isLoading } = useAuth();
 
   const [mounted, setMounted] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
@@ -38,30 +38,43 @@ const NavBarComponent = () => {
 
   const isTokenExpired = useMemo(() => {
     const token = dataUser?.token;
+
     if (!token) return true;
 
     try {
-      const payload = JSON.parse(atob(token.split(".")[1]));
+      const parts = token.split(".");
+      if (parts.length !== 3) return false;
+
+      const base64Url = parts[1];
+      const base64 = base64Url.replace(/-/g, "+").replace(/_/g, "/");
+      const payload = JSON.parse(atob(base64));
+
       if (!payload?.exp) return false;
 
-      return payload.exp * 1000 < now;
+      return payload.exp * 1000 <= now;
     } catch {
-      return true;
+      return false;
     }
   }, [dataUser?.token, now]);
 
   useEffect(() => {
-    if (mounted && dataUser?.token && isTokenExpired) {
+    if (!mounted || isLoading) return;
+
+    if (dataUser?.token && isTokenExpired) {
       logOut();
     }
-  }, [mounted, dataUser?.token, isTokenExpired, logOut]);
+  }, [mounted, isLoading, dataUser?.token, isTokenExpired, logOut]);
 
   if (!mounted) return null;
 
   const role = dataUser?.user?.role;
   const profileImg = dataUser?.user?.profileImg;
 
-  const isAuthenticated = !!dataUser?.token && !isTokenExpired;
+  const isAuthenticated =
+    !isLoading &&
+    !!dataUser?.token &&
+    dataUser?.login === true &&
+    !isTokenExpired;
 
   let navItems = navPublic;
 
@@ -156,13 +169,9 @@ const NavBarComponent = () => {
                   className="block mb-2"
                 >
                   {role === "Admin" ? (
-                    <Image
-                      src="/images/admin-avatar.png"
-                      alt="Admin"
-                      width={32}
-                      height={32}
-                      className="w-8 h-8 rounded-full object-cover inline-block mr-2"
-                    />
+                    <div className="w-8 h-8 rounded-full bg-white flex items-center justify-center inline-flex mr-2">
+                      <PowerGym_Logo className="w-5 h-5 text-black" />
+                    </div>
                   ) : profileImg ? (
                     <Image
                       src={profileImg}
