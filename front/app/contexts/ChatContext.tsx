@@ -251,7 +251,8 @@ export const ChatProvider = ({ children }: { children: ReactNode }) => {
       content: clean,
     });
     setTimeout(async () => {
-      if (!activeConversationRef.current?.id || !token || !userId) return;
+      try {
+        if (!activeConversationRef.current?.id || !token || !userId) return;
 
       const data = await getMessagesByConversation(
         activeConversationRef.current.id,
@@ -259,6 +260,9 @@ export const ChatProvider = ({ children }: { children: ReactNode }) => {
         userId
       );
       setMessages(data);
+      } catch (error) {
+        console.error("Error actualizando mensajes después de enviar:", error);
+      }
     }, 800);
   };
 
