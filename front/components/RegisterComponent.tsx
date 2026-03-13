@@ -40,27 +40,23 @@ const RegisterComponent = () => {
 
         const res = await RegisterUser(payload);
 
-        if (!res?.accessToken) {
-          throw new Error("Error al registrarse");
-        }
+          if (!res?.accessToken) {
+            throw new Error("Error al registrarse");
+            }
 
-        const token = res.accessToken;
+          const token = res.accessToken;
 
-        const user = await GetCurrentUser(token);
-
-        console.log(formik.values.Birthdate);
-
-        setDataUser({
-          login: true,
-          token,
-          user: {
-            id: user.id,
-            name: user.name,
-            email: user.email,
-            role: user.role,
-            phone: user.phone,
+          setDataUser({
+            login: true,
+            token,
+            user: {
+            id: res.user.id,
+            name: res.user.name,
+            email: res.user.email,
+            role: res.user.role,
+            phone: res.user.phone,
             orders: [],
-            isProfileComplete: user.isProfileComplete,
+            isProfileComplete: res.user.isProfileComplete,
           },
         });
 
