@@ -283,41 +283,62 @@ export const ChatProvider = ({ children }: { children: ReactNode }) => {
     return () => clearInterval(interval);
   }, [activeConversation, token, userId]);
 
-  /**
-   * SEND MESSAGE
-   */
+
+  // send message
+  
   const sendMessage = (content: string) => {
-    const clean = content.trim();
+  const clean = content.trim();
 
-    if (!socketRef.current?.connected) return;
-    if (!activeConversationRef.current?.id) return;
-    if (!clean) return;
+  if (!socketRef.current?.connected) return;
+  if (!activeConversationRef.current?.id) return;
+  if (!clean) return;
 
-    const senderId = dataUser?.user?.id;
-    if (!senderId) return;
+  const senderId = dataUser?.user?.id;
+  if (!senderId) return;
 
-    const optimisticMessage: MessageSessionProps = {
-      id: `temp-${Date.now()}`,
-      content: clean,
-      senderId: senderId,
-      conversationId: activeConversationRef.current.id,
-      createdAt: new Date().toISOString(),
-      type: "user",
-      isRead: false,
-      sender: {
-        id: senderId,
-        name: "You",
-        email: "",
-      },
-    };
-
-    setMessages((prev) => [...prev, optimisticMessage]);
-
-    socketRef.current.emit("sendMessage", {
-      conversationId: activeConversationRef.current.id,
-      content: clean,
-    });
+  const optimisticMessage: MessageSessionProps = {
+    id: `temp-${Date.now()}`,
+    content: clean,
+    senderId: senderId,
+    conversationId: activeConversationRef.current.id,
+    createdAt: new Date().toISOString(),
+    type: "user",
+    isRead: false,
+    sender: {
+      id: senderId,
+      name: "You",
+      email: "",
+    },
   };
+
+  setMessages((prev) => [...prev, optimisticMessage]);
+
+  socketRef.current.emit("sendMessage", {
+    conversationId: activeConversationRef.current.id,
+    content: clean,
+  });
+
+  
+  const refreshMessages = async () => {
+    try {
+      if (!activeConversationRef.current?.id || !token || !userId) return;
+
+      const data = await getMessagesByConversation(
+        activeConversationRef.current.id,
+        token,
+        userId
+      );
+
+      setMessages(data);
+    } catch (error) {
+      console.error("Chat refresh error:", error);
+    }
+  };
+
+  setTimeout(refreshMessages, 600);
+  setTimeout(refreshMessages, 1200);
+  setTimeout(refreshMessages, 2000);
+};
 
   return (
     <ChatContext.Provider
