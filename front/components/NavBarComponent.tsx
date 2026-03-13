@@ -21,6 +21,7 @@ const NavBarComponent = () => {
   const [mounted, setMounted] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
   const [now, setNow] = useState(Date.now());
+  const [hasLocalToken, setHasLocalToken] = useState(false);
 
   const pathname = usePathname();
 
@@ -29,8 +30,16 @@ const NavBarComponent = () => {
   }, []);
 
   useEffect(() => {
+    const checkToken = () => {
+      const token = localStorage.getItem("token");
+      setHasLocalToken(!!token);
+    };
+
+    checkToken();
+
     const interval = setInterval(() => {
       setNow(Date.now());
+      checkToken();
     }, 1000);
 
     return () => clearInterval(interval);
@@ -38,17 +47,13 @@ const NavBarComponent = () => {
 
   const isTokenExpired = useMemo(() => {
     const token = dataUser?.token;
-
     if (!token) return true;
 
     try {
       const parts = token.split(".");
       if (parts.length !== 3) return false;
 
-      const base64Url = parts[1];
-      const base64 = base64Url.replace(/-/g, "+").replace(/_/g, "/");
-      const payload = JSON.parse(atob(base64));
-
+      const payload = JSON.parse(atob(parts[1]));
       if (!payload?.exp) return false;
 
       return payload.exp * 1000 <= now;
@@ -60,10 +65,10 @@ const NavBarComponent = () => {
   useEffect(() => {
     if (!mounted || isLoading) return;
 
-    if (dataUser?.token && isTokenExpired) {
+    if (dataUser && (!hasLocalToken || isTokenExpired)) {
       logOut();
     }
-  }, [mounted, isLoading, dataUser?.token, isTokenExpired, logOut]);
+  }, [mounted, isLoading, dataUser, hasLocalToken, isTokenExpired, logOut]);
 
   if (!mounted) return null;
 
@@ -73,6 +78,7 @@ const NavBarComponent = () => {
   const isAuthenticated =
     !isLoading &&
     !!dataUser?.token &&
+    !!hasLocalToken &&
     dataUser?.login === true &&
     !isTokenExpired;
 
