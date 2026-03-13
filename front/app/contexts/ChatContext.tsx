@@ -99,31 +99,31 @@ export const ChatProvider = ({ children }: { children: ReactNode }) => {
     });
 
     socket.on("newMessage", (message: MessageSessionProps) => {
-      setMessages((prev) => {
-        console.log("Mensaje recibido:", message);
-        const exists = prev.some((msg) => {
-          const sameId = msg.id === message.id;
 
-          const sameSignature =
-            msg.content === message.content &&
-            msg.senderId === message.senderId &&
-            Math.abs(
-              new Date(msg.createdAt).getTime() -
-                new Date(message.createdAt).getTime(),
-            ) < 3000;
+  const currentUserId = dataUser?.user?.id;
 
-          return sameId || sameSignature;
-        });
+  const normalizedMessage: MessageSessionProps = {
+    ...message,
+    senderId:
+      message.senderId ??
+      (message.type === "user" ? currentUserId : "coach"),
+  };
 
-        if (exists) return prev;
+  console.log("Mensaje recibido:", normalizedMessage);
 
-        if (activeConversationRef.current?.id === message.conversationId) {
-          return [...prev, message];
-        }
+  setMessages((prev) => {
 
-        return prev;
-      });
-    });
+    const exists = prev.some((msg) => msg.id === normalizedMessage.id);
+
+    if (exists) return prev;
+
+    if (activeConversationRef.current?.id === normalizedMessage.conversationId) {
+      return [...prev, normalizedMessage];
+    }
+
+    return prev;
+  });
+});
     return () => {
       socket.disconnect();
       socketRef.current = null;
