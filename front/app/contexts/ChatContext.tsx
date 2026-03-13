@@ -217,8 +217,11 @@ export const ChatProvider = ({ children }: { children: ReactNode }) => {
         setIsLoadingMessages(false);
       }
     };
+    
 
     loadMessages();
+
+    
 
     return () => {
       if (
@@ -232,6 +235,30 @@ export const ChatProvider = ({ children }: { children: ReactNode }) => {
       }
     };
   }, [activeConversation, token, userId, isLoading]);
+
+  useEffect(() => {
+  if (!activeConversation?.id) return;
+  if (!token || !userId) return;
+
+  const interval = setInterval(async () => {
+    try {
+
+      const data = await getMessagesByConversation(
+        activeConversation.id,
+        token,
+        userId
+      );
+
+      setMessages(data);
+
+    } catch (error) {
+      console.error("Polling chat error:", error);
+    }
+  }, 2000);
+
+  return () => clearInterval(interval);
+
+}, [activeConversation, token, userId]);
 
   /**
    * POLLING FALLBACK (IMPORTANTE PARA LA DEMO)
