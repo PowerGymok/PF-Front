@@ -37,6 +37,10 @@ const ChatWindow = () => {
     }
   }, [messages]);
 
+  useEffect(() => {
+  setNewMessage((prev) => prev);
+}, [messages]);
+
   if (!currentUserId) return null;
 
   return (
@@ -161,7 +165,7 @@ const ChatWindow = () => {
 
               return (
                 <div
-                  key={`${msg.id}-${msg.createdAt}`}
+                  key={msg.id}
                   className={`flex ${
                     isMine ? "justify-end" : "justify-start"
                   }`}
