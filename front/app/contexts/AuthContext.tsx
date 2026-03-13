@@ -40,7 +40,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
 
         const parsedData: UserSession = JSON.parse(stored);
 
-        if (!parsedData?.token || parsedData?.login !== true) {
+        if (!parsedData?.token) {
           clearSession();
           return;
         }
@@ -61,7 +61,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
 
         const updatedSession: UserSession = {
           ...parsedData,
-          login: true,
           user: {
             ...parsedData.user,
             ...user,
@@ -70,7 +69,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
 
         setDataUser(updatedSession);
         localStorage.setItem("userSession", JSON.stringify(updatedSession));
-        localStorage.setItem("token", updatedSession.token);
       } catch (error) {
         clearSession();
       } finally {
@@ -83,9 +81,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
 
   useEffect(() => {
     if (!isLoading) {
-      if (dataUser?.token && dataUser?.login) {
+      if (dataUser) {
         localStorage.setItem("userSession", JSON.stringify(dataUser));
-        localStorage.setItem("token", dataUser.token);
       } else {
         localStorage.removeItem("userSession");
         localStorage.removeItem("token");
