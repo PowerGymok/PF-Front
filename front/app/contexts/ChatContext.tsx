@@ -7,6 +7,7 @@ import {
   useRef,
   useState,
   ReactNode,
+  useCallback,
 } from "react";
 import { io, Socket } from "socket.io-client";
 import { useAuth } from "@/app/contexts/AuthContext";
@@ -41,10 +42,11 @@ export const ChatProvider = ({ children }: { children: ReactNode }) => {
   const [isConnected, setIsConnected] = useState(false);
   const [isLoadingConversations, setIsLoadingConversations] = useState(false);
   const [isLoadingMessages, setIsLoadingMessages] = useState(false);
+  const [socket, setSocket] = useState<Socket | null>(null);
 
   const socketRef = useRef<Socket | null>(null);
-  const [socket, setSocket] = useState<Socket | null>(null);
   const activeConversationRef = useRef<ConversationSession | null>(null);
+  const lastFetchIdRef = useRef(0);
 
   const token = dataUser?.token;
   const userId = dataUser?.user?.id;
@@ -53,6 +55,23 @@ export const ChatProvider = ({ children }: { children: ReactNode }) => {
   useEffect(() => {
     activeConversationRef.current = activeConversation;
   }, [activeConversation]);
+
+  const fetchMessages = useCallback(async (conversationId: string) => {
+    if (!token || !userId) return;
+
+    const fetchId = ++lastFetchIdRef.current;
+
+    try {
+      const data = await getMessagesByConversation(conversationId, token, userId);
+
+      // evita que una respuesta vieja pise una más nueva
+      if (fetchId !== lastFetchIdRef.current) return;
+
+      setMessages(data);
+    } catch (error) {
+      console.error("Error cargando mensajes:", error);
+    }
+  }, [token, userId]);
 
   /**
    * SOCKET CONNECTION
@@ -66,79 +85,53 @@ export const ChatProvider = ({ children }: { children: ReactNode }) => {
       socketRef.current = null;
     }
 
-    const socket = io(`${process.env.NEXT_PUBLIC_API_URL}/chat`, {
+    const newSocket = io(`${process.env.NEXT_PUBLIC_API_URL}/chat`, {
       transports: ["websocket"],
       auth: { token },
       query: { userId },
     });
 
-    socketRef.current = socket;
-    setSocket(socket);
+    socketRef.current = newSocket;
+    setSocket(newSocket);
 
-    socket.on("connect", () => {
+    newSocket.on("connect", () => {
       console.log("Chat conectado");
       setIsConnected(true);
 
       if (activeConversationRef.current?.id) {
-        socket.emit("joinConversation", activeConversationRef.current.id);
+        newSocket.emit("joinConversation", activeConversationRef.current.id);
       }
     });
 
-    socket.on("disconnect", () => {
+    newSocket.on("disconnect", () => {
       console.log("Chat desconectado");
       setIsConnected(false);
     });
 
-    socket.on("connect_error", (err) => {
+    newSocket.on("connect_error", (err) => {
       console.error("Socket error:", err.message);
     });
 
-    socket.on("newMessage", (message: MessageSessionProps) => {
-  const currentUserId = dataUser?.user?.id;
+    newSocket.on("newMessage", (message: MessageSessionProps) => {
+      console.log("Mensaje recibido:", message);
 
-  const normalizedMessage: MessageSessionProps = {
-    ...message,
-    senderId:
-      message.senderId ??
-      (message.type === "user" ? currentUserId : "coach"),
-  };
+      const currentConversationId = activeConversationRef.current?.id;
+      if (!currentConversationId) return;
+      if (message.conversationId !== currentConversationId) return;
 
-  console.log("Mensaje recibido:", normalizedMessage);
-
-  if (
-    activeConversationRef.current?.id !==
-    normalizedMessage.conversationId
-  ) {
-    return;
-  }
-
-  setMessages((prev) => {
-    const exists = prev.find((m) => m.id === normalizedMessage.id);
-    if (exists) return prev;
-
-    return [...prev, normalizedMessage];
-  });
-
-  // 🔧 fallback para sincronizar mensajes (arregla el problema del user)
-  setTimeout(async () => {
-    try {
-      if (!activeConversationRef.current?.id || !token || !userId) return;
-
-      const data = await getMessagesByConversation(
-        activeConversationRef.current.id,
-        token,
-        userId
-      );
-
-      setMessages(data);
-    } catch (error) {
-      console.error("Fallback chat sync error:", error);
-    }
-  }, 800);
-});
+      setMessages((prev) => {
+        const exists = prev.some((m) => m.id === message.id);
+        if (exists) return prev;
+        return [...prev, message];
+      });
+    });
 
     return () => {
-      socket.disconnect();
+      newSocket.off("connect");
+      newSocket.off("disconnect");
+      newSocket.off("connect_error");
+      newSocket.off("newMessage");
+      newSocket.disconnect();
       socketRef.current = null;
       setSocket(null);
     };
@@ -162,7 +155,6 @@ export const ChatProvider = ({ children }: { children: ReactNode }) => {
         setIsLoadingConversations(true);
 
         const data = await getConversationsByRole(role, token, userId);
-
         setConversations(data);
 
         setActiveConversation((prev) => {
@@ -185,133 +177,67 @@ export const ChatProvider = ({ children }: { children: ReactNode }) => {
   }, [isLoading, token, userId, role]);
 
   /**
-   * LOAD MESSAGES
+   * LOAD MESSAGES WHEN ACTIVE CONVERSATION CHANGES
    */
   useEffect(() => {
     if (isLoading) return;
     if (!token || !userId) return;
-    if (!activeConversation?.id) {
+
+    const conversationId = activeConversation?.id;
+
+    if (!conversationId) {
       setMessages([]);
       return;
     }
 
+    let mounted = true;
+    const previousConversationId = conversationId;
+
     const loadMessages = async () => {
       try {
         setIsLoadingMessages(true);
+        await fetchMessages(conversationId);
 
-        const data = await getMessagesByConversation(
-          activeConversation.id,
-          token,
-          userId
-        );
-
-        setMessages(data);
-
-        if (socketRef.current?.connected && activeConversation?.id) {
-
-          console.log("Joining conversation:", activeConversation.id);
-
-          socketRef.current.emit("joinConversation", activeConversation.id);
-
-      }
-      } catch (error) {
-        console.error("Error cargando mensajes:", error);
-        setMessages([]);
+        if (mounted && socketRef.current?.connected) {
+          console.log("Joining conversation:", conversationId);
+          socketRef.current.emit("joinConversation", conversationId);
+        }
       } finally {
-        setIsLoadingMessages(false);
+        if (mounted) {
+          setIsLoadingMessages(false);
+        }
       }
     };
-    
 
     loadMessages();
 
-    
-
     return () => {
-      if (
-        socketRef.current?.connected &&
-        activeConversationRef.current?.id
-      ) {
-        socketRef.current.emit(
-          "leaveConversation",
-          activeConversationRef.current.id
-        );
+      mounted = false;
+
+      if (socketRef.current?.connected) {
+        socketRef.current.emit("leaveConversation", previousConversationId);
       }
     };
-  }, [activeConversation, token, userId, isLoading]);
-
-  useEffect(() => {
-  if (!activeConversation?.id) return;
-  if (!token || !userId) return;
-
-  const interval = setInterval(async () => {
-    try {
-      const data = await getMessagesByConversation(
-        activeConversation.id,
-        token,
-        userId
-      );
-
-      setMessages([...data]);
-    } catch (error) {
-      console.error("Chat polling error:", error);
-    }
-  }, 1500);
-
-  return () => clearInterval(interval);
-
-}, [activeConversation?.id, token, userId]);
-
-  useEffect(() => {
-  if (!activeConversation?.id) return;
-  if (!token || !userId) return;
-
-  const interval = setInterval(async () => {
-    try {
-
-      const data = await getMessagesByConversation(
-        activeConversation.id,
-        token,
-        userId
-      );
-
-      setMessages(data);
-
-    } catch (error) {
-      console.error("Polling chat error:", error);
-    }
-  }, 2000);
-
-  return () => clearInterval(interval);
-
-}, [activeConversation, token, userId]);
+  }, [activeConversation?.id, token, userId, isLoading, fetchMessages]);
 
   /**
-   * POLLING FALLBACK (IMPORTANTE PARA LA DEMO)
+   * SINGLE POLLING FALLBACK
    */
   useEffect(() => {
     if (!activeConversation?.id || !token || !userId) return;
 
-    const interval = setInterval(async () => {
-      try {
-        const data = await getMessagesByConversation(
-          activeConversation.id,
-          token,
-          userId
-        );
+    const conversationId = activeConversation.id;
 
-        setMessages(data);
-      } catch (error) {
-        console.error("Polling mensajes error:", error);
-      }
-    }, 2500); // cada 2.5 segundos
+    const interval = setInterval(() => {
+      fetchMessages(conversationId);
+    }, 4000);
 
     return () => clearInterval(interval);
-  }, [activeConversation, token, userId]);
+  }, [activeConversation?.id, token, userId, fetchMessages]);
 
-
-  // send message
-
+  /**
+   * SEND MESSAGE
+   */
   const sendMessage = (content: string) => {
   const clean = content.trim();
 
@@ -320,15 +246,15 @@ export const ChatProvider = ({ children }: { children: ReactNode }) => {
   if (!clean) return;
 
   const senderId = dataUser?.user?.id;
-  if (!senderId) return;
+  if (!senderId || !role) return;
 
   const optimisticMessage: MessageSessionProps = {
     id: `temp-${Date.now()}`,
     content: clean,
-    senderId: senderId,
+    senderId,
     conversationId: activeConversationRef.current.id,
     createdAt: new Date().toISOString(),
-    type: "user",
+    type: role === "Coach" ? "coach" : "user",
     isRead: false,
     sender: {
       id: senderId,
@@ -344,26 +270,11 @@ export const ChatProvider = ({ children }: { children: ReactNode }) => {
     content: clean,
   });
 
-  
-  const refreshMessages = async () => {
-    try {
-      if (!activeConversationRef.current?.id || !token || !userId) return;
-
-      const data = await getMessagesByConversation(
-        activeConversationRef.current.id,
-        token,
-        userId
-      );
-
-      setMessages(data);
-    } catch (error) {
-      console.error("Chat refresh error:", error);
+  setTimeout(() => {
+    if (activeConversationRef.current?.id) {
+      fetchMessages(activeConversationRef.current.id);
     }
-  };
-
-  setTimeout(refreshMessages, 600);
-  setTimeout(refreshMessages, 1200);
-  setTimeout(refreshMessages, 2000);
+  }, 1000);
 };
 
   return (
