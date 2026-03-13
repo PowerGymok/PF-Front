@@ -3,12 +3,12 @@ import { PATHROUTES } from "../PathRoutes";
 export const navAdmin = [
   {
     id: 1,
-    nameToRender: "Home",
+    nameToRender: "Inicio",
     route: PATHROUTES.HOME,
   },
   {
     id: 2,
-    nameToRender: "Dashboard",
+    nameToRender: "Panel de Control",
     route: PATHROUTES.DASHBOARD,
   },
 ];
