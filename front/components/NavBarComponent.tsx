@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { PATHROUTES } from "@/utils/PathRoutes";
 import { useAuth } from "@/app/contexts/AuthContext";
 import { GymLogoComponent } from "./GymLogoComponent";
@@ -16,42 +16,91 @@ import { navUser } from "../utils/Navigation/navUsers";
 import { PowerGym_Logo } from "../components/icons/PowerGym_Logo";
 
 const NavBarComponent = () => {
-  const { dataUser, logOut, userInitial } = useAuth();
+  const { dataUser, logOut, userInitial, isLoading } = useAuth();
 
   const [mounted, setMounted] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
+  const [now, setNow] = useState(Date.now());
+  const [hasLocalToken, setHasLocalToken] = useState(false);
 
   const pathname = usePathname();
 
-  const isAuthenticated = !!dataUser?.token;
   useEffect(() => {
     setMounted(true);
   }, []);
 
+  useEffect(() => {
+    const checkToken = () => {
+      const token = localStorage.getItem("token");
+      setHasLocalToken(!!token);
+      setNow(Date.now());
+    };
+
+    checkToken();
+
+    const interval = setInterval(checkToken, 1000);
+
+    return () => clearInterval(interval);
+  }, []);
+
+  const isTokenExpired = useMemo(() => {
+    const token = dataUser?.token;
+
+    if (!token) return true;
+
+    try {
+      const parts = token.split(".");
+      if (parts.length !== 3) return false;
+
+      const payload = JSON.parse(atob(parts[1]));
+      if (!payload?.exp) return false;
+
+      return payload.exp * 1000 <= now;
+    } catch {
+      return false;
+    }
+  }, [dataUser?.token, now]);
+
+  const isAuthenticated =
+    mounted &&
+    !isLoading &&
+    !!dataUser?.token &&
+    !!hasLocalToken &&
+    dataUser?.login === true &&
+    !isTokenExpired;
+
+  useEffect(() => {
+    if (!mounted || isLoading) return;
+
+    if (dataUser && !isAuthenticated) {
+      logOut();
+    }
+  }, [mounted, isLoading, dataUser, isAuthenticated, logOut]);
+
   if (!mounted) return null;
 
-  const role = dataUser?.user?.role;
-  const profileImg = dataUser?.user?.profileImg;
+  const role = isAuthenticated ? dataUser?.user?.role : null;
+  const profileImg = isAuthenticated ? dataUser?.user?.profileImg : null;
 
   let navItems = navPublic;
 
-  if (role === "Admin") {
-    navItems = navAdmin;
-  } else if (role === "Coach") {
-    navItems = navCoach;
-  } else if (role === "user") {
-    navItems = navUser;
+  if (isAuthenticated) {
+    if (role === "Admin") {
+      navItems = navAdmin;
+    } else if (role === "Coach") {
+      navItems = navCoach;
+    } else if (role === "user") {
+      navItems = navUser;
+    }
   }
 
   return (
     <header className="w-full bg-black px-4 md:px-10">
       <div className="flex items-center justify-between h-[70px]">
-        {/* Logo */}
         <Link href={PATHROUTES.HOME}>
           <GymLogoComponent className="w-14 h-14 sm:w-16 sm:h-16 md:w-20 md:h-20 lg:w-24 lg:h-24" />
         </Link>
 
-        {/* Botón hamburguesa */}
         <button
           onClick={() => setIsOpen(!isOpen)}
           className="text-white md:hidden text-2xl"
@@ -59,7 +108,6 @@ const NavBarComponent = () => {
           ☰
         </button>
 
-        {/* Menú desktop */}
         <nav className="hidden md:flex gap-14 text-white text-md tracking-wide font-light">
           {navItems.map((item) => (
             <Link
@@ -67,7 +115,7 @@ const NavBarComponent = () => {
               href={item.route}
               className={clsx(
                 "hover:text-gray-300 relative transition-all duration-300 hover:after:w-full after:content-[''] after:absolute after:left-0 after:-bottom-1 after:h-[1px] after:w-0 after:bg-white after:transition-all after:duration-300",
-                pathname === item.route && "after:w-full",
+                pathname === item.route && "after:w-full"
               )}
             >
               {item.nameToRender}
@@ -75,7 +123,6 @@ const NavBarComponent = () => {
           ))}
         </nav>
 
-        {/* Perfil / Login */}
         <div className="hidden md:flex text-white gap-4">
           {isAuthenticated ? (
             <Link href={PATHROUTES.DASHBOARD}>
@@ -100,7 +147,10 @@ const NavBarComponent = () => {
           ) : (
             <Link
               href={PATHROUTES.LOGIN}
-              className="text-md mr-4 hover:text-gray-300 relative transition-all duration-300 hover:after:w-full after:content-[''] after:absolute after:left-0 after:-bottom-1 after:h-[1px] after:w-0 after:bg-white after:transition-all after:duration-300"
+              className={clsx(
+                "text-md mr-4 hover:text-gray-300 relative transition-all duration-300 hover:after:w-full after:content-[''] after:absolute after:left-0 after:-bottom-1 after:h-[1px] after:w-0 after:bg-white after:transition-all after:duration-300",
+                pathname === PATHROUTES.LOGIN && "after:w-full"
+              )}
             >
               Login
             </Link>
@@ -108,7 +158,6 @@ const NavBarComponent = () => {
         </div>
       </div>
 
-      {/* Menú mobile */}
       {isOpen && (
         <div className="md:hidden flex flex-col gap-4 pb-4 text-white uppercase text-md tracking-widest">
           {navItems.map((item) => (
@@ -131,13 +180,9 @@ const NavBarComponent = () => {
                   className="block mb-2"
                 >
                   {role === "Admin" ? (
-                    <Image
-                      src="/images/admin-avatar.png"
-                      alt="Admin"
-                      width={32}
-                      height={32}
-                      className="w-8 h-8 rounded-full object-cover inline-block mr-2"
-                    />
+                    <div className="w-8 h-8 rounded-full bg-white inline-flex items-center justify-center mr-2">
+                      <PowerGym_Logo className="w-5 h-5 text-black" />
+                    </div>
                   ) : profileImg ? (
                     <Image
                       src={profileImg}
