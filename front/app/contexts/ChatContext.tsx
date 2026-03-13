@@ -44,10 +44,15 @@ export const ChatProvider = ({ children }: { children: ReactNode }) => {
 
   const socketRef = useRef<Socket | null>(null);
   const [socket, setSocket] = useState<Socket | null>(null);
+  const activeConversationRef = useRef<ConversationSession | null>(null);
 
   const token = dataUser?.token;
   const userId = dataUser?.user?.id;
   const role = dataUser?.user?.role as "user" | "Coach" | "Admin" | undefined;
+
+  useEffect(() => {
+    activeConversationRef.current = activeConversation;
+  }, [activeConversation]);
 
   /**
    * SOCKET CONNECTION
@@ -73,6 +78,10 @@ export const ChatProvider = ({ children }: { children: ReactNode }) => {
     socket.on("connect", () => {
       console.log("Chat conectado");
       setIsConnected(true);
+
+      if (activeConversationRef.current?.id) {
+        socket.emit("joinConversation", activeConversationRef.current.id);
+  }
     });
 
     socket.on("disconnect", () => {
@@ -91,6 +100,7 @@ export const ChatProvider = ({ children }: { children: ReactNode }) => {
 
     socket.on("newMessage", (message: MessageSessionProps) => {
       setMessages((prev) => {
+        console.log("Mensaje recibido:", message);
         const exists = prev.some((msg) => {
           const sameId = msg.id === message.id;
 
@@ -107,7 +117,7 @@ export const ChatProvider = ({ children }: { children: ReactNode }) => {
 
         if (exists) return prev;
 
-        if (activeConversation?.id === message.conversationId) {
+        if (activeConversationRef.current?.id === message.conversationId) {
           return [...prev, message];
         }
 
@@ -184,7 +194,7 @@ export const ChatProvider = ({ children }: { children: ReactNode }) => {
 
         setMessages(data);
 
-        if (socketRef.current) {
+        if (socketRef.current?.connected) {
           socketRef.current.emit("joinConversation", activeConversation.id);
         }
       } catch (error) {
@@ -198,8 +208,8 @@ export const ChatProvider = ({ children }: { children: ReactNode }) => {
     loadMessages();
 
     return () => {
-      if (socketRef.current && activeConversation?.id) {
-        socketRef.current.emit("leaveConversation", activeConversation.id);
+      if (socketRef.current?.connected && activeConversationRef.current?.id) {
+        socketRef.current.emit("leaveConversation", activeConversationRef.current.id);
       }
     };
   }, [activeConversation, token, userId, isLoading]);
@@ -211,7 +221,7 @@ export const ChatProvider = ({ children }: { children: ReactNode }) => {
     const clean = content.trim();
 
     if (!socketRef.current) return;
-    if (!activeConversation?.id) return;
+    if (!activeConversationRef.current?.id) return;
     if (!clean) return;
 
     const senderId = dataUser?.user?.id;
@@ -221,7 +231,7 @@ export const ChatProvider = ({ children }: { children: ReactNode }) => {
       id: `temp-${Date.now()}`,
       content: clean,
       senderId: senderId,
-      conversationId: activeConversation.id,
+      conversationId: activeConversationRef.current.id,
       createdAt: new Date().toISOString(),
       type: "user",
       isRead: false,
@@ -249,7 +259,7 @@ export const ChatProvider = ({ children }: { children: ReactNode }) => {
     });
 
     socketRef.current.emit("sendMessage", {
-      conversationId: activeConversation.id,
+      conversationId: activeConversationRef.current?.id,
       content: clean,
     });
   };
