@@ -207,9 +207,13 @@ export const ChatProvider = ({ children }: { children: ReactNode }) => {
 
         setMessages(data);
 
-        if (socketRef.current?.connected) {
+        if (socketRef.current?.connected && activeConversation?.id) {
+
+          console.log("Joining conversation:", activeConversation.id);
+
           socketRef.current.emit("joinConversation", activeConversation.id);
-        }
+
+      }
       } catch (error) {
         console.error("Error cargando mensajes:", error);
         setMessages([]);
@@ -236,56 +240,78 @@ export const ChatProvider = ({ children }: { children: ReactNode }) => {
     };
   }, [activeConversation, token, userId, isLoading]);
 
-  useEffect(() => {
-  if (!activeConversation?.id) return;
-  if (!token || !userId) return;
+//   useEffect(() => {
+//   if (!activeConversation?.id) return;
+//   if (!token || !userId) return;
 
-  const interval = setInterval(async () => {
-    try {
+//   const interval = setInterval(async () => {
+//     try {
+//       const data = await getMessagesByConversation(
+//         activeConversation.id,
+//         token,
+//         userId
+//       );
 
-      const data = await getMessagesByConversation(
-        activeConversation.id,
-        token,
-        userId
-      );
+//       setMessages([...data]);
+//     } catch (error) {
+//       console.error("Chat polling error:", error);
+//     }
+//   }, 1500);
 
-      setMessages(data);
+//   return () => clearInterval(interval);
 
-    } catch (error) {
-      console.error("Polling chat error:", error);
-    }
-  }, 2000);
+// }, [activeConversation?.id, token, userId]);
 
-  return () => clearInterval(interval);
+//   useEffect(() => {
+//   if (!activeConversation?.id) return;
+//   if (!token || !userId) return;
 
-}, [activeConversation, token, userId]);
+//   const interval = setInterval(async () => {
+//     try {
 
-  /**
-   * POLLING FALLBACK (IMPORTANTE PARA LA DEMO)
-   */
-  useEffect(() => {
-    if (!activeConversation?.id || !token || !userId) return;
+//       const data = await getMessagesByConversation(
+//         activeConversation.id,
+//         token,
+//         userId
+//       );
 
-    const interval = setInterval(async () => {
-      try {
-        const data = await getMessagesByConversation(
-          activeConversation.id,
-          token,
-          userId
-        );
+//       setMessages(data);
 
-        setMessages(data);
-      } catch (error) {
-        console.error("Polling mensajes error:", error);
-      }
-    }, 2500); // cada 2.5 segundos
+//     } catch (error) {
+//       console.error("Polling chat error:", error);
+//     }
+//   }, 2000);
 
-    return () => clearInterval(interval);
-  }, [activeConversation, token, userId]);
+//   return () => clearInterval(interval);
+
+// }, [activeConversation, token, userId]);
+
+//   /**
+//    * POLLING FALLBACK (IMPORTANTE PARA LA DEMO)
+//    */
+//   useEffect(() => {
+//     if (!activeConversation?.id || !token || !userId) return;
+
+//     const interval = setInterval(async () => {
+//       try {
+//         const data = await getMessagesByConversation(
+//           activeConversation.id,
+//           token,
+//           userId
+//         );
+
+//         setMessages(data);
+//       } catch (error) {
+//         console.error("Polling mensajes error:", error);
+//       }
+//     }, 2500); // cada 2.5 segundos
+
+//     return () => clearInterval(interval);
+//   }, [activeConversation, token, userId]);
 
 
   // send message
-  
+
   const sendMessage = (content: string) => {
   const clean = content.trim();
 
