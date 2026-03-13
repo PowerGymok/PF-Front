@@ -29,9 +29,12 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const persistSession = (session: UserSession | null) => {
     if (!session) {
       localStorage.removeItem("userSession");
+      localStorage.removeItem("token");
       return;
     }
+
     localStorage.setItem("userSession", JSON.stringify(session));
+    localStorage.setItem("token", session.token);
   };
 
   const setDataUser = (session: UserSession | null) => {
@@ -39,17 +42,21 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     persistSession(session);
   };
 
-  const logOut = () => {
+  const clearSession = () => {
     setDataUserState(null);
     localStorage.removeItem("userSession");
-    localStorage.removeItem("token"); // por si en algún flujo viejo lo guardaste así
+    localStorage.removeItem("token");
+  };
+
+  const logOut = () => {
+    clearSession();
   };
 
   const updateProfileImg = (img: string) => {
     setDataUserState((prev) => {
       if (!prev) return prev;
 
-      const updatedSession = {
+      const updatedSession: UserSession = {
         ...prev,
         user: {
           ...prev.user,
@@ -57,7 +64,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         },
       };
 
-      localStorage.setItem("userSession", JSON.stringify(updatedSession));
+      persistSession(updatedSession);
       return updatedSession;
     });
   };
@@ -66,8 +73,12 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     const loadUser = async () => {
       try {
         const storedSession = localStorage.getItem("userSession");
+        const legacyToken = localStorage.getItem("token");
 
         if (!storedSession) {
+          if (legacyToken) {
+            localStorage.removeItem("token");
+          }
           setIsLoading(false);
           return;
         }
@@ -77,21 +88,25 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         try {
           parsedData = JSON.parse(storedSession);
         } catch {
-          localStorage.removeItem("userSession");
+          clearSession();
           setIsLoading(false);
           return;
         }
 
         if (!parsedData?.token) {
-          localStorage.removeItem("userSession");
+          clearSession();
           setIsLoading(false);
           return;
         }
 
-        // Primero hidratamos con lo que ya existe en localStorage
+        // Hidratar primero desde localStorage para evitar parpadeo/deslogueo visual
         setDataUserState(parsedData);
 
-        // Si no existe API_URL, no intentamos refrescar
+        // Re-sincronizar token viejo por compatibilidad
+        if (!legacyToken || legacyToken !== parsedData.token) {
+          localStorage.setItem("token", parsedData.token);
+        }
+
         if (!process.env.NEXT_PUBLIC_API_URL) {
           setIsLoading(false);
           return;
@@ -106,7 +121,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           cache: "no-store",
         });
 
-        // Si el backend falla, NO tumbamos la sesión local
+        // Si falla el backend o el token expiró, conservamos la sesión local.
+        // Así evitamos "entra y se sale" por fallos temporales de deploy/backend.
         if (!res.ok) {
           setIsLoading(false);
           return;
@@ -116,6 +132,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
         const updatedSession: UserSession = {
           ...parsedData,
+          login: true,
+          token: parsedData.token,
           user: {
             ...parsedData.user,
             ...userFromApi,
@@ -123,7 +141,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         };
 
         setDataUserState(updatedSession);
-        localStorage.setItem("userSession", JSON.stringify(updatedSession));
+        persistSession(updatedSession);
       } catch (error) {
         console.error("Error loading auth session:", error);
       } finally {

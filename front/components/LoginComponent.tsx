@@ -9,6 +9,8 @@ import { LoginInitialValues, LoginValidation } from "@/validators/loginSchema";
 import ButtonComponent from "./ButtonComponent";
 import GoogleLoginButton from "./GoogleLoginButton";
 import Link from "next/link";
+import { PATHROUTES } from "@/utils/PathRoutes";
+import { UserSession } from "@/interface/UserSession";
 
 const LoginComponent = () => {
   const router = useRouter();
@@ -27,12 +29,9 @@ const LoginComponent = () => {
         }
 
         const token = res.accessToken;
-
-        localStorage.setItem("token", token);
-
         const user = await GetCurrentUser(token);
 
-        const session = {
+        const session: UserSession = {
           login: true,
           token,
           user: {
@@ -41,21 +40,29 @@ const LoginComponent = () => {
             email: user.email,
             role: user.role,
             phone: user.phone,
-            orders: [],
-            profileImg: user.profileImg,
-            isProfileComplete: user.isProfileComplete,
+            orders: user.orders ?? [],
+            profileImg: user.profileImg ?? null,
+            isProfileComplete: user.isProfileComplete ?? true,
           },
         };
 
         setDataUser(session);
 
-        localStorage.setItem("userSession", JSON.stringify(session));
-
         resetForm();
 
-        router.push("/dashboard");
+        if (user.role === "Admin") {
+          router.push("/admin/dashboard");
+          return;
+        }
+
+        if (user.role === "Coach") {
+          router.push("/coach/dashboard");
+          return;
+        }
+
+        router.push(PATHROUTES.DASHBOARD);
       } catch (error) {
-        console.error(error);
+        console.error("Error en login:", error);
         alert("Inicio de sesión incorrecto");
       }
     },
@@ -63,10 +70,7 @@ const LoginComponent = () => {
 
   return (
     <div className="flex items-center justify-center min-h-screen px-4">
-      
       <div className="w-full max-w-md bg-zinc-900 border border-zinc-800 rounded-2xl shadow-xl p-8">
-
-        {/* Titulo */}
         <div className="text-center mb-6">
           <h1 className="text-3xl font-bold text-white">Bienvenido</h1>
           <p className="text-gray-400 text-sm mt-2">
@@ -74,12 +78,10 @@ const LoginComponent = () => {
           </p>
         </div>
 
-        {/* Google Login */}
         <section className="mb-6">
           <GoogleLoginButton />
         </section>
 
-        {/* Divider */}
         <div className="flex items-center gap-4 my-6">
           <div className="h-px bg-zinc-700 w-full"></div>
           <span className="text-gray-400 text-sm">o</span>
@@ -87,7 +89,6 @@ const LoginComponent = () => {
         </div>
 
         <form onSubmit={formik.handleSubmit}>
-
           <InputComponent
             type="email"
             placeholder="Correo electrónico"
@@ -120,22 +121,19 @@ const LoginComponent = () => {
             </div>
           )}
 
-          {/* Botón login */}
           <div className="flex justify-center mt-6">
             <ButtonComponent type="submit" label="Iniciar Sesión" />
           </div>
 
-          {/* Register */}
           <p className="text-gray-400 flex justify-center gap-2 mt-6 text-sm">
             ¿Todavía no tienes una cuenta?
             <Link
-              href={"register"}
+              href="/register"
               className="text-white relative transition-all duration-300 hover:after:w-full after:content-[''] after:absolute after:left-0 after:-bottom-1 after:h-[1px] after:w-0 after:bg-white after:transition-all after:duration-300 hover:text-gray-300"
             >
               Regístrate
             </Link>
           </p>
-
         </form>
       </div>
     </div>

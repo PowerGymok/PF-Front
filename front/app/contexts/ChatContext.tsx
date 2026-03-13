@@ -197,7 +197,7 @@ export const ChatProvider = ({ children }: { children: ReactNode }) => {
 
         setActiveConversation((prev) => {
           if (prev) {
-            const stillExists = data.find((c) => c.id === prev.id);
+            const stillExists = data.find((c: any) => c.id === prev.id);
             if (stillExists) return stillExists;
           }
           return data.length > 0 ? data[0] : null;
