@@ -38,6 +38,16 @@ const ChatWindow = () => {
   }, [messages]);
 
   useEffect(() => {
+  if (!activeConversation) return;
+
+  const interval = setInterval(() => {
+    setActiveConversation({ ...activeConversation });
+  }, 4000);
+
+  return () => clearInterval(interval);
+}, [activeConversation]);
+
+  useEffect(() => {
   setNewMessage((prev) => prev);
 }, [messages]);
 
