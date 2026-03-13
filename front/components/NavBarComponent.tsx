@@ -167,7 +167,7 @@ const NavBarComponent = () => {
           ))}
 
           <div className="border-t border-gray-700 pt-4">
-            {isAuthenticated ? (
+            {!isAuthenticated ? (
               <>
                 <Link
                   href={PATHROUTES.DASHBOARD}
