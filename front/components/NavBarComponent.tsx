@@ -92,6 +92,12 @@ const NavBarComponent = () => {
     navItems = navUser;
   }
 
+  const remoteItems = () => {
+    if (!isAuthenticated) {
+      return navPublic;
+    }
+  }
+
   return (
     <header className="w-full bg-black px-4 md:px-10">
       <div className="flex items-center justify-between h-[70px]">
@@ -149,14 +155,6 @@ const NavBarComponent = () => {
             >
               Login
             </Link>
-          )}
-          {isAuthenticated && (
-            <button
-              onClick={logOut}
-              className="text-md hover:text-gray-300 relative transition-all duration-300 hover:after:w-full after:content-[''] after:absolute after:left-0 after:-bottom-1 after:h-[1px] after:w-0 after:bg-white after:transition-all after:duration-300"
-            >
-              Logout
-            </button>
           )}
         </div>
       </div>
