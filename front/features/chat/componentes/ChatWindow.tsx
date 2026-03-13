@@ -151,15 +151,14 @@ const ChatWindow = () => {
               console.log("senderId:", msg.senderId);
               console.log("currentUserId:", currentUserId);
 
-              const isMine = String(msg.sender?.id ?? msg.senderId) === String(currentUserId);
+              const isMine = msg.sender?.id === currentUserId || msg.senderId === currentUserId || msg.type === "user";
+
 
               return (
                 <div
-                  key={msg.id}
-                  className={`flex ${
-                    isMine ? "justify-end" : "justify-start"
-                  }`}
-                >
+                  key={`${msg.id}-${msg.createdAt}`}
+                    className={`flex ${ isMine ? "justify-end" : "justify-start" }`}
+                  >
 
                   <div
                     className={`max-w-[75%] px-4 py-2 rounded-lg text-sm ${
