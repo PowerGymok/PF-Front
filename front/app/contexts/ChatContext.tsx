@@ -56,22 +56,28 @@ export const ChatProvider = ({ children }: { children: ReactNode }) => {
     activeConversationRef.current = activeConversation;
   }, [activeConversation]);
 
-  const fetchMessages = useCallback(async (conversationId: string) => {
-    if (!token || !userId) return;
+  const fetchMessages = useCallback(
+    async (conversationId: string) => {
+      if (!token || !userId) return;
 
-    const fetchId = ++lastFetchIdRef.current;
+      const fetchId = ++lastFetchIdRef.current;
 
-    try {
-      const data = await getMessagesByConversation(conversationId, token, userId);
+      try {
+        const data = await getMessagesByConversation(
+          conversationId,
+          token,
+          userId
+        );
 
-      // evita que una respuesta vieja pise una más nueva
-      if (fetchId !== lastFetchIdRef.current) return;
+        if (fetchId !== lastFetchIdRef.current) return;
 
-      setMessages(data);
-    } catch (error) {
-      console.error("Error cargando mensajes:", error);
-    }
-  }, [token, userId]);
+        setMessages(data);
+      } catch (error) {
+        console.error("Error cargando mensajes:", error);
+      }
+    },
+    [token, userId]
+  );
 
   /**
    * SOCKET CONNECTION
@@ -99,7 +105,14 @@ export const ChatProvider = ({ children }: { children: ReactNode }) => {
       setIsConnected(true);
 
       if (activeConversationRef.current?.id) {
-        newSocket.emit("joinConversation", activeConversationRef.current.id);
+        console.log(
+          "FRONT joinConversation emit on connect:",
+          activeConversationRef.current.id
+        );
+
+        newSocket.emit("joinConversation", {
+          conversationId: activeConversationRef.current.id,
+        });
       }
     });
 
@@ -112,6 +125,14 @@ export const ChatProvider = ({ children }: { children: ReactNode }) => {
       console.error("Socket error:", err.message);
     });
 
+    newSocket.on("joinedConversation", (payload) => {
+      console.log("joinedConversation:", payload);
+    });
+
+    newSocket.on("messageSent", (payload) => {
+      console.log("messageSent:", payload);
+    });
+
     newSocket.on("newMessage", (message: MessageSessionProps) => {
       console.log("Mensaje recibido:", message);
 
@@ -122,15 +143,32 @@ export const ChatProvider = ({ children }: { children: ReactNode }) => {
       setMessages((prev) => {
         const exists = prev.some((m) => m.id === message.id);
         if (exists) return prev;
-        return [...prev, message];
+
+        const withoutTemps = prev.filter(
+          (m) =>
+            !(
+              String(m.id).startsWith("temp-") &&
+              m.content.trim() === message.content.trim() &&
+              m.senderId === message.senderId
+            )
+        );
+
+        return [...withoutTemps, message];
       });
+    });
+
+    newSocket.on("error", (payload) => {
+      console.error("Chat socket error:", payload);
     });
 
     return () => {
       newSocket.off("connect");
       newSocket.off("disconnect");
       newSocket.off("connect_error");
+      newSocket.off("joinedConversation");
+      newSocket.off("messageSent");
       newSocket.off("newMessage");
+      newSocket.off("error");
       newSocket.disconnect();
       socketRef.current = null;
       setSocket(null);
@@ -159,7 +197,7 @@ export const ChatProvider = ({ children }: { children: ReactNode }) => {
 
         setActiveConversation((prev) => {
           if (prev) {
-            const stillExists = data.find((c: any) => c.id === prev.id);
+            const stillExists = data.find((c) => c.id === prev.id);
             if (stillExists) return stillExists;
           }
           return data.length > 0 ? data[0] : null;
@@ -191,16 +229,17 @@ export const ChatProvider = ({ children }: { children: ReactNode }) => {
     }
 
     let mounted = true;
-    const previousConversationId = conversationId;
 
     const loadMessages = async () => {
       try {
         setIsLoadingMessages(true);
+
         await fetchMessages(conversationId);
 
         if (mounted && socketRef.current?.connected) {
           console.log("Joining conversation:", conversationId);
-          socketRef.current.emit("joinConversation", conversationId);
+
+          socketRef.current.emit("joinConversation", { conversationId });
         }
       } finally {
         if (mounted) {
@@ -213,10 +252,6 @@ export const ChatProvider = ({ children }: { children: ReactNode }) => {
 
     return () => {
       mounted = false;
-
-      if (socketRef.current?.connected) {
-        socketRef.current.emit("leaveConversation", previousConversationId);
-      }
     };
   }, [activeConversation?.id, token, userId, isLoading, fetchMessages]);
 
@@ -239,43 +274,43 @@ export const ChatProvider = ({ children }: { children: ReactNode }) => {
    * SEND MESSAGE
    */
   const sendMessage = (content: string) => {
-  const clean = content.trim();
+    const clean = content.trim();
 
-  if (!socketRef.current?.connected) return;
-  if (!activeConversationRef.current?.id) return;
-  if (!clean) return;
+    if (!socketRef.current?.connected) return;
+    if (!activeConversationRef.current?.id) return;
+    if (!clean) return;
 
-  const senderId = dataUser?.user?.id;
-  if (!senderId || !role) return;
+    const senderId = dataUser?.user?.id;
+    if (!senderId || !role) return;
 
-  const optimisticMessage: MessageSessionProps = {
-    id: `temp-${Date.now()}`,
-    content: clean,
-    senderId,
-    conversationId: activeConversationRef.current.id,
-    createdAt: new Date().toISOString(),
-    type: role === "Coach" ? "coach" : "user",
-    isRead: false,
-    sender: {
-      id: senderId,
-      name: "You",
-      email: "",
-    },
+    const optimisticMessage: MessageSessionProps = {
+      id: `temp-${Date.now()}`,
+      content: clean,
+      senderId,
+      conversationId: activeConversationRef.current.id,
+      createdAt: new Date().toISOString(),
+      type: role === "Coach" ? "coach" : "user",
+      isRead: false,
+      sender: {
+        id: senderId,
+        name: "You",
+        email: "",
+      },
+    };
+
+    setMessages((prev) => [...prev, optimisticMessage]);
+
+    socketRef.current.emit("sendMessage", {
+      conversationId: activeConversationRef.current.id,
+      content: clean,
+    });
+
+    setTimeout(() => {
+      if (activeConversationRef.current?.id) {
+        fetchMessages(activeConversationRef.current.id);
+      }
+    }, 1000);
   };
-
-  setMessages((prev) => [...prev, optimisticMessage]);
-
-  socketRef.current.emit("sendMessage", {
-    conversationId: activeConversationRef.current.id,
-    content: clean,
-  });
-
-  setTimeout(() => {
-    if (activeConversationRef.current?.id) {
-      fetchMessages(activeConversationRef.current.id);
-    }
-  }, 1000);
-};
 
   return (
     <ChatContext.Provider
