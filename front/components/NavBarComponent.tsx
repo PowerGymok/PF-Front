@@ -33,20 +33,19 @@ const NavBarComponent = () => {
     const checkToken = () => {
       const token = localStorage.getItem("token");
       setHasLocalToken(!!token);
+      setNow(Date.now());
     };
 
     checkToken();
 
-    const interval = setInterval(() => {
-      setNow(Date.now());
-      checkToken();
-    }, 1000);
+    const interval = setInterval(checkToken, 1000);
 
     return () => clearInterval(interval);
   }, []);
 
   const isTokenExpired = useMemo(() => {
     const token = dataUser?.token;
+
     if (!token) return true;
 
     try {
@@ -62,39 +61,36 @@ const NavBarComponent = () => {
     }
   }, [dataUser?.token, now]);
 
-  useEffect(() => {
-    if (!mounted || isLoading) return;
-
-    if (dataUser && (!hasLocalToken || isTokenExpired)) {
-      logOut();
-    }
-  }, [mounted, isLoading, dataUser, hasLocalToken, isTokenExpired, logOut]);
-
-  if (!mounted) return null;
-
-  const role = dataUser?.user?.role;
-  const profileImg = dataUser?.user?.profileImg;
-
   const isAuthenticated =
+    mounted &&
     !isLoading &&
     !!dataUser?.token &&
     !!hasLocalToken &&
     dataUser?.login === true &&
     !isTokenExpired;
 
+  useEffect(() => {
+    if (!mounted || isLoading) return;
+
+    if (dataUser && !isAuthenticated) {
+      logOut();
+    }
+  }, [mounted, isLoading, dataUser, isAuthenticated, logOut]);
+
+  if (!mounted) return null;
+
+  const role = isAuthenticated ? dataUser?.user?.role : null;
+  const profileImg = isAuthenticated ? dataUser?.user?.profileImg : null;
+
   let navItems = navPublic;
 
-  if (role === "Admin") {
-    navItems = navAdmin;
-  } else if (role === "Coach") {
-    navItems = navCoach;
-  } else if (role === "user") {
-    navItems = navUser;
-  }
-
-  const remoteItems = () => {
-    if (!isAuthenticated) {
-      return navPublic;
+  if (isAuthenticated) {
+    if (role === "Admin") {
+      navItems = navAdmin;
+    } else if (role === "Coach") {
+      navItems = navCoach;
+    } else if (role === "user") {
+      navItems = navUser;
     }
   }
 
@@ -151,7 +147,10 @@ const NavBarComponent = () => {
           ) : (
             <Link
               href={PATHROUTES.LOGIN}
-              className="text-md mr-4 hover:text-gray-300 relative transition-all duration-300 hover:after:w-full after:content-[''] after:absolute after:left-0 after:-bottom-1 after:h-[1px] after:w-0 after:bg-white after:transition-all after:duration-300"
+              className={clsx(
+                "text-md mr-4 hover:text-gray-300 relative transition-all duration-300 hover:after:w-full after:content-[''] after:absolute after:left-0 after:-bottom-1 after:h-[1px] after:w-0 after:bg-white after:transition-all after:duration-300",
+                pathname === PATHROUTES.LOGIN && "after:w-full"
+              )}
             >
               Login
             </Link>
@@ -181,7 +180,7 @@ const NavBarComponent = () => {
                   className="block mb-2"
                 >
                   {role === "Admin" ? (
-                    <div className="w-8 h-8 rounded-full bg-white flex items-center justify-center inline-flex mr-2">
+                    <div className="w-8 h-8 rounded-full bg-white inline-flex items-center justify-center mr-2">
                       <PowerGym_Logo className="w-5 h-5 text-black" />
                     </div>
                   ) : profileImg ? (
