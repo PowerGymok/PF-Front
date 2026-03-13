@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { PATHROUTES } from "@/utils/PathRoutes";
 import { useAuth } from "@/app/contexts/AuthContext";
 import { GymLogoComponent } from "./GymLogoComponent";
@@ -16,24 +16,52 @@ import { navUser } from "../utils/Navigation/navUsers";
 import { PowerGym_Logo } from "../components/icons/PowerGym_Logo";
 
 const NavBarComponent = () => {
-  const { dataUser, logOut, userInitial, isLoading } = useAuth();
+  const { dataUser, logOut, userInitial } = useAuth();
 
   const [mounted, setMounted] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
+  const [now, setNow] = useState(Date.now());
 
   const pathname = usePathname();
-
-  const isAuthenticated =
-    !isLoading && !!dataUser?.token && dataUser?.login === true;
 
   useEffect(() => {
     setMounted(true);
   }, []);
 
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setNow(Date.now());
+    }, 1000);
+
+    return () => clearInterval(interval);
+  }, []);
+
+  const isTokenExpired = useMemo(() => {
+    const token = dataUser?.token;
+    if (!token) return true;
+
+    try {
+      const payload = JSON.parse(atob(token.split(".")[1]));
+      if (!payload?.exp) return false;
+
+      return payload.exp * 1000 < now;
+    } catch {
+      return true;
+    }
+  }, [dataUser?.token, now]);
+
+  useEffect(() => {
+    if (mounted && dataUser?.token && isTokenExpired) {
+      logOut();
+    }
+  }, [mounted, dataUser?.token, isTokenExpired, logOut]);
+
   if (!mounted) return null;
 
   const role = dataUser?.user?.role;
   const profileImg = dataUser?.user?.profileImg;
+
+  const isAuthenticated = !!dataUser?.token && !isTokenExpired;
 
   let navItems = navPublic;
 

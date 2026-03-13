@@ -32,8 +32,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     const loadUser = async () => {
       try {
         const stored = localStorage.getItem("userSession");
+        const token = localStorage.getItem("token");
 
-        if (!stored) {
+        if (!stored || !token) {
           clearSession();
           return;
         }
