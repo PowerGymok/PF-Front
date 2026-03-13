@@ -151,7 +151,7 @@ const ChatWindow = () => {
               console.log("senderId:", msg.senderId);
               console.log("currentUserId:", currentUserId);
 
-              const isMine = msg.sender?.id === currentUserId || msg.senderId === currentUserId || msg.type === "user";
+              const isMine = msg.sender?.id === currentUserId || msg.senderId === currentUserId || (msg.type === "user" && dataUser?.user?.role === "Coach");
 
 
               return (

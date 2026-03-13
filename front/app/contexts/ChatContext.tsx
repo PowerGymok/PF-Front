@@ -94,31 +94,48 @@ export const ChatProvider = ({ children }: { children: ReactNode }) => {
     });
 
     socket.on("newMessage", (message: MessageSessionProps) => {
-      const currentUserId = dataUser?.user?.id;
+  const currentUserId = dataUser?.user?.id;
 
-      const normalizedMessage: MessageSessionProps = {
-        ...message,
-        senderId:
-          message.senderId ??
-          (message.type === "user" ? currentUserId : "coach"),
-      };
+  const normalizedMessage: MessageSessionProps = {
+    ...message,
+    senderId:
+      message.senderId ??
+      (message.type === "user" ? currentUserId : "coach"),
+  };
 
-      console.log("Mensaje recibido:", normalizedMessage);
+  console.log("Mensaje recibido:", normalizedMessage);
 
-      if (
-        activeConversationRef.current?.id !==
-        normalizedMessage.conversationId
-      ) {
-        return;
-      }
+  if (
+    activeConversationRef.current?.id !==
+    normalizedMessage.conversationId
+  ) {
+    return;
+  }
 
-      setMessages((prev) => {
-        const exists = prev.find((m) => m.id === normalizedMessage.id);
-        if (exists) return prev;
+  setMessages((prev) => {
+    const exists = prev.find((m) => m.id === normalizedMessage.id);
+    if (exists) return prev;
 
-        return [...prev, normalizedMessage];
-      });
-    });
+    return [...prev, normalizedMessage];
+  });
+
+  // 🔧 fallback para sincronizar mensajes (arregla el problema del user)
+  setTimeout(async () => {
+    try {
+      if (!activeConversationRef.current?.id || !token || !userId) return;
+
+      const data = await getMessagesByConversation(
+        activeConversationRef.current.id,
+        token,
+        userId
+      );
+
+      setMessages(data);
+    } catch (error) {
+      console.error("Fallback chat sync error:", error);
+    }
+  }, 800);
+});
 
     return () => {
       socket.disconnect();
