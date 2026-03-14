@@ -3,7 +3,7 @@ import { PATHROUTES } from "../PathRoutes";
 export const navPublic = [
   {
     id: 1,
-    nameToRender: "Home",
+    nameToRender: "Inicio",
     route: PATHROUTES.HOME,
   },
   {
